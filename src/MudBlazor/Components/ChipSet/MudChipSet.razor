@@ -2,6 +2,10 @@
 @typeparam T
 @inherits MudComponentBase
 
+@{
+    UserAttributes.TryAdd("role", "group");
+}
+
 <div @attributes="UserAttributes" class="@Classname" style="@Style" >
     <CascadingValue IsFixed="true" Value="this">
         @ChildContent

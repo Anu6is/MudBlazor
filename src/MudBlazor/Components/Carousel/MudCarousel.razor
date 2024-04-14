@@ -2,6 +2,10 @@
 @inherits MudBaseBindableItemsControl<MudCarouselItem, TData>
 @typeparam TData
 
+@{
+    UserAttributes.TryAdd("role", "region");
+}
+
 <section @attributes="UserAttributes" aria-roledescription="carousel" class="@Classname" style="@Style">
     <CascadingValue Value="this">
 

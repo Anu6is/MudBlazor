@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -418,9 +417,13 @@ namespace MudBlazor
 
         protected override void OnInitialized()
         {
+            base.OnInitialized();
+
             var text = GetItemString(Value);
             if (!string.IsNullOrWhiteSpace(text))
+            {
                 Text = text;
+            }
         }
 
         protected override void OnAfterRender(bool firstRender)

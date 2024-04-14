@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
-using MudBlazor.Extensions;
 using MudBlazor.Utilities;
 
 namespace MudBlazor
@@ -32,7 +32,22 @@ namespace MudBlazor
         /// <summary>
         /// Type of the input element. It should be a valid HTML5 input type.
         /// </summary>
-        [Parameter] public InputType InputType { get; set; } = InputType.Text;
+        [Parameter]
+        public InputType InputType { get; set; } = InputType.Text;
+
+        /// <summary>
+        ///  Helps assistive technologies understand the purpose of an element.
+        ///  Maps to the role attribute as part of the WAI-ARIA specification.
+        /// </summary>
+        [Parameter]
+        public string InputRole { get; set; }
+
+        /// <summary>
+        /// Adds attributes to the div surrounding the input elements.
+        /// </summary>
+        [Parameter]
+        [Category(CategoryTypes.ComponentBase.Common)]
+        public Dictionary<string, object> InputContainerAttributes { get; set; } = new();
 
         internal override InputType GetInputType() => InputType;
 

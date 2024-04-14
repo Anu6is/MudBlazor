@@ -2,6 +2,10 @@
 @using System.Globalization
 @inherits MudChartBase
 
+@{
+    UserAttributes.TryAdd("role", "img");
+}
+
 <svg @attributes="UserAttributes" class="mud-chart-donut" width="@ParentWidth" height="@ParentHeight" viewBox="0 0 42 42">
     <Filters />
     <circle class="mud-donut-ring" cx="21" cy="21" r="@(100 / (2 * Math.PI))"></circle>

@@ -23,6 +23,8 @@
                           Placeholder="@Placeholder" Immediate="true"
                           InputMode="@InputMode" Pattern="@Pattern"
                           ShrinkLabel="@ShrinkLabel"
+                          InputRole="textbox"
+                          InputContainerAttributes="@(new() { {"role","combobox"}, {"aria-haspopup", "listbox" }, {"aria-expanded", IsOpen}})"
                           T="string" />
 
                 @if (ShowProgressIndicator && IsLoading)

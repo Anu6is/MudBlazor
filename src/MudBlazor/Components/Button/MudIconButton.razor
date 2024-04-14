@@ -1,6 +1,10 @@
 ﻿@namespace MudBlazor
 @inherits MudBaseButton
 
+@{
+    UserAttributes.TryAdd("role", "button");
+}
+
 <MudElement @bind-Ref="@_elementReference"
             HtmlTag="@HtmlTag"
             Class="@Classname" 

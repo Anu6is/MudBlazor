@@ -2,6 +2,18 @@
 @typeparam T
 @inherits MudComponentBase
 
+@{
+    if (ChipSet is null)
+    {
+        UserAttributes.TryAdd("role", "button");
+    }
+    else
+    {
+        UserAttributes.TryAdd("role", "checkbox");
+        UserAttributes["aria-checked"] = IsSelectedState.Value.ToString().ToLowerInvariant();
+    }
+}
+
 <div tabindex="0" @attributes="UserAttributes" class="@Classname" style="@Style" @onclick="EventUtil.AsNonRenderingEventHandler<MouseEventArgs>(OnClickAsync)">
     @{
         if (AvatarContent is not null)

@@ -1,6 +1,10 @@
 ﻿@namespace MudBlazor.Charts
 @inherits MudChartBase
 
+@{
+    UserAttributes.TryAdd("role", "group");
+}
+
 @if (MudChartParent?.ChartOptions.DisableLegend != true)
 {
     <div @attributes="UserAttributes" class="mud-chart-legend">

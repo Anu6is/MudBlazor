@@ -3,7 +3,7 @@
 @inherits MudBaseInput<T>
 @using MudBlazor.Internal
 
-<div class="@Classname" style="@Style">
+<div class="@Classname" style="@Style" @attributes="@InputContainerAttributes">
     @if (Adornment == Adornment.Start)
     {
         <MudInputAdornment Class="@AdornmentClassname" 
@@ -42,6 +42,7 @@
                 @onwheel="@OnMouseWheel"
                 aria-invalid="@Error.ToString().ToLower()"
                 aria-describedby="@ErrorId"
+                role="textbox"
         > 
             @Text
         </textarea>
@@ -72,6 +73,7 @@
                 @onwheel="@OnMouseWheel"
                 aria-invalid="@Error.ToString().ToLower()"
                 aria-describedby="@ErrorId"
+                role="@InputRole"
          />
          @*Note: double mouse wheel handlers needed for Firefox because it doesn't know onmousewheel*@
       

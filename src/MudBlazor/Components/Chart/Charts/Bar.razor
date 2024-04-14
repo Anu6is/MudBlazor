@@ -2,6 +2,10 @@
 @using System.Globalization;
 @inherits MudChartBase
 
+@{
+    UserAttributes.TryAdd("role", "img");
+}
+
 <svg @attributes="UserAttributes" class="mud-chart-line mud-ltr" width="@MudChartParent?.Width" height="@MudChartParent?.Height" viewBox="0 0 650 350">
     <g class="mud-charts-grid">
         <g class="mud-charts-gridlines-yaxis">

@@ -3,7 +3,7 @@
 @typeparam T
 @attribute [CascadingTypeParameter(nameof(T))]
 
-<div @attributes="UserAttributes" class="@Classname" style="@Style">
+<div @attributes="UserAttributes" class="@Classname" style="@Style" role="listbox">
     <CascadingValue Value="@this" IsFixed="true">
         @ChildContent
     </CascadingValue>

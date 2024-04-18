@@ -1,6 +1,7 @@
 ﻿@namespace MudBlazor
 @typeparam T
 @inherits MudComponentBase
+@attribute [CascadingTypeParameter(nameof(T))]
 
 @{
     UserAttributes.TryAdd("role", "group");

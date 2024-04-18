@@ -44,9 +44,8 @@
                 required="@Required"
                 aria-invalid="@Error.ToString().ToLower()"
                 aria-describedby="@ErrorId"
-                aria-required="@Required.ToString().ToLowerInvariant()">
-                role="textbox"
-        > 
+                aria-required="@Required.ToString().ToLowerInvariant()"
+                role="textbox"> 
             @Text
         </textarea>
         @*Note: double mouse wheel handlers needed for Firefox because it doesn't know onmousewheel*@
@@ -85,8 +84,7 @@
       
          @if (GetDisabledState()) {
              @*Note: this div must always be there to avoid crashes in WASM, but it is hidden most of the time except if ChildContent should be shown.
-                           In Disabled state the tabindex attribute must NOT be set at all or else it will get focus on click
-             *@
+                     In Disabled state the tabindex attribute must NOT be set at all or else it will get focus on click*@
             <div class="@InputClassname"
                 style="@("display:"+(InputType == InputType.Hidden && ChildContent != null ? "inline" : "none"))"
                 @onblur="@OnBlurredAsync" @ref="@_elementReference1"

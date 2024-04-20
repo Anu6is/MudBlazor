@@ -3,14 +3,15 @@
 @inherits MudComponentBase
 
 @{
-    if (ChipSet is null)
-    {
-        UserAttributes.TryAdd("role", "button");
-    }
-    else
+    if (ChipSet is not null)
     {
         UserAttributes.TryAdd("role", "checkbox");
         UserAttributes["aria-checked"] = IsSelectedState.Value.ToString().ToLowerInvariant();
+
+    }
+    else if (IsClickable && GetDisabled() is false)
+    {
+        UserAttributes.TryAdd("role", "button");
     }
 }
 

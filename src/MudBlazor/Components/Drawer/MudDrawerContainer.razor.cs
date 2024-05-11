@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Components;
+using MudBlazor.Extensions;
 using MudBlazor.Utilities;
 
 namespace MudBlazor
@@ -36,7 +37,7 @@ namespace MudBlazor
 
         internal void Add(MudDrawer drawer)
         {
-            if (Fixed && !drawer.Fixed)
+            if (Fixed && !drawer.IsFixed)
                 return;
 
             _drawers.Add(drawer);
@@ -56,10 +57,10 @@ namespace MudBlazor
                 return string.Empty;
             }
 
-            var className = $"mud-drawer-{(drawer.Open ? "open" : "close")}-{drawer.Variant.ToDescriptionString()}";
+            var className = $"mud-drawer-{(drawer.GetState<bool>(nameof(MudDrawer.Open)) ? "open" : "close")}-{drawer.Variant.ToDescriptionString()}";
             if (drawer.Variant is DrawerVariant.Responsive or DrawerVariant.Mini)
             {
-                className += $"-{drawer.Breakpoint.ToDescriptionString()}";
+                className += $"-{drawer.GetState<Breakpoint>(nameof(MudDrawer.Breakpoint)).ToDescriptionString()}";
             }
             className += $"-{drawer.GetPosition()}";
 

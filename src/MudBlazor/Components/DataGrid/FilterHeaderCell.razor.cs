@@ -75,6 +75,7 @@ namespace MudBlazor
         private Enum valueEnum => fieldType.IsEnum && Column.FilterContext.FilterDefinition.Value is not null ? (Enum)Column.FilterContext.FilterDefinition.Value : default;
         private DateTime? valueDate => fieldType.IsDateTime ? (DateTime?)Column.FilterContext.FilterDefinition.Value : default;
         private TimeSpan? valueTime => fieldType.IsDateTime && Column.FilterContext.FilterDefinition.Value is not null ? ((DateTime?)Column.FilterContext.FilterDefinition.Value).Value.TimeOfDay : null;
+        private TimeSpan? valueTimeSpan => fieldType.IsTimeSpan ? (TimeSpan?)Column.FilterContext.FilterDefinition.Value : default;
         private string @operator => Column.FilterContext.FilterDefinition.Operator ?? operators.FirstOrDefault();
 
         private string chosenOperatorStyle(string o)
@@ -153,6 +154,12 @@ namespace MudBlazor
                 Column.FilterContext.FilterDefinition.Value = date;
                 await ApplyFilterAsync(Column.FilterContext.FilterDefinition);
             }
+        }
+
+        internal async Task TimeSpanValueChangedAsync(TimeSpan? value)
+        {
+            Column.FilterContext.FilterDefinition.Value = value;
+            await ApplyFilterAsync(Column.FilterContext.FilterDefinition);
         }
 
         internal async Task ApplyFilterAsync(IFilterDefinition<T> filterDefinition)

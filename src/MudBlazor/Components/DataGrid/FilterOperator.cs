@@ -200,6 +200,42 @@ namespace MudBlazor
             public const string NotEqual = "not equals";
         }
 
+        /// <summary>
+        /// Represents filters which are available for TimeSpan values.
+        /// </summary>
+        public static class TimeSpan
+        {
+            /// <summary>
+            /// Find values equal to the filter TimeSpan.
+            /// </summary>
+            public const string Equal = "equals";
+
+            /// <summary>
+            /// Find values different from the filter TimeSpan.
+            /// </summary>
+            public const string NotEqual = "not equals";
+
+            /// <summary>
+            /// Find values greater than the filter TimeSpan.
+            /// </summary>
+            public const string GreaterThan = "greater than";
+
+            /// <summary>
+            /// Find values greater than or equal to the filter TimeSpan.
+            /// </summary>
+            public const string GreaterThanOrEqual = "greater than or equal";
+
+            /// <summary>
+            /// Find values less than the filter TimeSpan.
+            /// </summary>
+            public const string LessThan = "less than";
+
+            /// <summary>
+            /// Find values less than or equal to the filter TimeSpan.
+            /// </summary>
+            public const string LessThanOrEqual = "less than or equal";
+        }
+
         internal static string[] GetOperatorByDataType(Type type)
         {
             var fieldType = FieldType.Identify(type);
@@ -272,6 +308,18 @@ namespace MudBlazor
                     Guid.NotEqual,
                 };
             }
+            if (fieldType.IsTimeSpan)
+            {
+                return new[]
+                {
+                    TimeSpan.Equal,
+                    TimeSpan.NotEqual,
+                    TimeSpan.GreaterThan,
+                    TimeSpan.GreaterThanOrEqual,
+                    TimeSpan.LessThan,
+                    TimeSpan.LessThanOrEqual,
+                };
+            }
 
             // default
             return Array.Empty<string>();
@@ -310,6 +358,12 @@ namespace MudBlazor
             //DateTime.NotEmpty => LanguageResource.MudDataGrid_IsNotEmpty,
             //Guid.Equal => LanguageResource.MudDataGrid_Equals,
             //Guid.NotEqual => LanguageResource.MudDataGrid_NotEquals,
+            TimeSpan.Equal => LanguageResource.MudDataGrid_Equals,
+            TimeSpan.NotEqual => LanguageResource.MudDataGrid_NotEquals,
+            TimeSpan.GreaterThan => LanguageResource.MudDataGrid_GreaterThan,
+            TimeSpan.GreaterThanOrEqual => LanguageResource.MudDataGrid_GreaterThanOrEqual,
+            TimeSpan.LessThan => LanguageResource.MudDataGrid_LessThan,
+            TimeSpan.LessThanOrEqual => LanguageResource.MudDataGrid_LessThanOrEqual,
             _ => throw new ArgumentOutOfRangeException(nameof(operatorName), operatorName, "Unknown operator name.")
         };
     }

@@ -582,6 +582,10 @@
                                 </MudItem>
                             </MudGrid>
                         }
+                        else if (fieldType.IsTimeSpan)
+                        {
+                            <MudTimePicker Time="@filter._valueTime" TimeChanged="@filter.TimeValueChanged" Label="@Localizer[LanguageResource.MudDataGrid_Value]" Placeholder="@Localizer[LanguageResource.MudDataGrid_FilterValue]" Margin="@Margin.Dense" Class="filter-input-time" />
+                        }
                         else if (fieldType.IsGuid)
                         {
                             <MudTextField T="Guid?" Value="@filter._valueGuid" ValueChanged="@filter.GuidValueChanged" FullWidth="true" Label="@Localizer[LanguageResource.MudDataGrid_Value]" Placeholder="@Localizer[LanguageResource.MudDataGrid_FilterValue]" Margin="@Margin.Dense"
@@ -644,6 +648,10 @@
                                     <MudTimePicker Time="@filter._valueTime" TimeChanged="@filter.TimeValueChanged" Placeholder="@Localizer[LanguageResource.MudDataGrid_FilterValue]" Margin="@Margin.Dense" Class="filter-input-time"/>
                                 </MudItem>
                             </MudGrid>
+                        }
+                        else if (fieldType.IsTimeSpan)
+                        {
+                            <MudTimePicker Time="@filter._valueTime" TimeChanged="@filter.TimeValueChanged" Placeholder="@Localizer[LanguageResource.MudDataGrid_FilterValue]" Margin="@Margin.Dense" Class="filter-input-time" />
                         }
                         else if (fieldType.IsGuid)
                         {

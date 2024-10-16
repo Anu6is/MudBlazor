@@ -121,6 +121,23 @@ public static class FilterExpressionGenerator
             };
         }
 
+        if (fieldType.IsTimeSpan)
+        {
+            if (filter.Value is null)
+                return x => true;
+
+            return filter.Operator switch
+            {
+                FilterOperator.TimeSpan.Equal => propertyExpression.GenerateBinary<T>(ExpressionType.Equal, filter.Value),
+                FilterOperator.TimeSpan.NotEqual => propertyExpression.GenerateBinary<T>(ExpressionType.NotEqual, filter.Value),
+                FilterOperator.TimeSpan.GreaterThan => propertyExpression.GenerateBinary<T>(ExpressionType.GreaterThan, filter.Value),
+                FilterOperator.TimeSpan.GreaterThanOrEqual => propertyExpression.GenerateBinary<T>(ExpressionType.GreaterThanOrEqual, filter.Value),
+                FilterOperator.TimeSpan.LessThan => propertyExpression.GenerateBinary<T>(ExpressionType.LessThan, filter.Value),
+                FilterOperator.TimeSpan.LessThanOrEqual => propertyExpression.GenerateBinary<T>(ExpressionType.LessThanOrEqual, filter.Value),
+                _ => x => true
+            };
+        }
+
         if (fieldType.IsBoolean)
         {
             if (filter.Value is null)

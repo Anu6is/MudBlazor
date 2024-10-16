@@ -53,6 +53,10 @@
                         </MudItem>
                     </MudGrid>
                 }
+                else if (fieldType.IsTimeSpan)
+                {
+                    <MudTimePicker Time="@valueTimeSpan" TimeChanged="@TimeSpanValueChangedAsync" Margin="@Margin.Dense" />
+                }
                 <MudMenu Icon="@Icons.Material.Filled.FilterAlt" Size="@Size.Small" Dense="true">
                     @foreach (var o in operators)
                     {

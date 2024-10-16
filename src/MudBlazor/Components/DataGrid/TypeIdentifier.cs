@@ -121,5 +121,22 @@ namespace MudBlazor
 
             return underlyingType is not null && underlyingType == typeof(Guid);
         }
+
+        public static bool IsTimeSpan(Type? type)
+        {
+            if (type is null)
+            {
+                return false;
+            }
+
+            if (type == typeof(TimeSpan))
+            {
+                return true;
+            }
+
+            var underlyingType = Nullable.GetUnderlyingType(type);
+
+            return underlyingType is not null && underlyingType == typeof(TimeSpan);
+        }
     }
 }

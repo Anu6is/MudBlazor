@@ -23,5 +23,13 @@ namespace MudBlazor
         /// The text to display.
         /// </summary>
         public string? Value { get; set; }
+
+        /// <summary>
+        /// Specifies the horizontal alignment of the text.
+        /// </summary>
+        /// <remarks>
+        /// Common values are "start", "middle", or "end".
+        /// </remarks>
+        public string? TextAnchor { get; set; }
     }
 }

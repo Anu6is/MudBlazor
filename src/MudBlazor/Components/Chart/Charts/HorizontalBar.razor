@@ -52,7 +52,7 @@
             builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create(this, () => SetSelectedIndexAsync(bar.Index)));
             builder.AddAttribute(seq++, "fill", color);
             builder.AddAttribute(seq++, "stroke", color);
-            builder.AddAttribute(seq++, "stroke-width", _barWidth.ToS());
+            builder.AddAttribute(seq++, "stroke-width", _barHeight.ToS());
             builder.AddAttribute(seq++, "d", bar.Data);
             builder.AddAttribute(seq++, "onmouseover", EventCallback.Factory.Create<MouseEventArgs>(this, e => OnBarMouseOver(e, bar)));
             builder.AddAttribute(seq++, "onmouseout", EventCallback.Factory.Create(this, OnBarMouseOut));

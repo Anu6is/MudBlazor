@@ -69,6 +69,54 @@ public class HorizontalBarChartOptions : DefaultBarChartOptions
     /// </summary>
     public double? FixedBarGap { get; set; }
 
+    // X-axis specific properties for the value axis of the HorizontalBar chart
+    // These mirror the Y-axis properties from DefaultAxisChartOptions but are for the X-axis.
+
+    private int _xAxisTicks = 20;
+    /// <summary>
+    /// The spacing between horizontal value tick marks.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to <c>20</c>. Value must be greater than or equal to <c>1</c>.
+    /// </remarks>
+    public int XAxisTicks
+    {
+        get => _xAxisTicks;
+        set => _xAxisTicks = Math.Max(1, value);
+    }
+
+    private int _maxNumXAxisTicks = 20;
+    /// <summary>
+    /// The maximum allowed number of horizontal value tick marks.
+    /// </summary>
+    /// <remarks>
+    /// If the number of ticks calculated exceeds this value, the tick marks will automatically be thinned out.
+    /// Value must be greater than or equal to <c>1</c>.
+    /// </remarks>
+    public int MaxNumXAxisTicks
+    {
+        get => _maxNumXAxisTicks;
+        set => _maxNumXAxisTicks = Math.Max(1, value);
+    }
+
+    /// <summary>
+    /// The maximum value for the horizontal value axis.
+    /// </summary>
+    /// <remarks>
+    /// This value is used only if all data points are less than or equal to it. 
+    /// If any data point exceeds this value, the X-axis maximum will automatically adjust to fit the data.
+    /// If this value is <c>null</c>, the X-axis maximum will be calculated automatically.
+    /// </remarks>
+    public double? XAxisSuggestedMax { get; set; }
+
+    /// <summary>
+    /// The format applied to numbers on the horizontal value axis.
+    /// </summary>
+    /// <remarks>
+    /// Values in this property are standard .NET format strings, such as those passed into the <c>ToString()</c> method.
+    /// </remarks>
+    public string? XAxisFormat { get; set; }
+
 
     public static implicit operator HorizontalBarChartOptions(ChartOptions options) => new()
     {

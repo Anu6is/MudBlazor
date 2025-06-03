@@ -121,9 +121,12 @@ namespace MudBlazor.Charts
             if (allDataValues.Any())
             {
                 var minX = allDataValues.Min();
-                var maxX = ChartOptions?.XAxisSuggestedMax is null
-                    ? allDataValues.Max()
-                    : Math.Max(ChartOptions.XAxisSuggestedMax.Value, allDataValues.Max());
+                var maxX = allDataValues.Max(); // Default if no suggestion or suggestion is lower
+                var maxXSuggestion = ChartOptions?.XAxisSuggestedMax;
+                if (maxXSuggestion.HasValue)
+                {
+                    maxX = Math.Max(maxX, maxXSuggestion.Value);
+                }
 
                 lowestValueLine = Math.Min((int)Math.Floor(minX / gridXUnits), 0); // Lowest value on X-axis (e.g., 0 or negative if data has it)
                 var highestValueLine = Math.Max((int)Math.Ceiling(maxX / gridXUnits), 0); // Highest value on X-axis
@@ -173,19 +176,19 @@ namespace MudBlazor.Charts
                     Data = $"M {ToS(HorizontalStartSpace)} {ToS(y)} L {ToS(_boundWidth - HorizontalEndSpace)} {ToS(y)}"
                 };
                  // Option: Don't draw lines if user doesn't want them for categories
-                if(ChartOptions.ShowCategoryLines)
+                if(ChartOptions?.ShowCategoryLines == true) // Added ?. and explicit true check
                     HorizontalLines.Add(line);
 
 
                 var yLabelText = i < ChartLabels.Length ? ChartLabels[i] : $"Category {i + 1}";
                 var labelYPos = (categoryPositions.Length > i && numCategoryLines > 0) ? categoryPositions[i] : VerticalStartSpace + (categoryAxisSpace / Math.Max(1,numCategoryLines)) * (i + 0.5);
-                if(ChartOptions.Justify == Justify.FlexStart && categoryPositions.Length > i)
+                if(ChartOptions?.Justify == Justify.FlexStart && categoryPositions.Length > i) // Added ?.
                      labelYPos = categoryPositions[i]; // categoryPositions[i] is already the center for FlexStart
 
 
                 var lineValue = new SvgText()
                 {
-                    X = HorizontalStartSpace - (ChartOptions.YAxisLabelSpacing), // Position Y-axis labels to the left
+                    X = HorizontalStartSpace - (ChartOptions?.YAxisLabelSpacing ?? 10), // Added ?. and fallback
                     Y = labelYPos, // Center label text vertically within the category group
                     Value = yLabelText,
                     TextAnchor = "end" // Align text to the end (right before the axis line)
@@ -214,7 +217,7 @@ namespace MudBlazor.Charts
                 var lineValue = new SvgText()
                 {
                     X = x,
-                    Y = _boundHeight - VerticalEndSpace + (ChartOptions.XAxisLabelSpacing), // Position X-axis labels below the axis
+                    Y = _boundHeight - VerticalEndSpace + (ChartOptions?.XAxisLabelSpacing ?? 15), // Added ?. and fallback
                     Value = ToS(value, ChartOptions?.XAxisFormat),
                     TextAnchor = "middle" // Center text below the tick mark
                 };
@@ -282,35 +285,36 @@ namespace MudBlazor.Charts
 
             var positions = new double[categoriesCount];
             var totalEffectiveBarHeightPerGroup = (seriesCount * _barHeight) + (Math.Max(0, seriesCount - 1) * _barGap); // Total height taken by bars in one category
+            var currentChartOptions = ChartOptions; // Cache for safe access if needed, though OnInitialized should ensure non-null
 
-            switch (ChartOptions.Justify)
+            switch (currentChartOptions?.Justify ?? MudBlazor.Justify.SpaceEvenly) // Added ?. and fallback
             {
                 case Justify.FlexStart:
-                    var currentY = VerticalStartSpace + ChartOptions.BarGroupGap + totalEffectiveBarHeightPerGroup / 2.0;
+                    var currentY = VerticalStartSpace + (currentChartOptions?.BarGroupGap ?? 10) + totalEffectiveBarHeightPerGroup / 2.0; // Added ?. and fallback
                     for (var i = 0; i < categoriesCount; i++)
                     {
                         positions[i] = currentY;
-                        currentY += totalEffectiveBarHeightPerGroup + ChartOptions.BarGroupGap;
+                        currentY += totalEffectiveBarHeightPerGroup + (currentChartOptions?.BarGroupGap ?? 10); // Added ?. and fallback
                     }
                     break;
 
                 case Justify.FlexEnd:
-                    var totalHeightNeeded = (categoriesCount * totalEffectiveBarHeightPerGroup) + (Math.Max(0, categoriesCount + 1) * ChartOptions.BarGroupGap);
-                    currentY = _boundHeight - VerticalEndSpace - totalHeightNeeded + ChartOptions.BarGroupGap + totalEffectiveBarHeightPerGroup / 2.0;
+                    var totalHeightNeeded = (categoriesCount * totalEffectiveBarHeightPerGroup) + (Math.Max(0, categoriesCount + 1) * (currentChartOptions?.BarGroupGap ?? 10)); // Added ?. and fallback
+                    currentY = _boundHeight - VerticalEndSpace - totalHeightNeeded + (currentChartOptions?.BarGroupGap ?? 10) + totalEffectiveBarHeightPerGroup / 2.0; // Added ?. and fallback
                      for (var i = 0; i < categoriesCount; i++)
                     {
                         positions[i] = currentY;
-                        currentY += totalEffectiveBarHeightPerGroup + ChartOptions.BarGroupGap;
+                        currentY += totalEffectiveBarHeightPerGroup + (currentChartOptions?.BarGroupGap ?? 10); // Added ?. and fallback
                     }
                     break;
 
                 case Justify.Center:
-                    totalHeightNeeded = (categoriesCount * totalEffectiveBarHeightPerGroup) + (Math.Max(0, categoriesCount -1) * ChartOptions.BarGroupGap);
+                    totalHeightNeeded = (categoriesCount * totalEffectiveBarHeightPerGroup) + (Math.Max(0, categoriesCount -1) * (currentChartOptions?.BarGroupGap ?? 10)); // Added ?. and fallback
                     currentY = VerticalStartSpace + (categoryAxisSpace - totalHeightNeeded) / 2.0 + totalEffectiveBarHeightPerGroup / 2.0;
                     for (var i = 0; i < categoriesCount; i++)
                     {
                         positions[i] = currentY;
-                        currentY += totalEffectiveBarHeightPerGroup + ChartOptions.BarGroupGap;
+                        currentY += totalEffectiveBarHeightPerGroup + (currentChartOptions?.BarGroupGap ?? 10); // Added ?. and fallback
                     }
                     break;
 
@@ -368,7 +372,7 @@ namespace MudBlazor.Charts
             var remainingHeight = verticalSpace - totalBarGroupStructureHeight; // Remaining space for gaps
 
             // Ensure SeriesSpacingRatio is within a sensible range if used.
-            var effectiveRatio = ChartOptions!.SeriesSpacingRatio.EnsureRange(0.0, 1.0);
+            var effectiveRatio = ChartOptions?.SeriesSpacingRatio.EnsureRange(0.0, 1.0) ?? 1.0; // Added ?. and fallback
             
             // Distribute a portion of the remaining height according to the ratio.
             // This interpretation of SeriesSpacingRatio might not be what's intended for group spacing.
@@ -390,13 +394,13 @@ namespace MudBlazor.Charts
             {
                 _barHeight = fixedHeight.Value; // Thickness of the bar
                 // Gap is a ratio of the bar height, or a fixed value from options
-                _barGap = ChartOptions.FixedBarGap ?? _barHeight * ChartOptions.BarSpacingRatio;
+                _barGap = ChartOptions?.FixedBarGap ?? _barHeight * (ChartOptions?.BarSpacingRatio ?? 0.20); // Added ?. and fallback
                 _barGroupHeight = (seriesCount * _barHeight) + (Math.Max(0, seriesCount - 1) * _barGap);
                 return;
             }
 
             // groupHeightRatio determines how much of the available category tick height is used by the bar group
-            var groupHeightRatio = ChartOptions!.BarHeightRatio.EnsureRange(0.01, 1.0);
+            var groupHeightRatio = ChartOptions?.BarHeightRatio.EnsureRange(0.01, 1.0) ?? 0.60; // Added ?. and fallback
             var actualGroupHeight = categoryTickHeight * groupHeightRatio; // The total height allocated to the bar group for this category
 
             if (seriesCount == 0)
@@ -409,10 +413,11 @@ namespace MudBlazor.Charts
             
             // From the actualGroupHeight, allocate space to bars and gaps based on BarSpacingRatio
             // Total parts = seriesCount (for bars) + (seriesCount - 1) * BarSpacingRatio (for gaps)
-            var totalParts = seriesCount + (Math.Max(0, seriesCount - 1) * ChartOptions.BarSpacingRatio);
+            var barSpacingRatio = ChartOptions?.BarSpacingRatio ?? 0.20; // Added ?. and fallback
+            var totalParts = seriesCount + (Math.Max(0, seriesCount - 1) * barSpacingRatio);
             
             _barHeight = actualGroupHeight / totalParts;
-            _barGap = _barHeight * ChartOptions.BarSpacingRatio;
+            _barGap = _barHeight * barSpacingRatio;
 
             // Ensure minimum bar height
             if (_barHeight < MinBarHeight)
@@ -423,7 +428,7 @@ namespace MudBlazor.Charts
                  var oldBarHeight = _barHeight;
                 _barHeight = MinBarHeight;
                  // If we cap bar height, recalculate gap based on original ratio, but don't exceed group height.
-                 _barGap = _barHeight * ChartOptions.BarSpacingRatio;
+                 _barGap = _barHeight * barSpacingRatio;
                  if ( (seriesCount * _barHeight) + (Math.Max(0, seriesCount - 1) * _barGap) > actualGroupHeight)
                  {
                     // If it exceeds, then we must shrink gaps, or bars, or both.

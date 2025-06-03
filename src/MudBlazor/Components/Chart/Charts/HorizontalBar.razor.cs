@@ -191,7 +191,6 @@ namespace MudBlazor.Charts
                     X = HorizontalStartSpace - (ChartOptions?.YAxisLabelSpacing ?? 10), // Added ?. and fallback
                     Y = labelYPos, // Center label text vertically within the category group
                     Value = yLabelText,
-                    TextAnchor = "end" // Align text to the end (right before the axis line)
                 };
                 HorizontalValues.Add(lineValue);
             }
@@ -219,7 +218,6 @@ namespace MudBlazor.Charts
                     X = x,
                     Y = _boundHeight - VerticalEndSpace + (ChartOptions?.XAxisLabelSpacing ?? 15), // Added ?. and fallback
                     Value = ToS(value, ChartOptions?.XAxisFormat),
-                    TextAnchor = "middle" // Center text below the tick mark
                 };
                 VerticalValues.Add(lineValue);
             }
@@ -435,7 +433,7 @@ namespace MudBlazor.Charts
                     // Simplest: shrink gaps, potentially to 0.
                     _barGap = seriesCount > 1 ? (actualGroupHeight - seriesCount * _barHeight) / (seriesCount -1) : 0;
                     if(_barGap < 0) _barGap = 0; // Gap cannot be negative
-                    _barHeight = (actualGroupHeight - Math.Max(0, seriesCount -1) * _barGap) / seriesCount; // re-calc bar height with new gap
+                    //_barHeight = (actualGroupHeight - Math.Max(0, seriesCount -1) * _barGap) / seriesCount; // re-calc bar height with new gap
                  }
 
             }

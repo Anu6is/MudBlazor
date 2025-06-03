@@ -1,0 +1,57 @@
+@namespace MudBlazor.Docs.Examples
+
+<DocsPageSection Title="Simple Horizontal Bar Chart" Anchor="charts-horizontal-bar-simple" SecondaryNavigation="false">
+    <SectionContent Code="@nameof(HorizontalBarChartSimpleExampleCode)">
+        <HorizontalBarChartSimpleExampleCode />
+    </SectionContent>
+</DocsPageSection>
+
+<DocsPageSection Title="Horizontal Bar Chart with Options" Anchor="charts-horizontal-bar-options" SecondaryNavigation="false">
+    <SectionContent Code="@nameof(HorizontalBarChartWithOptionsExampleCode)">
+        <HorizontalBarChartWithOptionsExampleCode />
+    </SectionContent>
+</DocsPageSection>
+
+@code {
+    public const string HorizontalBarChartSimpleExampleCode = @"
+<MudChart ChartType=""ChartType.HorizontalBar"" ChartSeries=""@_series"" XAxisLabels=""@_xAxisLabels"" Width=""100%"" Height=""350px"">
+</MudChart>
+
+@code {
+    private List<ChartSeries> _series = new List<ChartSeries>()
+    {
+        new ChartSeries() { Name = ""Series 1"", Data = new double[] { 90, 79, 72, 69, 62, 62, 55, 65, 70 } },
+        new ChartSeries() { Name = ""Series 2"", Data = new double[] { 35, 41, 49, 52, 55, 60, 65, 70, 75 } },
+    };
+    private string[] _xAxisLabels = { ""Jan"", ""Feb"", ""Mar"", ""Apr"", ""May"", ""Jun"", ""Jul"", ""Aug"", ""Sep"" };
+}";
+
+    public const string HorizontalBarChartWithOptionsExampleCode = @"
+<MudChart ChartType=""ChartType.HorizontalBar"" ChartSeries=""@_series"" XAxisLabels=""@_xAxisLabels"" ChartOptions=""@_options"" Width=""100%"" Height=""450px"">
+</MudChart>
+
+@code {
+    private List<ChartSeries> _series = new List<ChartSeries>()
+    {
+        new ChartSeries() { Name = ""Product A"", Data = new double[] { 500, 320, 480, 600 } },
+        new ChartSeries() { Name = ""Product B"", Data = new double[] { 300, 250, 400, 520 } },
+        new ChartSeries() { Name = ""Product C"", Data = new double[] { 150, 120, 200, 300 } },
+    };
+    private string[] _xAxisLabels = { ""Q1 Sales"", ""Q2 Sales"", ""Q3 Sales"", ""Q4 Sales"" };
+
+    private HorizontalBarChartOptions _options = new HorizontalBarChartOptions()
+    {
+        FixedBarHeight = 30, // Makes bars 30px thick
+        BarGroupGap = 15,    // 15px gap between category groups
+        YAxisLabelSpacing = 20, // More space for Y-axis labels
+        XAxisLines = true, // Show X-axis grid lines
+        YAxisLines = false, // Hide Y-axis category separator lines (example)
+        ShowCategoryLines = false, // Explicitly hide category lines (if different from YAxisLines)
+        BarHeightRatio = 0.7, // Used if FixedBarHeight is null
+        // Example of setting XAxisTicks (value axis ticks)
+        XAxisTicks = 100, // Show ticks at every 100 units on the X-axis
+        // Example of setting XAxisSuggestedMax
+        XAxisSuggestedMax = 700,
+    };
+}";
+}

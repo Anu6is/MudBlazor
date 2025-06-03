@@ -1,0 +1,12 @@
+﻿@namespace MudBlazor.Docs.Examples
+
+<MudChart ChartType=ChartType.HorizontalBar ChartSeries="@_series" ChartLabels="@_chartLabels" Width="100%" Height="350px" />
+
+@code {
+    private List<ChartSeries> _series = new List<ChartSeries>()
+    {
+        new ChartSeries() { Name = "Series 1", Data = new double[] { 90, 79, 72, 69, 62, 62, 55, 65, 70 } },
+        new ChartSeries() { Name = "Series 2", Data = new double[] { 35, 41, 49, 52, 55, 60, 65, 70, 75 } },
+    };
+    private string[] _chartLabels = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep" };
+}

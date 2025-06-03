@@ -1,0 +1,26 @@
+﻿@namespace MudBlazor.Docs.Examples
+
+<MudChart ChartType=ChartType.HorizontalBar ChartSeries="@_series" ChartLabels="@_chartLabels" Width="100%" Height="350px" />
+
+@code {
+    private List<ChartSeries> _series = new List<ChartSeries>()
+    {
+        new ChartSeries() { Name = "Product A", Data = new double[] { 500, 320, 480, 600 } },
+        new ChartSeries() { Name = "Product B", Data = new double[] { 300, 250, 400, 520 } },
+        new ChartSeries() { Name = "Product C", Data = new double[] { 150, 120, 200, 300 } },
+    };
+    private string[] _chartLabels = { "Q1 Sales", "Q2 Sales", "Q3 Sales", "Q4 Sales" };
+
+    private HorizontalBarChartOptions _options = new HorizontalBarChartOptions()
+    {
+        FixedBarHeight = 30, // Makes bars 30px thick
+        BarGroupGap = 15,    // 15px gap between category groups
+        YAxisLabelSpacing = 20, // More space for Y-axis labels
+        XAxisLines = true, // Show X-axis grid lines
+        YAxisLines = false, // Hide Y-axis category separator lines
+        ShowCategoryLines = false, // Explicitly hide category lines
+        XAxisTicks = 100, // Show ticks at every 100 units on the X-axis
+        XAxisSuggestedMax = 700,
+    };
+}
+

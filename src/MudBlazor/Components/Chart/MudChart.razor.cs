@@ -47,6 +47,7 @@ public partial class MudChart
         ChartType.Timeseries => (TimeSeriesChartOptions)options,
         ChartType.Rose => (RoseChartOptions)options,
         ChartType.Radar => (RadarChartOptions)options,
+        ChartType.HorizontalBar => (HorizontalBarChartOptions)options,
         _ => ChartOptions!
     };
 
@@ -61,6 +62,7 @@ public partial class MudChart
         ChartType.Timeseries => new TimeSeriesChartOptions(),
         ChartType.Rose => new RoseChartOptions(),
         ChartType.Radar => new RadarChartOptions(),
+        ChartType.HorizontalBar => new HorizontalBarChartOptions(),
         _ => throw new NotImplementedException($"{ChartType} chart is not supported")
     };
 

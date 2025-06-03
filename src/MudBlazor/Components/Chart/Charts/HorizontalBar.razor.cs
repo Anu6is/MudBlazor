@@ -163,7 +163,7 @@ namespace MudBlazor.Charts
             {
                 // Ensure categoryPositions are valid and provide a fallback if necessary
                 var y = (categoryPositions.Length > i && numCategoryLines > 0) ? categoryPositions[i] - _barGroupHeight / 2 : VerticalStartSpace + (i * (categoryAxisSpace / Math.Max(1,numCategoryLines))) ;
-                 if(ChartOptions.Justify != Justify.FlexStart) // Adjust for center alignment of label
+                 if(ChartOptions?.Justify != Justify.FlexStart) // Adjust for center alignment of label
                     y = (categoryPositions.Length > i && numCategoryLines > 0) ? categoryPositions[i] : VerticalStartSpace + (categoryAxisSpace / Math.Max(1,numCategoryLines)) * (i + 0.5);
 
 

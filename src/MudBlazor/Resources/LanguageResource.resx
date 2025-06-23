@@ -321,6 +321,12 @@
   <data name="MudPagination_PreviousPage" xml:space="preserve">
     <value>Previous page</value>
   </data>
+  <data name="MudPagination_EnterPage" xml:space="preserve">
+    <value>Enter page number</value>
+  </data>
+  <data name="MudPagination_EditPage" xml:space="preserve">
+    <value>Edit page number</value>
+  </data>
   <data name="MudRatingItem_Label" xml:space="preserve">
     <value>{0} rating</value>
   </data>

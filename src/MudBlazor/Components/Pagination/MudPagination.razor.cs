@@ -19,6 +19,14 @@ namespace MudBlazor
         private ParameterState<int> _middleCountState;
         private ParameterState<int> _boundaryCountState;
 
+        private bool _isEditingStartEllipsis = false;
+        private bool _isEditingEndEllipsis = false;
+        private string _startEllipsisInputValue = string.Empty;
+        private string _endEllipsisInputValue = string.Empty;
+        // Using a single field for the input value, as only one ellipsis can be edited at a time.
+        // We'll decide which ellipsis it corresponds to based on _isEditingStartEllipsis or _isEditingEndEllipsis.
+        private string _ellipsisInputValue = string.Empty;
+
         private string Classname =>
             new CssBuilder("mud-pagination")
                 .AddClass($"mud-pagination-{Variant.ToDescriptionString()}")
@@ -401,6 +409,74 @@ namespace MudBlazor
             var newPageIndex = Math.Max(1, Math.Min(pageIndex, _countState.Value));
 
             await _selectedState.SetValueAsync(newPageIndex);
+        }
+
+        // Field to reference the input element for focusing
+        private MudTextField<string> _ellipsisInputReference;
+
+        private async Task HandleEllipsisClick(bool isStartEllipsis)
+        {
+            if (isStartEllipsis)
+            {
+                _isEditingStartEllipsis = true;
+                _isEditingEndEllipsis = false;
+            }
+            else
+            {
+                _isEditingStartEllipsis = false;
+                _isEditingEndEllipsis = true;
+            }
+            _ellipsisInputValue = string.Empty; // Clear previous input
+            StateHasChanged(); // Notify the component to re-render
+
+            // It's good practice to ensure the input is rendered before trying to focus.
+            // A small delay can often help, or a more robust solution might involve JS interop after render.
+            // For now, let's rely on the re-render and direct focus if the reference is set.
+            // In MudPagination.razor, the MudTextField needs `@ref="_ellipsisInputReference"`
+            await Task.Delay(50); // Brief delay to allow UI to update
+            if (_ellipsisInputReference != null)
+            {
+                await _ellipsisInputReference.FocusAsync();
+            }
+        }
+
+        private async Task HandleEllipsisInputKeyDown(KeyboardEventArgs e, bool isStartEllipsis)
+        {
+            if (e.Key == "Enter")
+            {
+                if (int.TryParse(_ellipsisInputValue, out var pageNumber))
+                {
+                    if (pageNumber >= 1 && pageNumber <= _countState.Value)
+                    {
+                        await SetSelectedAsync(pageNumber);
+                    }
+                }
+                // Reset editing state regardless of successful parse,
+                // or provide user feedback for invalid input.
+                if (isStartEllipsis)
+                {
+                    _isEditingStartEllipsis = false;
+                }
+                else
+                {
+                    _isEditingEndEllipsis = false;
+                }
+                _ellipsisInputValue = string.Empty;
+                StateHasChanged();
+            }
+            else if (e.Key == "Escape")
+            {
+                if (isStartEllipsis)
+                {
+                    _isEditingStartEllipsis = false;
+                }
+                else
+                {
+                    _isEditingEndEllipsis = false;
+                }
+                _ellipsisInputValue = string.Empty;
+                StateHasChanged();
+            }
         }
     }
 }

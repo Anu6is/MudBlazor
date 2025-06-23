@@ -18,13 +18,43 @@
     }
     @if (ShowPageButtons)
     {
+        @{ var ellipsisCounter = 0; }
         foreach (var state in GeneratePagination())
         {
             var currentPage = state;
             if (currentPage == -1)
             {
+                var isStartEllipsis = ellipsisCounter == 0; // Determine if this is the first ellipsis
+                ellipsisCounter++; // Increment for the next potential ellipsis
+
                 <li class="@ItemClassname">
-                    <MudText disabled="@Disabled">...</MudText>
+                    @if (isStartEllipsis ? _isEditingStartEllipsis : _isEditingEndEllipsis)
+                    {
+                        // Use MudTextField for consistency and built-in features.
+                        // Bind to _ellipsisInputValue.
+                        // Add @onkeydown event.
+                        <MudTextField @ref="_ellipsisInputReference" @bind-Value="_ellipsisInputValue"
+                                      Margin="Margin.Dense"
+                                      Placeholder="..."
+                                      Variant="Variant.Text"
+                                      T="string"
+                                      DisableUnderLine="true"
+                                      Class="mud-pagination-ellipsis-input"
+                                      Style="width: 50px;"
+                                      Immediate="true"
+                                      OnKeyDown="@((KeyboardEventArgs e) => HandleEllipsisInputKeyDown(e, isStartEllipsis))"
+                                      aria-label="@Localizer[LanguageResource.MudPagination_EnterPage]" />
+                    }
+                    else
+                    {
+                        // Use MudButton for the ellipsis to make it clickable and stylistically consistent.
+                        <MudButton Variant="@Variant.Text"
+                                   Size="@Size.Small"
+                                   Disabled="@Disabled"
+                                   OnClick="@(() => HandleEllipsisClick(isStartEllipsis))"
+                                   Class="mud-pagination-ellipsis-button"
+                                   aria-label="@Localizer[LanguageResource.MudPagination_EditPage]">...</MudButton>
+                    }
                 </li>
             }
             else if (currentPage == _selectedState.Value)

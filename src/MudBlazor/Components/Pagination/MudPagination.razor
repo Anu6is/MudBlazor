@@ -18,7 +18,7 @@
     }
     @if (ShowPageButtons)
     {
-        @{ var ellipsisCounter = 0; }
+        var ellipsisCounter = 0;
         foreach (var state in GeneratePagination())
         {
             var currentPage = state;
@@ -37,19 +37,19 @@
                                       Margin="Margin.Dense"
                                       Placeholder="..."
                                       Variant="Variant.Text"
-                                      T="string"
-                                      DisableUnderLine="true"
+                                      T="string" 
                                       Class="mud-pagination-ellipsis-input"
-                                      Style="width: 50px;"
-                                      Immediate="true"
+                                      Style="width: 50px;" 
+                                      Immediate="true" 
                                       OnKeyDown="@((KeyboardEventArgs e) => HandleEllipsisInputKeyDown(e, isStartEllipsis))"
+                                      @onblur="@(() => HandleEllipsisInputBlur(isStartEllipsis))"
                                       aria-label="@Localizer[LanguageResource.MudPagination_EnterPage]" />
                     }
                     else
                     {
                         // Use MudButton for the ellipsis to make it clickable and stylistically consistent.
                         <MudButton Variant="@Variant.Text"
-                                   Size="@Size.Small"
+                                   Size="@Size.Small" 
                                    Disabled="@Disabled"
                                    OnClick="@(() => HandleEllipsisClick(isStartEllipsis))"
                                    Class="mud-pagination-ellipsis-button"

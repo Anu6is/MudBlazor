@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using MudBlazor.State;
 using MudBlazor.Utilities;
 
@@ -412,7 +413,7 @@ namespace MudBlazor
         }
 
         // Field to reference the input element for focusing
-        private MudTextField<string> _ellipsisInputReference;
+        private MudTextField<string>? _ellipsisInputReference;
 
         private async Task HandleEllipsisClick(bool isStartEllipsis)
         {
@@ -475,6 +476,36 @@ namespace MudBlazor
                     _isEditingEndEllipsis = false;
                 }
                 _ellipsisInputValue = string.Empty;
+                StateHasChanged();
+            }
+        }
+
+        private void HandleEllipsisInputBlur(bool isStartEllipsis)
+        {
+            // Revised logic for blur:
+            // The goal is to close the input if it loses focus FOR ANY REASON OTHER than just having pressed Enter/Escape
+            // (which already handle closing).
+            // The event sequence can be tricky. For example, clicking outside could cause blur.
+            // If Enter was pressed, _isEditing... is already false.
+            // If Escape was pressed, _isEditing... is already false.
+            // So, if _isEditing... is TRUE when blur is called, it means neither Enter nor Escape was the *immediate* cause.
+
+            bool needsStateChange = false;
+            if (isStartEllipsis && _isEditingStartEllipsis)
+            {
+                _isEditingStartEllipsis = false;
+                _ellipsisInputValue = string.Empty; // Clear value if blur is the reason for closing
+                needsStateChange = true;
+            }
+            else if (!isStartEllipsis && _isEditingEndEllipsis)
+            {
+                _isEditingEndEllipsis = false;
+                _ellipsisInputValue = string.Empty; // Clear value if blur is the reason for closing
+                needsStateChange = true;
+            }
+
+            if (needsStateChange)
+            {
                 StateHasChanged();
             }
         }

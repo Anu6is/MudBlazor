@@ -98,27 +98,24 @@
 }
 
 .mud-pagination-ellipsis-button {
-    // Inherit general button styling from pagination context if possible,
-    // or define specific minimal styling.
-    // Ensure it aligns well with other pagination items.
-    // For example, if other buttons have specific padding/margin, try to match.
-    // This is mostly a placeholder; specific styling might depend on visual testing.
-    min-width: var(--mud-button-min-width, 36px); // Match typical icon button or small button size
-    padding: var(--mud-button-size-small-padding, 0 8px); // Match small button padding
-    margin: 0 2px; // Consistent with how page number buttons might be spaced
+  min-width: var(--mud-button-min-width, 36px);
+  padding: var(--mud-button-size-small-padding, 0 8px);
+  margin: 0 2px;
 }
 
 .mud-pagination-ellipsis-input {
-    .mud-input-control {
-        // Try to make the input field compact and blend with pagination items
-        margin-top: 0; // Override default margin if any from MudTextField
-        margin-bottom: 0; // Override default margin if any from MudTextField
-    }
-    input {
-        text-align: center; // Center the number input
-        padding: var(--mud-input-text-input-padding-dense, 4px 0 5px); // Use dense padding
-    }
-    // Ensure it doesn't disrupt the vertical alignment of pagination items
-    display: inline-flex;
-    align-items: center;
+  .mud-input-control {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  input {
+    text-align: center; // Center the number input
+    padding: var(--mud-input-text-input-padding-dense, 4px 0 5px); // Use dense padding
+    font-size: inherit; // Make font size match surrounding elements
+    line-height: normal; // Ensure line height is appropriate
+  }
+  // Ensure it doesn't disrupt the vertical alignment of pagination items
+  display: inline-flex;
+  align-items: center;
 }

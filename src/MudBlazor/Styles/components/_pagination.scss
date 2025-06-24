@@ -105,17 +105,20 @@
 
 .mud-pagination-ellipsis-input {
   .mud-input-control {
-    margin-top: 0;
-    margin-bottom: 0;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
   }
 
   input {
-    text-align: center; // Center the number input
-    padding: var(--mud-input-text-input-padding-dense, 4px 0 5px); // Use dense padding
-    font-size: inherit; // Make font size match surrounding elements
-    line-height: normal; // Ensure line height is appropriate
+    text-align: center;
+    font-size: inherit;
+    line-height: normal;
   }
-  // Ensure it doesn't disrupt the vertical alignment of pagination items
   display: inline-flex;
   align-items: center;
+}
+
+.mud-pagination-ellipsis-input {
+  margin: 0 !important;
+  padding: 0 !important;
 }

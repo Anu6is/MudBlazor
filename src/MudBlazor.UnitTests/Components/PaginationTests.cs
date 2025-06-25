@@ -1,6 +1,7 @@
 ﻿using AngleSharp.Dom;
 using Bunit;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using MudBlazor.Extensions;
 using MudBlazor.UnitTests.TestComponents.Pagination;
 using NUnit.Framework;
@@ -75,9 +76,9 @@ namespace MudBlazor.UnitTests.Components
         /// <param name="label">The expected value in the aria-label.</param>
         [TestCase(2, "Page 1")]
         [TestCase(3, "Page 2")]
-        [TestCase(5, "Current page 6")]
-        [TestCase(7, "Page 10")]
-        [TestCase(8, "Page 11")]
+        [TestCase(6, "Current page 6")]
+        [TestCase(8, "Edit page number")]
+        [TestCase(9, "Page 10")]
         [Test]
         public void PaginationPageButtonAriaLabelTest(int index, string label)
         {
@@ -131,7 +132,7 @@ namespace MudBlazor.UnitTests.Components
         /// <param name="initiallySelectedPage">The initially selected page.</param>
         /// <param name="expectedSelectedPage">The expected selected page.</param>
         [TestCase(0, 6, 1)]
-        [TestCase(6, 6, 11)]
+        [TestCase(8, 6, 11)]
         [TestCase(5, 5, 6)]
         [TestCase(2, 5, 3)]
         [Test]
@@ -312,7 +313,7 @@ namespace MudBlazor.UnitTests.Components
             var paginationItems = comp.FindAll("mud-pagination-item");
 
             //test if previous and next buttons are hidden
-            buttons.Count.Should().Be(8);
+            buttons.Count.Should().Be(9); //8 number + 1 ellipsis
 
             //test if variant is filled
             pagination.ClassName.Should().Contain("mud-pagination-filled");
@@ -345,9 +346,13 @@ namespace MudBlazor.UnitTests.Components
         [Test]
         public async Task Ellipsis_Click_ShowsInput()
         {
-            using var ctx = new Bunit.TestContext();
+            Context.Services.AddSingleton<ILocalizationInterceptor, DefaultLocalizationInterceptor>();
+            Context.Services.AddSingleton<ILocalizationEnumInterceptor, DefaultLocalizationEnumInterceptor>();
+            Context.Services.AddTransient<InternalMudLocalizer>();
+            Context.JSInterop.SetupVoid("mudElementRef.addOnBlurEvent", _ => true);
+            Context.JSInterop.SetupVoid("mudElementRef.removeOnBlurEvent", _ => true);
             var selectedPage = 1;
-            var comp = ctx.RenderComponent<MudPagination>(parameters => parameters
+            var comp = Context.RenderComponent<MudPagination>(parameters => parameters
                 .Add(p => p.Count, 10)
                 .Add(p => p.MiddleCount, 2) // Ensure ellipsis shows near start
                 .Add(p => p.BoundaryCount, 1)
@@ -355,11 +360,6 @@ namespace MudBlazor.UnitTests.Components
                 .Add(p => p.SelectedChanged, Microsoft.AspNetCore.Components.EventCallback.Factory.Create<int>(this, newVal => selectedPage = newVal))
             );
 
-            // There should be one ellipsis button visible initially when selected page is 1
-            // (e.g., 1 ... 4 5 ... 10 , the second "..." is the one we target for this initial test)
-            // Or with MiddleCount=2, BoundaryCount=1, Selected=1, Count=10 --> 1 ... 3 4 ... 10. We click the first ellipsis.
-            // Let's adjust parameters for a predictable single start ellipsis: Selected=5, Count=10, MiddleCount=1, BoundaryCount=1
-            // This would be: 1 ... 5 ... 10. Click the first one.
             selectedPage = 5;
             comp.SetParametersAndRender(parameters => parameters
                 .Add(p => p.Count, 10)
@@ -378,20 +378,21 @@ namespace MudBlazor.UnitTests.Components
             // Assert input is visible
             comp.Find(".mud-pagination-ellipsis-input").Should().NotBeNull();
 
-            // Assert the specific ellipsis button clicked is no longer a button, or all buttons are gone if only one ellipsis was there.
-            // Re-finding elements after UI update
-            comp.FindAll(".mud-pagination-ellipsis-button", enableAutoRefresh: true)
-                .FirstOrDefault(b => b.TextContent == "...")
-                .Should().BeNull(); // Assuming the clicked button is replaced by the input
+            // Assert that there is now only one ellipsis button remaining
+            comp.FindAll(".mud-pagination-ellipsis-button", enableAutoRefresh: true).Count.Should().Be(1);
         }
 
         [Test]
         public async Task Ellipsis_EnterValidPage_NavigatesAndHidesInput()
         {
-            using var ctx = new Bunit.TestContext();
+            Context.Services.AddSingleton<ILocalizationInterceptor, DefaultLocalizationInterceptor>();
+            Context.Services.AddSingleton<ILocalizationEnumInterceptor, DefaultLocalizationEnumInterceptor>();
+            Context.Services.AddTransient<InternalMudLocalizer>();
+            Context.JSInterop.SetupVoid("mudElementRef.addOnBlurEvent", _ => true);
+            Context.JSInterop.SetupVoid("mudElementRef.removeOnBlurEvent", _ => true);
             var selectedPage = 5; // Start page where an ellipsis is visible
             var newPageViaInput = 0;
-            var comp = ctx.RenderComponent<MudPagination>(parameters => parameters
+            var comp = Context.RenderComponent<MudPagination>(parameters => parameters
                 .Add(p => p.Count, 10)
                 .Add(p => p.MiddleCount, 1) // e.g., 1 ... 5 ... 10
                 .Add(p => p.BoundaryCount, 1)
@@ -405,7 +406,7 @@ namespace MudBlazor.UnitTests.Components
             var inputField = comp.Find(".mud-pagination-ellipsis-input input"); // Find the actual input element
             inputField.Should().NotBeNull();
 
-            await inputField.ChangeAsync(new Microsoft.AspNetCore.Components.ChangeEventArgs { Value = "3" }); // Type valid page
+            await inputField.InputAsync(new Microsoft.AspNetCore.Components.ChangeEventArgs { Value = "3" });
             await inputField.KeyDownAsync(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Enter" });
 
             newPageViaInput.Should().Be(3); // SelectedChanged was invoked with 3
@@ -415,11 +416,7 @@ namespace MudBlazor.UnitTests.Components
             comp.FindAll(".mud-pagination-ellipsis-input", enableAutoRefresh: true).Should().BeEmpty();
             comp.FindAll(".mud-pagination-ellipsis-button", enableAutoRefresh: true).Should().NotBeEmpty();
 
-            // Verify current page display if possible (e.g., by checking the selected item's text)
-            // This structure: 1 2 3 4 ... 10 (if MiddleCount=1, BoundaryCount=1 selected 3)
-            // Or more simply: 1 ... 3 ... 10.
-            // The selected item should have the text "3"
-             comp.Find(".mud-pagination-item-selected button").TextContent.Should().Be("3");
+            comp.Find(".mud-pagination-item-selected button").TextContent.Should().Be("3");
         }
 
         [Test]
@@ -428,10 +425,14 @@ namespace MudBlazor.UnitTests.Components
         [TestCase("abc")] // Non-numeric
         public async Task Ellipsis_EnterInvalidPage_NoNavigationAndHidesInput(string invalidInput)
         {
-            using var ctx = new Bunit.TestContext();
+            Context.Services.AddSingleton<ILocalizationInterceptor, DefaultLocalizationInterceptor>();
+            Context.Services.AddSingleton<ILocalizationEnumInterceptor, DefaultLocalizationEnumInterceptor>();
+            Context.Services.AddTransient<InternalMudLocalizer>();
+            Context.JSInterop.SetupVoid("mudElementRef.addOnBlurEvent", _ => true);
+            Context.JSInterop.SetupVoid("mudElementRef.removeOnBlurEvent", _ => true);
             var initialSelectedPage = 5;
             var selectedPageTracker = initialSelectedPage; // To track if SelectedChanged is called
-            var comp = ctx.RenderComponent<MudPagination>(parameters => parameters
+            var comp = Context.RenderComponent<MudPagination>(parameters => parameters
                 .Add(p => p.Count, 10)
                 .Add(p => p.MiddleCount, 1)
                 .Add(p => p.BoundaryCount, 1)
@@ -443,23 +444,28 @@ namespace MudBlazor.UnitTests.Components
             await ellipsisButton.ClickAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
 
             var inputField = comp.Find(".mud-pagination-ellipsis-input input");
-            await inputField.ChangeAsync(new Microsoft.AspNetCore.Components.ChangeEventArgs { Value = invalidInput });
+            await inputField.InputAsync(new Microsoft.AspNetCore.Components.ChangeEventArgs { Value = invalidInput });
             await inputField.KeyDownAsync(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Enter" });
 
             selectedPageTracker.Should().Be(initialSelectedPage); // SelectedChanged should not be called with a new value
 
             comp.FindAll(".mud-pagination-ellipsis-input", enableAutoRefresh: true).Should().BeEmpty();
             comp.FindAll(".mud-pagination-ellipsis-button", enableAutoRefresh: true).Should().NotBeEmpty();
-            comp.FindComponent<MudPagination>().Instance.GetState(p => p.Selected).Should().Be(initialSelectedPage); // Internal state remains unchanged
+            // Verify active page button by checking its text content
+            comp.WaitForAssertion(() => comp.Find("li.mud-pagination-item-selected button.mud-button-root").TextContent.Trim().Should().Be(initialSelectedPage.ToString()), TimeSpan.FromSeconds(1));
         }
 
         [Test]
         public async Task Ellipsis_PressEscape_CancelsAndHidesInput()
         {
-            using var ctx = new Bunit.TestContext();
+            Context.Services.AddSingleton<ILocalizationInterceptor, DefaultLocalizationInterceptor>();
+            Context.Services.AddSingleton<ILocalizationEnumInterceptor, DefaultLocalizationEnumInterceptor>();
+            Context.Services.AddTransient<InternalMudLocalizer>();
+            Context.JSInterop.SetupVoid("mudElementRef.addOnBlurEvent", _ => true);
+            Context.JSInterop.SetupVoid("mudElementRef.removeOnBlurEvent", _ => true);
             var initialSelectedPage = 5;
             var selectedPageTracker = initialSelectedPage;
-            var comp = ctx.RenderComponent<MudPagination>(parameters => parameters
+            var comp = Context.RenderComponent<MudPagination>(parameters => parameters
                 .Add(p => p.Count, 10)
                 .Add(p => p.MiddleCount, 1)
                 .Add(p => p.BoundaryCount, 1)
@@ -471,82 +477,160 @@ namespace MudBlazor.UnitTests.Components
             await ellipsisButton.ClickAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
 
             var inputField = comp.Find(".mud-pagination-ellipsis-input input");
-            await inputField.ChangeAsync(new Microsoft.AspNetCore.Components.ChangeEventArgs { Value = "3" }); // User types something
+            await inputField.InputAsync(new Microsoft.AspNetCore.Components.ChangeEventArgs { Value = "3" }); // User types something
             await inputField.KeyDownAsync(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Escape" });
 
             selectedPageTracker.Should().Be(initialSelectedPage); // SelectedChanged should not be called
 
             comp.FindAll(".mud-pagination-ellipsis-input", enableAutoRefresh: true).Should().BeEmpty();
             comp.FindAll(".mud-pagination-ellipsis-button", enableAutoRefresh: true).Should().NotBeEmpty();
-            comp.FindComponent<MudPagination>().Instance.GetState(p => p.Selected).Should().Be(initialSelectedPage);
+            // Verify active page button by checking its text content
+            comp.WaitForAssertion(() => comp.Find("li.mud-pagination-item-selected button.mud-button-root").TextContent.Trim().Should().Be(initialSelectedPage.ToString()), TimeSpan.FromSeconds(1));
         }
 
         [Test]
         public async Task Ellipsis_HandlesTwoEllipses_Independently()
         {
-            using var ctx = new Bunit.TestContext();
-            var selectedPage = 10; // Middle page to ensure two ellipses
-            var pageAfterInput = selectedPage;
+            Context.Services.AddSingleton<ILocalizationInterceptor, DefaultLocalizationInterceptor>();
+            Context.Services.AddSingleton<ILocalizationEnumInterceptor, DefaultLocalizationEnumInterceptor>();
+            Context.Services.AddTransient<InternalMudLocalizer>();
+            Context.JSInterop.SetupVoid("mudElementRef.observeFocus", _ => true).SetVoidResult();
+            Context.JSInterop.SetupVoid("mudElementRef.activateFocusTrap", _ => true).SetVoidResult();
+            Context.JSInterop.Setup<Interop.BoundingClientRect>("mudElementRef.getBoundingClientRect", _ => true).SetResult(new Interop.BoundingClientRect());
+            Context.JSInterop.SetupVoid("mudElementRef.restoreFocus", _ => true).SetVoidResult();
+            Context.JSInterop.SetupVoid("mudElementRef.addOnBlurEvent", _ => true).SetVoidResult();
+            Context.JSInterop.SetupVoid("mudElementRef.removeOnBlurEvent", _ => true).SetVoidResult();
 
-            // Count=20, Selected=10, BoundaryCount=2, MiddleCount=3
-            // Expected: 1 2 ... 8 9 10 11 12 ... 19 20
-            var comp = ctx.RenderComponent<MudPagination>(parameters => parameters
-                .Add(p => p.Count, 20)
-                .Add(p => p.BoundaryCount, 2)
-                .Add(p => p.MiddleCount, 3)
+            var selectedPage = 10;
+            var initialSelectedPage = selectedPage;
+            var pageCount = 20;
+            var boundaryCount = 1;
+            var middleCount = 1;
+
+            var selectedChangedValue = 0;
+            var selectedChangedCalled = false;
+
+            var comp = Context.RenderComponent<MudPagination>(parameters => parameters
+                .Add(p => p.Count, pageCount)
                 .Add(p => p.Selected, selectedPage)
-                .Add(p => p.SelectedChanged, Microsoft.AspNetCore.Components.EventCallback.Factory.Create<int>(this, newVal => pageAfterInput = newVal))
+                .Add(p => p.BoundaryCount, boundaryCount)
+                .Add(p => p.MiddleCount, middleCount)
+                .Add(p => p.SelectedChanged, Microsoft.AspNetCore.Components.EventCallback.Factory.Create<int>(this, newVal =>
+                {
+                    selectedChangedValue = newVal;
+                    selectedChangedCalled = true;
+                }))
             );
 
-            var ellipsisButtons = comp.FindAll(".mud-pagination-ellipsis-button");
-            ellipsisButtons.Count.Should().Be(2); // Ensure two ellipses are present
+            // Initial check: Two ellipsis buttons should be present
+            comp.WaitForAssertion(() => comp.FindAll(".mud-pagination-ellipsis-button").Count.Should().Be(2, "Initially two ellipsis buttons should be visible."));
 
-            var firstEllipsisButton = ellipsisButtons[0];
-            var secondEllipsisButton = ellipsisButtons[1];
+            // --- Interact with the first ellipsis ---
+            var allEllipses = comp.FindAll(".mud-pagination-ellipsis-button");
+            var firstEllipsisButton = allEllipses[0];
 
-            // Test first ellipsis
             await firstEllipsisButton.ClickAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
-            var inputField = comp.Find(".mud-pagination-ellipsis-input input"); // Should be only one input at a time
-            inputField.Should().NotBeNull();
-            // The other ellipsis should still be a button
-            comp.FindAll(".mud-pagination-ellipsis-button", enableAutoRefresh: true).Count.Should().Be(1);
+            comp.WaitForState(() => comp.FindAll(".mud-pagination-ellipsis-input input").Any(), TimeSpan.FromSeconds(1));
 
-            await inputField.ChangeAsync(new Microsoft.AspNetCore.Components.ChangeEventArgs { Value = "5" });
+            // Check: one input, one ellipsis button
+            comp.FindAll(".mud-pagination-ellipsis-input input").Count.Should().Be(1);
+            comp.FindAll(".mud-pagination-ellipsis-button").Count.Should().Be(1, "After clicking first ellipsis, one should remain a button.");
+
+            var inputField = comp.Find(".mud-pagination-ellipsis-input input");
+            await inputField.InputAsync(new Microsoft.AspNetCore.Components.ChangeEventArgs { Value = "5" });
             await inputField.KeyDownAsync(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Enter" });
 
-            pageAfterInput.Should().Be(5);
-            comp.FindAll(".mud-pagination-ellipsis-input", enableAutoRefresh: true).Should().BeEmpty(); // Input hidden
-            // Re-render might be needed or check selected page
-            comp.Render(); // Re-render to update pagination items after navigation
-            var currentEllipsisButtons = comp.FindAll(".mud-pagination-ellipsis-button");
-            currentEllipsisButtons.Count.Should().BeGreaterThan(0); // Ellipses should be back (could be 1 or 2 depending on new page)
+            comp.WaitForAssertion(() => {
+                selectedChangedCalled.Should().BeTrue();
+                selectedChangedValue.Should().Be(5);
+                var ellipsisButtons = comp.FindAll(".mud-pagination-ellipsis-button");
+                // Corrected Assertion: Expect 2 ellipses for "1 ... 5 ... 20"
+                ellipsisButtons.Count.Should().Be(2, "After navigating to page 5, two ellipses should remain (e.g., 1 ... 5 ... 20).");
+                comp.Find("li.mud-pagination-item-selected button.mud-button-root").TextContent.Trim().Should().Be("5");
+            }, TimeSpan.FromSeconds(1));
 
-            // Reset for second ellipsis test - select a page that shows two ellipses again
-            selectedPage = 10;
-            pageAfterInput = selectedPage; // reset tracker
-            comp.SetParametersAndRender(parameters => parameters
+            selectedChangedCalled = false;
+
+            var remainingEllipses = comp.FindAll(".mud-pagination-ellipsis-button");
+            if (remainingEllipses.Any())
+            {
+                var secondEllipsisButtonToTest = remainingEllipses.First();
+
+                await secondEllipsisButtonToTest.ClickAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
+                comp.WaitForState(() => comp.FindAll(".mud-pagination-ellipsis-input input").Any(), TimeSpan.FromSeconds(1));
+
+                inputField = comp.Find(".mud-pagination-ellipsis-input input");
+                await inputField.InputAsync(new Microsoft.AspNetCore.Components.ChangeEventArgs { Value = "18" });
+                await inputField.KeyDownAsync(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Enter" });
+
+                comp.WaitForAssertion(() => {
+                    selectedChangedCalled.Should().BeTrue();
+                    selectedChangedValue.Should().Be(18);
+                    // Corrected Assertion: Expect 1 ellipsis for "1 ... 18 19 20"
+                    comp.FindAll(".mud-pagination-ellipsis-button").Count.Should().Be(1, "After navigating to page 18, one ellipsis should remain (e.g., 1 ... 18 19 20).");
+                    comp.Find("li.mud-pagination-item-selected button.mud-button-root").TextContent.Trim().Should().Be("18");
+                }, TimeSpan.FromSeconds(1));
+            }
+            else
+            {
+                Assert.Fail("Expected at least one ellipsis to remain for the second part of the test.");
+            }
+        }
+
+        [Test]
+        public async Task EllipsisInput_Blur_RevertsToButton()
+        {
+            Context.Services.AddSingleton<ILocalizationInterceptor, DefaultLocalizationInterceptor>();
+            Context.Services.AddSingleton<ILocalizationEnumInterceptor, DefaultLocalizationEnumInterceptor>();
+            Context.Services.AddTransient<InternalMudLocalizer>();
+
+            // Mock JSInterop
+            Context.JSInterop.SetupVoid("mudElementRef.observeFocus", _ => true).SetVoidResult();
+            Context.JSInterop.SetupVoid("mudElementRef.activateFocusTrap", _ => true).SetVoidResult();
+            // Assuming BoundingClientRect is in MudBlazor.Interop
+            Context.JSInterop.Setup<Interop.BoundingClientRect>("mudElementRef.getBoundingClientRect", _ => true).SetResult(new Interop.BoundingClientRect());
+            Context.JSInterop.SetupVoid("mudElementRef.restoreFocus", _ => true).SetVoidResult();
+            Context.JSInterop.SetupVoid("mudElementRef.addOnBlurEvent", _ => true).SetVoidResult();
+            Context.JSInterop.SetupVoid("mudElementRef.removeOnBlurEvent", _ => true).SetVoidResult();
+
+            var selectedPage = 1;
+            var initialSelectedPage = selectedPage;
+            var selectedChangedCalled = false;
+
+            var comp = Context.RenderComponent<MudPagination>(parameters => parameters
+                .Add(p => p.Count, 10)
+                .Add(p => p.MiddleCount, 2)
+                .Add(p => p.BoundaryCount, 1)
                 .Add(p => p.Selected, selectedPage)
+                .Add(p => p.SelectedChanged, Microsoft.AspNetCore.Components.EventCallback.Factory.Create<int>(this, newVal =>
+                {
+                    selectedPage = newVal;
+                    selectedChangedCalled = true;
+                }))
             );
 
-            ellipsisButtons = comp.FindAll(".mud-pagination-ellipsis-button");
-            ellipsisButtons.Count.Should().Be(2);
-            secondEllipsisButton = ellipsisButtons[1]; // Re-find the second button
-
-            // Test second ellipsis
-            await secondEllipsisButton.ClickAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
-            inputField = comp.Find(".mud-pagination-ellipsis-input input");
-            inputField.Should().NotBeNull();
-            comp.FindAll(".mud-pagination-ellipsis-button", enableAutoRefresh: true).Count.Should().Be(1);
+            var ellipsisButton = comp.FindAll(".mud-pagination-ellipsis-button").First();
+            await ellipsisButton.ClickAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
+            comp.WaitForState(() => comp.FindAll(".mud-pagination-ellipsis-input input").Any(), TimeSpan.FromSeconds(1));
 
 
-            await inputField.ChangeAsync(new Microsoft.AspNetCore.Components.ChangeEventArgs { Value = "15" });
-            await inputField.KeyDownAsync(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Enter" });
+            // Find the input element
+            var inputElement = comp.Find(".mud-pagination-ellipsis-input input");
+            inputElement.Should().NotBeNull("Input element should be present after clicking ellipsis.");
 
-            pageAfterInput.Should().Be(15);
-            comp.FindAll(".mud-pagination-ellipsis-input", enableAutoRefresh: true).Should().BeEmpty();
-            comp.Render();
-             currentEllipsisButtons = comp.FindAll(".mud-pagination-ellipsis-button");
-            currentEllipsisButtons.Count.Should().BeGreaterThan(0);
+            // Simulate blur on the input element
+            // Pass FocusEventArgs for Blazor's built-in onblur mapping
+            await inputElement.BlurAsync(new Microsoft.AspNetCore.Components.Web.FocusEventArgs());
+
+            // After blur, the input should be gone, and the button should reappear.
+            // Use WaitForAssertion to handle timing for UI updates.
+            comp.WaitForAssertion(() => {
+                comp.FindAll(".mud-pagination-ellipsis-input input").Should().BeEmpty("Input should disappear after blur.");
+                comp.FindAll(".mud-pagination-ellipsis-button").Should().NotBeEmpty("Ellipsis button should reappear after blur.");
+            }, TimeSpan.FromSeconds(1));
+
+            selectedChangedCalled.Should().BeFalse("SelectedChanged should not be called on blur.");
+            selectedPage.Should().Be(initialSelectedPage, "Page selection should not change on blur.");
         }
     }
 }

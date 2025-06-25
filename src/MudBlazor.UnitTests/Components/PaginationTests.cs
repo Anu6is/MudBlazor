@@ -540,7 +540,8 @@ namespace MudBlazor.UnitTests.Components
             await inputField.InputAsync(new Microsoft.AspNetCore.Components.ChangeEventArgs { Value = "5" });
             await inputField.KeyDownAsync(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Enter" });
 
-            comp.WaitForAssertion(() => {
+            comp.WaitForAssertion(() =>
+            {
                 selectedChangedCalled.Should().BeTrue();
                 selectedChangedValue.Should().Be(5);
                 var ellipsisButtons = comp.FindAll(".mud-pagination-ellipsis-button");
@@ -563,7 +564,8 @@ namespace MudBlazor.UnitTests.Components
                 await inputField.InputAsync(new Microsoft.AspNetCore.Components.ChangeEventArgs { Value = "18" });
                 await inputField.KeyDownAsync(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Enter" });
 
-                comp.WaitForAssertion(() => {
+                comp.WaitForAssertion(() =>
+                {
                     selectedChangedCalled.Should().BeTrue();
                     selectedChangedValue.Should().Be(18);
                     // Corrected Assertion: Expect 1 ellipsis for "1 ... 18 19 20"
@@ -624,7 +626,8 @@ namespace MudBlazor.UnitTests.Components
 
             // After blur, the input should be gone, and the button should reappear.
             // Use WaitForAssertion to handle timing for UI updates.
-            comp.WaitForAssertion(() => {
+            comp.WaitForAssertion(() =>
+            {
                 comp.FindAll(".mud-pagination-ellipsis-input input").Should().BeEmpty("Input should disappear after blur.");
                 comp.FindAll(".mud-pagination-ellipsis-button").Should().NotBeEmpty("Ellipsis button should reappear after blur.");
             }, TimeSpan.FromSeconds(1));

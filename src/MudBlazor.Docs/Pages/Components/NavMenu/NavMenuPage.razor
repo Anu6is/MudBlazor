@@ -88,6 +88,18 @@
         </DocsPageSection>
 
         <DocsPageSection>
+            <SectionHeader Title="Horizontal">
+                <Description>
+                    <CodeInline>MudNavMenu</CodeInline> will automatically render horizontally when it is placed inside a component that provides a toolbar context, such as <CodeInline>MudAppBar</CodeInline> or directly within an element with the <CodeInline>.mud-toolbar</CodeInline> class.
+                    <MudAlert Severity="Severity.Info" Dense Class="mt-3">Note: For navigation items with  nested menus (example: Settings), using a <CodeInline>MudMenu</CodeInline> instead of a <CodeInline>MudNavGroup</CodeInline> offers a more conventional user experience.</MudAlert>
+                </Description>
+            </SectionHeader>
+            <SectionContent Code="@nameof(NavMenuAppBarExample)" DarkenBackground="true" ShowCode="false">
+                <NavMenuAppBarExample />
+            </SectionContent>
+        </DocsPageSection>
+
+        <DocsPageSection>
             <SectionHeader Title="Customizing the Group Title">
                 <Description></Description>
             </SectionHeader>

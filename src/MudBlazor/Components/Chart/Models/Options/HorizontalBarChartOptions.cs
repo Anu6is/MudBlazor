@@ -11,7 +11,7 @@ namespace MudBlazor;
 public class HorizontalBarChartOptions : BarChartOptions
 {
     /// <summary>
-    /// The number of ticks to display on the X-axis.
+    /// The value interval between ticks on the X-axis
     /// </summary>
     public int? XAxisTicks { get; set; }
 

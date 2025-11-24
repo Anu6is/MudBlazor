@@ -27,10 +27,6 @@ public enum ChartType
     /// </summary>
     Bar,
     /// <summary>
-    /// Data is displayed as horizontal rectangles.
-    /// </summary>
-    HorizontalBar,
-    /// <summary>
     /// Data is displayed as connected rectangles.
     /// </summary>
     StackedBar,
@@ -54,4 +50,8 @@ public enum ChartType
     /// Data is displayed as nodes connected by edges.
     /// </summary>
     Sankey,
+    /// <summary>
+    /// Data is displayed as horizontal rectangles.
+    /// </summary>
+    HorizontalBar,
 }

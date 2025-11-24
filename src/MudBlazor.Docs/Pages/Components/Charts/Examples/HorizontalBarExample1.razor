@@ -1,4 +1,4 @@
-@namespace MudBlazor.Docs.Pages.Components.Charts.Examples
+﻿@namespace MudBlazor.Docs.Examples
 
 <MudPaper Class="doc-section-component-container">
     <MudChart ChartType="ChartType.HorizontalBar" ChartSeries="@_series" @bind-SelectedIndex="_index" ChartLabels="@_xAxisLabels" ChartOptions="_axisChartOptions"
@@ -7,16 +7,13 @@
 
 <MudGrid>
     <MudItem xs="6">
-        <MudText Typo="Typo.body1" Class="py-3">Selected: @(_index < 0 ? "None" : _series[_index].Name)</MudText>
+        <MudText Typo="Typo.body1" Class="py-3">Selected: @(_index >= 0 && _index < _series.Count ? _series[_index].Name : "None")</MudText>
     </MudItem>
     <MudItem md="6" xs="12">
         <MudCheckBox @bind-Value="_matchBoundsToSize" Color="Color.Primary" Label="MatchBoundsToSize"></MudCheckBox>
     </MudItem>
     <MudItem md="6" xs="12">
         <MudSlider @bind-Value="_height" Min="150" Max="500" Step="50">@($"Chart Height: {_height}px")</MudSlider>
-    </MudItem>
-    <MudItem md="6" xs="12">
-        <MudSlider @bind-Value="_axisChartOptions.YAxisLabelRotation" Min="0" Max="90" Step="15">YAxis Label Rotation</MudSlider>
     </MudItem>
 </MudGrid>
 

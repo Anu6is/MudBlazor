@@ -195,6 +195,17 @@ namespace MudBlazor
             await base.OnAfterRenderAsync(firstRender);
         }
 
+        protected internal async Task OnInputAsync(ChangeEventArgs e)
+        {
+            var inputValue = e.Value?.ToString();
+
+            if (inputValue == null)
+                return;
+
+            Mask.SetText(inputValue);
+            await UpdateAsync();
+        }
+
         protected internal async Task HandleKeyDown(KeyboardEventArgs e)
         {
             try
@@ -499,7 +510,7 @@ namespace MudBlazor
                 (_, text, _) = BaseMask.SplitSelection(text, Mask.Selection.Value);
             }
 
-            JsApiService.CopyToClipboardAsync(text);
+            JsApiService.CopyToClipboardAsync(text ?? string.Empty);
         }
 
         [GeneratedRegex(@"^.$")]

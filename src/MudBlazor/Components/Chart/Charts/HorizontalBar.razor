@@ -1,22 +1,30 @@
-﻿@namespace MudBlazor.Charts
+@namespace MudBlazor.Charts
+@using MudBlazor.Charts.Base
+@using MudBlazor.Charts
+@using System.Numerics
 
-@inherits MudAxisChartBase<HorizontalBarChartOptions>
+@inherits MudBarChartBase<T, HorizontalBarChartOptions>
+
+@typeparam T where T : struct, INumber<T>, IMinMaxValue<T>, IFormattable
 
 @if (!IsOverlayChart)
 {
     <div @attributes="UserAttributes" class="@Classname">
-        <BaseAxisChart TChartOptions="HorizontalBarChartOptions"
+        <BaseAxisChart T="T"
+                       TChartOptions="HorizontalBarChartOptions"
                        AxisChanged="AxisChanged"
                        ElementRefChanged="SetElementReference"
                        Width="@Width"
                        Height="@Height"
                        ViewBoxWidth="_boundWidth"
                        ViewBoxHeight="_boundHeight"
-                       ChartClass="mud-chart-horizontalbar"
+                       ChartClass="mud-chart-bar"
                        ChartSeries="@ChartSeries"
                        ChartLabels="@ChartLabels"
                        ChartOptions="@ChartOptions"
                        ChartType="@ChartType"
+                       XAxisTitle="@ChartOptions?.XAxisTitle"
+                       YAxisTitle="@ChartOptions?.YAxisTitle"
                        SeriesContent="@RenderBars()"
                        TooltipContent="@RenderTooltip()"
                        ChildContent="@OverlayContent"
@@ -28,7 +36,7 @@
                        VerticalValues="@VerticalValues"
                        UserAttributes="@UserAttributes" />
 
-        <Legend Data="@Legends" ShowLegend="@ChartOptions?.ShowLegend" CanHideSeries="@CanHideSeries"
+        <Legend T="T" Data="@Legends" ShowLegend="@ChartOptions?.ShowLegend" CanHideSeries="@CanHideSeries"
                 ChartPalette="@LegendPalette" OnLegendSelected="async (i) => await SetSelectedIndexAsync(i)" />
     </div>
 }
@@ -44,7 +52,7 @@
                 continue;
 
             var color = ChartOptions!.ChartPalette?.Length > 0
-                ? ChartOptions.ChartPalette.GetValue(bar.Index % ChartOptions.ChartPalette.Length)?.ToString() ?? string.Empty
+                ? ChartOptions.ChartPalette[bar.Index % ChartOptions.ChartPalette.Length]
                 : string.Empty;
 
             builder.OpenElement(seq++, "path");
@@ -52,7 +60,7 @@
             builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create(this, () => SetSelectedIndexAsync(bar.Index)));
             builder.AddAttribute(seq++, "fill", color);
             builder.AddAttribute(seq++, "stroke", color);
-            builder.AddAttribute(seq++, "stroke-width", _barHeight.ToS());
+            builder.AddAttribute(seq++, "stroke-width", _barWidth.ToStr());
             builder.AddAttribute(seq++, "d", bar.Data);
             builder.AddAttribute(seq++, "onmouseover", EventCallback.Factory.Create<MouseEventArgs>(this, e => OnBarMouseOver(e, bar)));
             builder.AddAttribute(seq++, "onmouseout", EventCallback.Factory.Create(this, OnBarMouseOut));
@@ -79,7 +87,7 @@
         {
             builder.OpenElement(seq++, "g");
             builder.AddAttribute(seq++, "class", "mud-chart-tooltip");
-            builder.AddAttribute(seq++, "transform", $"translate({tooltipX.ToS()},{tooltipY.ToS()})");
+            builder.AddAttribute(seq++, "transform", $"translate({tooltipX.ToStr()},{tooltipY.ToStr()})");
             builder.AddContent(seq++, TooltipTemplate((_hoveredBar, color)));
             builder.CloseElement();
         }
@@ -91,15 +99,8 @@
 
             if (!string.IsNullOrWhiteSpace(tooltipTitleFormat))
             {
-                var tooltipTitle = tooltipTitleFormat
-                    .Replace("{{SERIES_NAME}}", series.Name)
-                    .Replace("{{X_VALUE}}", _hoveredBar.LabelXValue)
-                    .Replace("{{Y_VALUE}}", _hoveredBar.LabelYValue);
-
-                var tooltipSubtitle = tooltipSubtitleFormat?
-                    .Replace("{{SERIES_NAME}}", series.Name)
-                    .Replace("{{X_VALUE}}", _hoveredBar.LabelXValue)
-                    .Replace("{{Y_VALUE}}", _hoveredBar.LabelYValue) ?? string.Empty;
+                var tooltipTitle = FormatTooltipText(tooltipTitleFormat, series, _hoveredBar);
+                var tooltipSubtitle = FormatTooltipText(tooltipSubtitleFormat, series, _hoveredBar);
 
                 builder.OpenComponent<ChartTooltip>(seq++);
                 builder.AddAttribute(seq++, "Title", tooltipTitle);
@@ -112,7 +113,7 @@
         }
     };
 
-    private RenderFragment Chart =>@<g class="mud-charts-bar-series">
+    protected override RenderFragment Chart =>@<g class="mud-charts-bar-series">
                                         @RenderBars()
                                         @RenderTooltip()
                                     </g>;

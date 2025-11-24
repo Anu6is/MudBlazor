@@ -7,12 +7,18 @@ using MudBlazor.Charts;
 
 namespace MudBlazor;
 
+/// <summary>
+/// Options specific to pie charts, extending <see cref="DefaultRadialChartOptions"/>.
+/// </summary>
 public class PieChartOptions : DefaultRadialChartOptions, IHasValueLabelOptions
 {
     /// <summary>
     /// Whether values should be displayed within the chart.
     /// </summary>
-    public bool ShowValues { get; set; }
+    /// <remarks>
+    /// Defaults to <c>false</c>.
+    /// </remarks>
+    public bool ShowValues { get; set; } = false;
 
     public static implicit operator PieChartOptions(ChartOptions options) => new()
     {

@@ -1,210 +1,128 @@
-﻿using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
-using MudBlazor.Extensions;
-using MudBlazor.Interfaces;
+using System.Numerics;
+using MudBlazor.Charts.Base;
 
 #nullable enable
 namespace MudBlazor.Charts
 {
-    /// <summary>
-    /// Represents a chart which displays series values as rectangular bars.
-    /// </summary>
-    /// <seealso cref="Donut"/>
-    /// <seealso cref="Line"/>
-    /// <seealso cref="Pie"/>
-    /// <seealso cref="StackedBar"/>
-    /// <seealso cref="TimeSeries"/>
-    partial class HorizontalBar : MudAxisChartBase<HorizontalBarChartOptions>
+    partial class HorizontalBar<T> : MudBarChartBase<T, HorizontalBarChartOptions> where T : struct, INumber<T>, IMinMaxValue<T>, IFormattable
     {
-        public static new ChartType ChartType => ChartType.HorizontalBar;
-
-        public override RenderFragment? OverlayContent { get; set; }
-
-        private readonly List<SvgPath> _bars = [];
-        private SvgPath? _hoveredBar;
-
-        private double _barGroupHeight; // Changed from _barGroupWidth
-        private double _barHeight; // Changed from _barWidth
-        private double _barGap;
-
-        private const double MinBarHeight = 6; // Changed from MinBarWidth
-
         protected override void OnInitialized()
         {
-            ChartOptions ??= new HorizontalBarChartOptions();
-
-            if (ChartReference is IMudAxisChart axisChart)
-            {
-                axisChart.OverlayChart = this;
-                axisChart.OverlayContent = this.Chart;
-            }
-
+            ChartType = ChartType.HorizontalBar;
             base.OnInitialized();
         }
 
-        public override void RebuildChart()
+        protected override void GenerateBars(int lowestHorizontalLine, T gridXUnits, double horizontalSpace, double verticalSpace, int numVerticalLines)
         {
-            // shared plot points should be initialized before generating overlay charts
-            if (IsOverlayChart && SharedData is null) return;
+            _bars.Clear();
 
-            Series = (ChartContainer != null && ChartReference is MudChart)
-                ? ChartContainer.ChartSeries
-                : ChartSeries;
+            var barGroupPositions = CalculateBarGroupPositions(verticalSpace, numVerticalLines);
 
-            GeneratePlotArea(out var gridXUnits, out var lowestVerticalLine, out var numVerticalLines, out var numHorizontalLines, out var valueAxisSpacePerUnit, out var categoryAxisSpace); // Renamed for clarity
-
-            if (!IsOverlayChart)
+            for (var i = 0; i < Series.Count; i++)
             {
-                // If this is not an overlay chart, we generate the shared plot points if an overlay exists
-                // For HorizontalBar, X-axis is value, Y-axis is category.
-                // AxisGridData: lowestHorizontalLine refers to the 'bottom' of the chart visually, which is min X for HorizontalBar.
-                // numHorizontalLines refers to lines parallel to X-axis, so these are category lines for HorizontalBar.
-                // gridYUnits refers to step of Y-axis, which is step of X-axis (value axis) for HorizontalBar.
-                SharedData = OverlayChart is IMudAxisChart ? new AxisGridData(lowestVerticalLine, numHorizontalLines, gridXUnits, _boundWidth, _boundHeight) : null;
-            }
-            else
-            {
-                // If this is an overlay chart, we use the shared plot points from the main chart
-                var area = SharedData!.Value;
+                var series = Series[i];
+                var data = series.Data;
 
-                // Apply shared data according to HorizontalBar's perspective
-                lowestVerticalLine = SharedData.Value.LowestHorizontalLine; // Min X value
-                numHorizontalLines = SharedData.Value.HorizontalLineCount; // Number of category lines
-                gridXUnits = SharedData.Value.YAxisTicks; // Step of X-axis (value)
+                for (var j = 0; j < data.Values.Count && j < barGroupPositions.Length; j++)
+                {
+                    var dataValue = data.GetValue(j);
 
-                _boundWidth = area.BoundWidth;
-                _boundHeight = area.BoundHeight;
-            }
+                    var groupStartY = barGroupPositions[j] - (_barGroupWidth / 2);
+                    var gridValueY = groupStartY + (i * (_barWidth + _barGap)) + (_barWidth / 2);
 
-            GenerateBars(lowestVerticalLine, gridXUnits, valueAxisSpacePerUnit, categoryAxisSpace, numHorizontalLines);
-            GenerateLegends();
+                    var gridValueX = HorizontalStartSpace - (lowestHorizontalLine * horizontalSpace);
+                    var barWidth = (double.CreateSaturating((dataValue / gridXUnits)) - lowestHorizontalLine) * horizontalSpace;
+                    var gridValue = HorizontalStartSpace + double.CreateSaturating(barWidth);
 
-            if (OverlayChart is IMudAxisChart overlay)
-            {
-                overlay.SharedData = SharedData;
-                overlay.RebuildChart();
-                StateHasChanged();
+                    var bar = new SvgPath()
+                    {
+                        Index = i,
+                        Data = $"M {ToS(gridValueX)} {ToS(gridValueY)} L {ToS(gridValue)} {ToS(gridValueY)}",
+                        LabelXValue = dataValue.ToString(series.TooltipXValueFormat, null),
+                        LabelYValue = ChartLabels.Length > j ? ChartLabels[j] : string.Empty,
+                        LabelY = gridValueY,
+                        LabelX = dataValue <= T.Zero ? gridValueX : gridValue
+                    };
+                    _bars.Add(bar);
+                }
             }
         }
 
-        // X-axis is Value axis, Y-axis is Category axis
-        private void GeneratePlotArea(out double gridXUnits, out int lowestValueLine, out int numValueLines, out int numCategoryLines, out double valueAxisSpacePerUnit, out double categoryAxisSpace)
+        /// <summary>
+        /// Overridden to handle the horizontal orientation.
+        /// </summary>
+        protected override void GeneratePlotArea(out T gridXUnits, out int lowestHorizontalLine, out int numHorizontalLines, out int numVerticalLines, out double horizontalSpace, out double verticalSpace)
         {
             SetBounds();
-            // numValueLines = number of lines perpendicular to bars (X-axis grid)
-            // numCategoryLines = number of lines parallel to bars (Y-axis grid)
-            ComputeUnitsAndNumberOfLines(out gridXUnits, out numValueLines, out lowestValueLine, out numCategoryLines);
+            ComputeUnitsAndNumberOfLines(out gridXUnits, out numHorizontalLines, out lowestHorizontalLine, out numVerticalLines);
 
-            // space for each value unit on X-axis
-            valueAxisSpacePerUnit = (_boundWidth - HorizontalStartSpace - HorizontalEndSpace) / Math.Max(1, numValueLines -1);
-            // total space for categories on Y-axis
-            categoryAxisSpace = _boundHeight - VerticalStartSpace - VerticalEndSpace; 
-            // height available for each category group
-            var tickHeight = categoryAxisSpace / Math.Max(1, numCategoryLines); 
+            var horizontalLines = IsOverlayChart ? SharedData!.Value.HorizontalLineCount - 1 : numHorizontalLines;
+
+            horizontalSpace = (_boundWidth - HorizontalStartSpace - HorizontalEndSpace) / Math.Max(1, horizontalLines);
+            verticalSpace = _boundHeight - VerticalStartSpace - VerticalEndSpace;
+            var tickHeight = verticalSpace / numVerticalLines;
 
             ComputeBarDimensions(tickHeight);
-            // Generates X-axis grid lines and labels (VerticalValue GridLines)
-            GenerateValueGridLines(numValueLines, lowestValueLine, gridXUnits, valueAxisSpacePerUnit);
-            // Generates Y-axis category lines and labels (HorizontalValue GridLines)
-            GenerateCategoryGridLines(numCategoryLines, categoryAxisSpace);
+            GenerateHorizontalGridLines(numHorizontalLines, lowestHorizontalLine, gridXUnits, horizontalSpace);
+            GenerateVerticalGridLines(numVerticalLines, verticalSpace);
         }
 
-        // Computes units and number of lines for X (value) and Y (category) axes
-        private void ComputeUnitsAndNumberOfLines(out double gridXUnits, out int numValueLines, out int lowestValueLine, out int numCategoryLines)
+        /// <summary>
+        /// Overridden to handle the horizontal orientation.
+        /// </summary>
+        protected override void ComputeUnitsAndNumberOfLines(out T gridXUnits, out int numHorizontalLines, out int lowestHorizontalLine, out int numVerticalLines)
         {
-            gridXUnits = ChartOptions?.XAxisTicks ?? 20; // Value step for X-axis
-            if (gridXUnits <= 0)
-                gridXUnits = 20;
+            var xAxisTicks = ChartOptions?.XAxisTicks;
+            if (xAxisTicks.HasValue && xAxisTicks.Value > 0)
+                gridXUnits = T.CreateSaturating(xAxisTicks.Value);
+            else
+                gridXUnits = T.CreateSaturating(20);
 
-            var allDataValues = Series.SelectMany(series => series.Data.Values);
+            var allValues = Series.SelectMany(series => series.Data.Values);
 
-            if (allDataValues.Any())
+            if (allValues.Any())
             {
-                var minX = allDataValues.Min();
-                var maxX = allDataValues.Max(); // Default if no suggestion or suggestion is lower
-                var maxXSuggestion = ChartOptions?.XAxisSuggestedMax;
-                if (maxXSuggestion.HasValue)
+                var minX = allValues.Min();
+                var maxX = ChartOptions?.XAxisSuggestedMax is null
+                    ? allValues.Max()
+                    : T.Max(T.CreateSaturating(ChartOptions.XAxisSuggestedMax.Value), allValues.Max());
+
+                lowestHorizontalLine = Math.Min((int)Math.Floor(double.CreateSaturating(minX / gridXUnits)), 0);
+                var highestHorizontalLine = Math.Max((int)Math.Ceiling(double.CreateSaturating(maxX / gridXUnits)), 0);
+                numHorizontalLines = highestHorizontalLine - lowestHorizontalLine + 1;
+
+                var maxXTicks = ChartOptions?.MaxNumXAxisTicks ?? 20;
+
+                while (numHorizontalLines > maxXTicks)
                 {
-                    maxX = Math.Max(maxX, maxXSuggestion.Value);
+                    gridXUnits *= T.CreateSaturating(2);
+                    lowestHorizontalLine = Math.Min((int)Math.Floor(double.CreateSaturating(minX / gridXUnits)), 0);
+                    highestHorizontalLine = Math.Max((int)Math.Ceiling(double.CreateSaturating(maxX / gridXUnits)), 0);
+
+                    numHorizontalLines = highestHorizontalLine - lowestHorizontalLine + 1;
                 }
 
-                lowestValueLine = Math.Min((int)Math.Floor(minX / gridXUnits), 0); // Lowest value on X-axis (e.g., 0 or negative if data has it)
-                var highestValueLine = Math.Max((int)Math.Ceiling(maxX / gridXUnits), 0); // Highest value on X-axis
-                numValueLines = highestValueLine - lowestValueLine + 1; // Number of grid lines for X-axis
-
-                var maxXAxisTicks = ChartOptions?.MaxNumXAxisTicks ?? 20;
-                while (numValueLines > maxXAxisTicks)
-                {
-                    gridXUnits *= 2;
-                    lowestValueLine = Math.Min((int)Math.Floor(minX / gridXUnits), 0);
-                    highestValueLine = Math.Max((int)Math.Ceiling(maxX / gridXUnits), 0);
-                    numValueLines = highestValueLine - lowestValueLine + 1;
-                }
-
-                numCategoryLines = ChartLabels.Length > 0 ? ChartLabels.Length : Series.Max(series => series.Data.Values.Length); // Number of categories on Y-axis
+                numVerticalLines = Series.Max(series => series.Data.Values.Count);
             }
             else
             {
-                numValueLines = 1;
-                lowestValueLine = 0;
-                numCategoryLines = 1;
+                numHorizontalLines = 1;
+                lowestHorizontalLine = 0;
+                numVerticalLines = 1;
             }
         }
 
-        // Generates Y-axis category lines and labels. (Visually horizontal lines, data-wise category separators)
-        private void GenerateCategoryGridLines(int numCategoryLines, double categoryAxisSpace)
+        /// <summary>
+        /// Overridden to handle the horizontal orientation. This method generates the vertical grid lines for the X-axis.
+        /// </summary>
+        protected override void GenerateHorizontalGridLines(int numHorizontalLines, int lowestHorizontalLine, T gridXUnits, double horizontalSpace)
         {
-            HorizontalLines.Clear(); // Stores category separator lines
-            HorizontalValues.Clear(); // Stores Y-axis category labels
+            VerticalLines.Clear();
+            VerticalValues.Clear();
 
-            var categoryPositions = CalculateBarGroupPositions(categoryAxisSpace, numCategoryLines);
-
-            for (var i = 0; i < numCategoryLines; i++)
+            for (var i = 0; i < numHorizontalLines; i++)
             {
-                // Ensure categoryPositions are valid and provide a fallback if necessary
-                var y = (categoryPositions.Length > i && numCategoryLines > 0) ? categoryPositions[i] - _barGroupHeight / 2 : VerticalStartSpace + (i * (categoryAxisSpace / Math.Max(1,numCategoryLines))) ;
-                 if(ChartOptions?.Justify != Justify.FlexStart) // Adjust for center alignment of label
-                    y = (categoryPositions.Length > i && numCategoryLines > 0) ? categoryPositions[i] : VerticalStartSpace + (categoryAxisSpace / Math.Max(1,numCategoryLines)) * (i + 0.5);
-
-
-                // This line represents the start of a category group, not the center.
-                // Or it can be the center depending on CalculateBarGroupPositions.
-                // For labels, we want them centered with the group.
-                var line = new SvgPath()
-                {
-                    Index = i,
-                    Data = $"M {ToS(HorizontalStartSpace)} {ToS(y)} L {ToS(_boundWidth - HorizontalEndSpace)} {ToS(y)}"
-                };
-                 // Option: Don't draw lines if user doesn't want them for categories
-                if(ChartOptions?.ShowCategoryLines == true) // Added ?. and explicit true check
-                    HorizontalLines.Add(line);
-
-
-                var yLabelText = i < ChartLabels.Length ? ChartLabels[i] : $"Category {i + 1}";
-                var labelYPos = (categoryPositions.Length > i && numCategoryLines > 0) ? categoryPositions[i] : VerticalStartSpace + (categoryAxisSpace / Math.Max(1,numCategoryLines)) * (i + 0.5);
-                if(ChartOptions?.Justify == Justify.FlexStart && categoryPositions.Length > i) // Added ?.
-                     labelYPos = categoryPositions[i]; // categoryPositions[i] is already the center for FlexStart
-
-
-                var lineValue = new SvgText()
-                {
-                    X = HorizontalStartSpace - (ChartOptions?.YAxisLabelSpacing ?? 10), // Added ?. and fallback
-                    Y = labelYPos, // Center label text vertically within the category group
-                    Value = yLabelText,
-                };
-                HorizontalValues.Add(lineValue);
-            }
-        }
-
-        // Generates X-axis value grid lines and labels. (Visually vertical lines, data-wise value markers)
-        private void GenerateValueGridLines(int numValueLines, int lowestValueLine, double gridXUnits, double valueAxisSpacePerUnit)
-        {
-            VerticalLines.Clear(); // Stores value marker lines
-            VerticalValues.Clear(); // Stores X-axis value labels
-
-            for (var i = 0; i < numValueLines; i++)
-            {
-                var x = HorizontalStartSpace + (i * valueAxisSpacePerUnit);
+                var x = HorizontalStartSpace + (i * horizontalSpace);
                 var line = new SvgPath()
                 {
                     Index = i,
@@ -212,251 +130,63 @@ namespace MudBlazor.Charts
                 };
                 VerticalLines.Add(line);
 
-                var value = (lowestValueLine + i) * gridXUnits;
+                var startGridX = T.CreateSaturating(lowestHorizontalLine + i) * gridXUnits;
                 var lineValue = new SvgText()
                 {
                     X = x,
-                    Y = _boundHeight - VerticalEndSpace + (ChartOptions?.XAxisLabelSpacing ?? 15), // Added ?. and fallback
-                    Value = ToS(value, ChartOptions?.XAxisFormat),
+                    Y = _boundHeight - 10,
+                    Value = BuildXAxisValueString(startGridX)
                 };
                 VerticalValues.Add(lineValue);
             }
         }
 
-        // Generates the SVG paths for the bars.
-        private void GenerateBars(int lowestValueLine, double gridXUnits, double valueAxisSpacePerUnit, double categoryAxisSpace, int numCategoryLines)
+        /// <summary>
+        /// Overridden to handle the horizontal orientation. This method generates the horizontal grid lines for the Y-axis.
+        /// </summary>
+        protected override void GenerateVerticalGridLines(int numVerticalLines, double verticalSpace)
         {
-            _bars.Clear();
+            HorizontalLines.Clear();
+            HorizontalValues.Clear();
 
-            // Get positions for each category group along the Y-axis
-            var categoryGroupPositionsY = CalculateBarGroupPositions(categoryAxisSpace, numCategoryLines);
-
-            // Calculate the X-coordinate of the zero line (or the minimum value line)
-            var zeroLineX = HorizontalStartSpace - (lowestValueLine * valueAxisSpacePerUnit);
-            if (lowestValueLine > 0) // if all values are positive, lowestValueLine might be >0, zero line should be at HorizontalStartSpace
-                zeroLineX = HorizontalStartSpace;
-
-
-            for (var seriesIndex = 0; seriesIndex < Series.Count; seriesIndex++)
+            var spaces = Series.Count - 1;
+            var topShift = spaces switch
             {
-                var series = Series[seriesIndex];
-                var data = series.Data;
+                0 or 2 => _barWidth / 2,
+                1 => 0,
+                _ => _barWidth * ((spaces - 1) / 2.0)
+            };
 
-                for (var categoryIndex = 0; categoryIndex < data.Values.Length && categoryIndex < categoryGroupPositionsY.Length; categoryIndex++)
+            var barGroupPositions = CalculateBarGroupPositions(verticalSpace, numVerticalLines);
+
+            for (var i = 0; i < numVerticalLines; i++)
+            {
+                var y = barGroupPositions.Length == 0 ? 0 : barGroupPositions[i];
+                var line = new SvgPath()
                 {
-                    var dataValue = data[categoryIndex];
+                    Index = i,
+                    Data = $"M {ToS(HorizontalStartSpace)} {ToS(y)} L {ToS(_boundWidth - HorizontalEndSpace)} {ToS(y)}"
+                };
+                HorizontalLines.Add(line);
 
-                    // Y position for the center of the current bar group (category)
-                    var groupCenterY = categoryGroupPositionsY[categoryIndex];
-                    
-                    // Calculate the Y position for the current bar within its group
-                    // This considers multiple series in the same category.
-                    var barCenterY = groupCenterY - (_barGroupHeight / 2) + (seriesIndex * (_barHeight + _barGap)) + (_barHeight / 2);
-
-                    // Calculate the width of the bar based on its data value
-                    var barActualWidth = (dataValue / gridXUnits) * valueAxisSpacePerUnit;
-
-                    var barStartX = dataValue >= 0 ? zeroLineX : zeroLineX + barActualWidth; // barActualWidth is negative for negative values
-                    var barEndX = dataValue >= 0 ? zeroLineX + barActualWidth : zeroLineX;
-
-
-                    var bar = new SvgPath()
-                    {
-                        Index = seriesIndex,
-                        Data = $"M {ToS(barStartX)} {ToS(barCenterY)} L {ToS(barEndX)} {ToS(barCenterY)}",
-                        LabelXValue = dataValue.ToString(series.TooltipYValueFormat), // Value is on X-axis
-                        LabelYValue = ChartLabels.Length > categoryIndex ? ChartLabels[categoryIndex] : string.Empty, // Category is on Y-axis
-                        LabelX = barEndX, // Tooltip X at the end of the bar
-                        LabelY = barCenterY // Tooltip Y at the vertical center of the bar
-                    };
-                    _bars.Add(bar);
-                }
+                var yLabels = i < ChartLabels.Length ? ChartLabels[i] : "";
+                var lineValue = new SvgText()
+                {
+                    X = 10,
+                    Y = y + (_barGroupWidth / 2) - ((_barGap * spaces) / 2) - topShift,
+                    Value = yLabels
+                };
+                HorizontalValues.Add(lineValue);
             }
         }
 
-        // Calculates Y positions for each category group.
-        private double[] CalculateBarGroupPositions(double categoryAxisSpace, int categoriesCount)
+        private string BuildXAxisValueString(T value)
         {
-            var seriesCount = Series.Count; // Number of series (bars) per category group
+            var doubleValue = double.CreateSaturating(value);
 
-            if (categoriesCount == 0) return [];
-
-            var positions = new double[categoriesCount];
-            var totalEffectiveBarHeightPerGroup = (seriesCount * _barHeight) + (Math.Max(0, seriesCount - 1) * _barGap); // Total height taken by bars in one category
-            var currentChartOptions = ChartOptions; // Cache for safe access if needed, though OnInitialized should ensure non-null
-
-            switch (currentChartOptions?.Justify ?? MudBlazor.Justify.SpaceEvenly) // Added ?. and fallback
-            {
-                case Justify.FlexStart:
-                    var currentY = VerticalStartSpace + (currentChartOptions?.BarGroupGap ?? 10) + totalEffectiveBarHeightPerGroup / 2.0; // Added ?. and fallback
-                    for (var i = 0; i < categoriesCount; i++)
-                    {
-                        positions[i] = currentY;
-                        currentY += totalEffectiveBarHeightPerGroup + (currentChartOptions?.BarGroupGap ?? 10); // Added ?. and fallback
-                    }
-                    break;
-
-                case Justify.FlexEnd:
-                    var totalHeightNeeded = (categoriesCount * totalEffectiveBarHeightPerGroup) + (Math.Max(0, categoriesCount + 1) * (currentChartOptions?.BarGroupGap ?? 10)); // Added ?. and fallback
-                    currentY = _boundHeight - VerticalEndSpace - totalHeightNeeded + (currentChartOptions?.BarGroupGap ?? 10) + totalEffectiveBarHeightPerGroup / 2.0; // Added ?. and fallback
-                     for (var i = 0; i < categoriesCount; i++)
-                    {
-                        positions[i] = currentY;
-                        currentY += totalEffectiveBarHeightPerGroup + (currentChartOptions?.BarGroupGap ?? 10); // Added ?. and fallback
-                    }
-                    break;
-
-                case Justify.Center:
-                    totalHeightNeeded = (categoriesCount * totalEffectiveBarHeightPerGroup) + (Math.Max(0, categoriesCount -1) * (currentChartOptions?.BarGroupGap ?? 10)); // Added ?. and fallback
-                    currentY = VerticalStartSpace + (categoryAxisSpace - totalHeightNeeded) / 2.0 + totalEffectiveBarHeightPerGroup / 2.0;
-                    for (var i = 0; i < categoriesCount; i++)
-                    {
-                        positions[i] = currentY;
-                        currentY += totalEffectiveBarHeightPerGroup + (currentChartOptions?.BarGroupGap ?? 10); // Added ?. and fallback
-                    }
-                    break;
-
-                case Justify.SpaceBetween:
-                    if (categoriesCount <= 1)
-                    {
-                        if (categoriesCount == 1) positions[0] = VerticalStartSpace + categoryAxisSpace / 2.0;
-                        return positions;
-                    }
-                    var spaceBetween = (categoryAxisSpace - (categoriesCount * totalEffectiveBarHeightPerGroup)) / (categoriesCount - 1);
-                    currentY = VerticalStartSpace + totalEffectiveBarHeightPerGroup / 2.0;
-                    for (var i = 0; i < categoriesCount; i++)
-                    {
-                        positions[i] = currentY;
-                        currentY += totalEffectiveBarHeightPerGroup + spaceBetween;
-                    }
-                    break;
-
-                case Justify.SpaceAround:
-                    var spaceAround = (categoryAxisSpace - (categoriesCount * totalEffectiveBarHeightPerGroup)) / categoriesCount;
-                    currentY = VerticalStartSpace + spaceAround / 2.0 + totalEffectiveBarHeightPerGroup / 2.0;
-                    for (var i = 0; i < categoriesCount; i++)
-                    {
-                        positions[i] = currentY;
-                        currentY += totalEffectiveBarHeightPerGroup + spaceAround;
-                    }
-                    break;
-
-                case Justify.SpaceEvenly:
-                default: // Default to SpaceEvenly
-                    var spaceEvenly = (categoryAxisSpace - (categoriesCount * totalEffectiveBarHeightPerGroup)) / (categoriesCount + 1);
-                    currentY = VerticalStartSpace + spaceEvenly + totalEffectiveBarHeightPerGroup / 2.0;
-                    for (var i = 0; i < categoriesCount; i++)
-                    {
-                        positions[i] = currentY;
-                        currentY += totalEffectiveBarHeightPerGroup + spaceEvenly;
-                    }
-                    break;
-            }
-            return positions;
-        }
-
-
-        // This method is not directly used by CalculateBarGroupPositions anymore with the new Justify logic.
-        // It might be useful if a different spacing strategy is adopted later.
-        // For now, it's effectively replaced by ChartOptions.BarGroupGap.
-        private int CalculateSpaceHeight(double verticalSpace, int groupCount)
-        {
-            if (groupCount <= 1) return 0; // No space needed for 0 or 1 group
-
-            // This calculates space based on SeriesSpacingRatio, which might conflict with Justify logic.
-            // The Justify logic in CalculateBarGroupPositions now uses ChartOptions.BarGroupGap for explicit spacing.
-            var spaceCount = groupCount -1; // Number of gaps between groups
-            var totalBarGroupStructureHeight = _barGroupHeight * groupCount; // Total height of all bar groups themselves
-            var remainingHeight = verticalSpace - totalBarGroupStructureHeight; // Remaining space for gaps
-
-            // Ensure SeriesSpacingRatio is within a sensible range if used.
-            var effectiveRatio = ChartOptions?.SeriesSpacingRatio.EnsureRange(0.0, 1.0) ?? 1.0; // Added ?. and fallback
-            
-            // Distribute a portion of the remaining height according to the ratio.
-            // This interpretation of SeriesSpacingRatio might not be what's intended for group spacing.
-            // ChartOptions.BarGroupGap is likely more direct.
-            var spaceToDistribute = remainingHeight * effectiveRatio; 
-            var spaceBetweenGroups = spaceCount > 0 ? spaceToDistribute / spaceCount : 0;
-
-            return (int)Math.Max(0, spaceBetweenGroups);
-        }
-
-
-        private void ComputeBarDimensions(double categoryTickHeight)
-        {
-            var seriesCount = Series.Count; // How many bars per category group
-
-            var fixedHeight = ChartOptions?.FixedBarHeight;
-
-            if (fixedHeight.HasValue && fixedHeight.Value > 0)
-            {
-                _barHeight = fixedHeight.Value; // Thickness of the bar
-                // Gap is a ratio of the bar height, or a fixed value from options
-                _barGap = ChartOptions?.FixedBarGap ?? _barHeight * (ChartOptions?.BarSpacingRatio ?? 0.20); // Added ?. and fallback
-                _barGroupHeight = (seriesCount * _barHeight) + (Math.Max(0, seriesCount - 1) * _barGap);
-                return;
-            }
-
-            // groupHeightRatio determines how much of the available category tick height is used by the bar group
-            var groupHeightRatio = ChartOptions?.BarHeightRatio.EnsureRange(0.01, 1.0) ?? 0.60; // Added ?. and fallback
-            var actualGroupHeight = categoryTickHeight * groupHeightRatio; // The total height allocated to the bar group for this category
-
-            if (seriesCount == 0)
-            {
-                _barHeight = 0;
-                _barGap = 0;
-                _barGroupHeight = 0;
-                return;
-            }
-            
-            // From the actualGroupHeight, allocate space to bars and gaps based on BarSpacingRatio
-            // Total parts = seriesCount (for bars) + (seriesCount - 1) * BarSpacingRatio (for gaps)
-            var barSpacingRatio = ChartOptions?.BarSpacingRatio ?? 0.20; // Added ?. and fallback
-            var totalParts = seriesCount + (Math.Max(0, seriesCount - 1) * barSpacingRatio);
-            
-            _barHeight = actualGroupHeight / totalParts;
-            _barGap = _barHeight * barSpacingRatio;
-
-            // Ensure minimum bar height
-            if (_barHeight < MinBarHeight)
-            {
-                // If calculated bar height is too small, try to adjust.
-                // This might involve reducing gaps or scaling. For now, just cap it.
-                // A more sophisticated approach might be needed if this is common.
-                 var oldBarHeight = _barHeight;
-                _barHeight = MinBarHeight;
-                 // If we cap bar height, recalculate gap based on original ratio, but don't exceed group height.
-                 _barGap = _barHeight * barSpacingRatio;
-                 if ( (seriesCount * _barHeight) + (Math.Max(0, seriesCount - 1) * _barGap) > actualGroupHeight)
-                 {
-                    // If it exceeds, then we must shrink gaps, or bars, or both.
-                    // Simplest: shrink gaps, potentially to 0.
-                    _barGap = seriesCount > 1 ? (actualGroupHeight - seriesCount * _barHeight) / (seriesCount -1) : 0;
-                    if(_barGap < 0) _barGap = 0; // Gap cannot be negative
-                    //_barHeight = (actualGroupHeight - Math.Max(0, seriesCount -1) * _barGap) / seriesCount; // re-calc bar height with new gap
-                 }
-
-            }
-            
-            _barGroupHeight = (seriesCount * _barHeight) + (Math.Max(0, seriesCount - 1) * _barGap);
-            // Sanity check: _barGroupHeight should not exceed actualGroupHeight significantly due to MinBarHeight enforcement.
-            // If it does, it means MinBarHeight * seriesCount + minimal gaps > actualGroupHeight.
-            // In such a case, bars will overflow or overlap, which might be unavoidable if categoryTickHeight is too small.
-        }
-        private void OnBarMouseOver(MouseEventArgs _, SvgPath bar)
-        {
-            _hoveredBar = bar;
-
-            if (IsOverlayChart && ChartReference is IMudStateHasChanged chart)
-                chart.StateHasChanged();
-        }
-
-        private void OnBarMouseOut()
-        {
-            _hoveredBar = null;
-
-            if (IsOverlayChart && ChartReference is IMudStateHasChanged chart)
-                chart.StateHasChanged();
+            return ChartOptions?.XAxisToStringFunc is null
+                ? ToS(doubleValue, ChartOptions?.XAxisFormat)
+                : ChartOptions.XAxisToStringFunc(doubleValue);
         }
     }
 }

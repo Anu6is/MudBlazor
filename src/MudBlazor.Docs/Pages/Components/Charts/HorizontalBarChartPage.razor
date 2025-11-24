@@ -1,27 +1,17 @@
-﻿@page "/components/horizontalbarchart"
+@page "/components/horizontalbarchart"
 @page "/components/chart-types/horizontalbarchart"
-@page "/components/horizontalbar"
 
 <DocsPage>
-    <DocsPageHeader Title="Horizontal Bar Chart" Component="@nameof(MudBlazor.Charts.HorizontalBar)" />
+    <DocsPageHeader Title="Horizontal Bar Chart" Component="@nameof(MudBlazor.Charts.HorizontalBar<T>)" />
 
     <DocsPageContent>
         <DocsPageSection>
             <SectionHeader>
-                <Description></Description>
+                <Description>A horizontal bar chart is a chart with rectangular bars with lengths proportional to the values that they represent. It is a variation of the bar chart, but with the bars oriented horizontally.</Description>
             </SectionHeader>
-            <SectionContent ShowCode="false" Code="@nameof(HorizontalBarChartExample1)">
-                <HorizontalBarChartExample1 />
+            <SectionContent ShowCode="false" Code="@nameof(HorizontalBarExample1)">
+                <HorizontalBarExample1 />
             </SectionContent>
         </DocsPageSection>
-
-        <DocsPageSection>
-            <SectionHeader Title="Chart Customization" />
-            <SectionContent Code="@nameof(HorizontalBarChartExample2)">
-                <HorizontalBarChartExample2 />
-            </SectionContent>
-        </DocsPageSection>
-
     </DocsPageContent>
 </DocsPage>
-

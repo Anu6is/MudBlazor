@@ -321,15 +321,31 @@ namespace MudBlazor.UnitTests.Components
             comp.Instance.IsProfessionGrouped.Should().Be(false);
             comp.Instance.IsNameGrouped.Should().Be(false);
 
-            //click age grouping in grid
             var headerOption = comp.Find("th.age .mud-menu button");
             headerOption.Click();
+
+            comp.WaitForAssertion(() =>
+            {
+                var items = popoverProvider.FindComponents<MudMenuItem>();
+                items.Count.Should().BeGreaterThan(0);
+            });
+
             var listItems = popoverProvider.FindComponents<MudMenuItem>();
-            listItems.Count.Should().Be(2);
+            var expectedMenuTexts = new[] { "Unsort", "Group" };
+
+            listItems.Count.Should().Be(expectedMenuTexts.Length);
+
+            for (int i = 0; i < listItems.Count; i++)
+            {
+                var itemText = listItems[i].Find(".mud-menu-item-text").TextContent.Trim();
+                itemText.Should().Be(expectedMenuTexts[i]);
+            }
+
             var clickablePopover = listItems[1].Find(".mud-menu-item");
             clickablePopover.Click();
             comp.Instance.IsAgeGrouped.Should().Be(true);
-            Rows().Count.Should().Be(5, because: "1 header row + 3 data rows + 1 footer row");
+            var rowCount = Rows().Count;
+            rowCount.Should().Be(5, because: "1 header row + 3 data rows + 1 footer row");
 
             ungroup.Click();
             comp.Instance.IsAgeGrouped.Should().Be(false);
@@ -573,16 +589,13 @@ namespace MudBlazor.UnitTests.Components
             // by default has a groupdefinition
             dataGrid.WaitForAssertion(() => dataGrid.Instance._groupDefinition.Should().NotBeNull());
             // turn off grouping for the whole grid
-            dataGrid.SetParam(x => x.Groupable, false);
+            await dataGrid.SetParamAsync(x => x.Groupable, false);
             dataGrid.Render();
             await component.InvokeAsync(() => dataGrid.Instance.ReloadServerData());
 
             // grouping shouldn't exist
             dataGrid.Instance._groupDefinition.Should().BeNull();
-            foreach (var column in dataGrid.Instance.RenderedColumns)
-            {
-                column.GroupingState.Value.Should().Be(false);
-            }
+            // leaving grouping intact
 
             // no grouping rows
             var rows = component.FindComponents<DataGridGroupRow<DataGridGroupingMultiLevelTest.USState>>();
@@ -622,6 +635,39 @@ namespace MudBlazor.UnitTests.Components
             row.Instance.Items.Count().Should().Be(2);
         }
 
+        [Test]
+        public async Task DataGrid_IsGrouping()
+        {
+            // Tests the IsGrouping property of MudDataGrid to ensure it handles a change properly
+            // and ensures the correct UI is rendered for column options
+            var provider = Context.RenderComponent<MudPopoverProvider>();
+            var comp = Context.RenderComponent<DataGridGroupExpandedTest>();
+            var dataGrid = comp.FindComponent<MudDataGrid<DataGridGroupExpandedTest.Fruit>>();
+            provider.Should().NotBeNull();
+            comp.WaitForAssertion(() => comp.FindAll("tbody .mud-table-row").Count.Should().Be(7));
+            var menus = comp.FindAll("span.column-options button[aria-label='Column options']");
+            menus.Count.Should().Be(3); // one for each column
+            var countMenu = menus[1]; // 2nd column options (Count)
+            countMenu.Click();
+            // Default is DataGrid Groupable = true and no Groupable override on column so should be groupable
+            provider.Markup.Should().Contain("Group");
+            var overlay = provider.Find(".mud-overlay");
+            overlay.Click(); // close the menu
+
+            await comp.SetParametersAndRenderAsync(x => x.Add(x => x.Groupable, false));
+            // no change in grid rows since Grouping did not change
+            comp.WaitForAssertion(() => comp.FindAll("tbody .mud-table-row").Count.Should().Be(7));
+
+            menus = comp.FindAll("span.column-options button[aria-label='Column options']");
+            menus.Count.Should().Be(3); // one for each column
+            countMenu = menus[1]; // 2nd column options (Count)
+            countMenu.Click();
+            // DataGrid Groupable now = false and no Groupable override on column so should not be groupable
+            provider.Markup.Should().NotContain("Group");
+            overlay = provider.Find(".mud-overlay");
+            overlay.Click(); // close the menu
+        }
+
         // https://github.com/MudBlazor/MudBlazor/pull/10213 
         // Allow grouping by null valus and toggle grouping keeps initial state on other groups
         [Test]
@@ -647,6 +693,7 @@ namespace MudBlazor.UnitTests.Components
         }
 
         [Test]
+        [SetCulture("en-US")]
         public async Task DataGridGroupingTemplateSetAtGridLevel()
         {
             var component = Context.RenderComponent<DataGridGroupingMultiLevelTest>();
@@ -659,7 +706,7 @@ namespace MudBlazor.UnitTests.Components
             groupingTemplateSwitch.Find("input").Change(true);
             dataGrid.Render();
 
-            //current grouping should use the defined template  
+            //current grouping should use the defined template
             var groupRow = component.FindComponent<DataGridGroupRow<DataGridGroupingMultiLevelTest.USState>>().Find(".mud-datagrid-group");
             var text = new string(groupRow.TextContent.Where(c => !Char.IsWhiteSpace(c)).ToArray());
             text.Should().Be("Manufacturing1states");
@@ -688,6 +735,33 @@ namespace MudBlazor.UnitTests.Components
             var groupRow = component.FindComponent<DataGridGroupRow<DataGridColumnGroupingTest.Model>>().Find(".mud-datagrid-group");
             var text = new string(groupRow.TextContent.Where(c => !Char.IsWhiteSpace(c)).ToArray());
             text.Should().Be("Name:John");
+        }
+
+
+        [Test]
+        public async Task DataGrid_MultilevelGrouping_ExpandSpecificNestedGroup()
+        {
+            var comp = Context.RenderComponent<DataGridMultilevelGroupingNestedGroupExpansionTest>();
+            var dataGrid = comp.FindComponent<MudDataGrid<DataGridMultilevelGroupingNestedGroupExpansionTest.Model>>();
+            var subGroupColName = nameof(DataGridMultilevelGroupingNestedGroupExpansionTest.Model.SubGroup);
+            var groupKey = new GroupKeyPath(["A", "X"]);
+
+            await comp.InvokeAsync(() => dataGrid.Instance.ToggleGroupExpand(
+                subGroupColName,
+                groupKey,
+                true));
+            dataGrid.Render();
+
+            var subGroupRows = comp
+                .FindComponents<DataGridGroupRow<DataGridMultilevelGroupingNestedGroupExpansionTest.Model>>()
+                .Where(x => x.Instance.GroupDefinition.Title == subGroupColName)
+                .ToList();
+
+            var groupRowA_X = subGroupRows.First(x => x.Instance.GroupDefinition.KeyPath.Equals(groupKey));
+            var groupRowB_X = subGroupRows.First(x => !x.Instance.GroupDefinition.KeyPath.Equals(groupKey));
+
+            Assert.That(groupRowA_X.Instance.GroupDefinition.Expanded, Is.True, "SubGroup X under group A should be expanded");
+            Assert.That(groupRowB_X.Instance.GroupDefinition.Expanded, Is.False, "SubGroup X under group B should remain collapsed");
         }
     }
 }

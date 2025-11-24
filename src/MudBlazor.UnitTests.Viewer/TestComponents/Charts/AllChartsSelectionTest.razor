@@ -9,7 +9,7 @@
                 <MudSelectItem Value="chartType">@chartType</MudSelectItem>
             }
         </MudSelect>
-        @if (_chartType == ChartType.Bar || _chartType == ChartType.StackedBar || _chartType == ChartType.HorizontalBar)
+        @if (_chartType == ChartType.Bar || _chartType == ChartType.StackedBar)
         {
             <MudSelect T="Justify" Label="Justify Type" @bind-Value="_selectedJustify" Dense FitContent Variant="Variant.Outlined" Margin="Margin.Dense">
                 @foreach (Justify justify in Enum.GetValues(typeof(Justify)))
@@ -27,7 +27,7 @@
                 }
             </MudSelect>
         }
-        else if (_chartType == ChartType.Pie || _chartType == ChartType.Donut || _chartType == ChartType.Rose || _chartType == ChartType.Radar)
+        else if (_chartType == ChartType.Pie || _chartType == ChartType.Donut || _chartType == ChartType.Rose || _chartType == ChartType.Radar || _chartType == ChartType.Sankey)
         {
             <MudSelect T="AggregationOption" Label="Group By" @bind-Value="_selectedAggregationOption" Dense FitContent Variant="Variant.Outlined" Margin="Margin.Dense">
                 @foreach (AggregationOption groupBy in Enum.GetValues(typeof(AggregationOption)))
@@ -61,18 +61,18 @@
     <MudText Typo="Typo.h6">Selected portion of the chart: @_index</MudText>
 </MudStack>
 <MudStack Class="my-2" Row>
-    @if (_chartType == ChartType.Bar || _chartType == ChartType.StackedBar || _chartType == ChartType.HorizontalBar)
+    @if (_chartType == ChartType.Bar || _chartType == ChartType.StackedBar)
     {
         <MudSlider @bind-Value="_spacingRatio" Min="0" Max="1" Step="0.02">Spacing: @_spacingRatio.ToString("F2")</MudSlider>
         <MudSlider @bind-Value="_barWidthRatio" Min="0" Max="1" Step="0.02">Width: @_barWidthRatio.ToString("F2")</MudSlider>
     }
-    @if (_chartType == ChartType.Bar || _chartType == ChartType.HorizontalBar)
+    @if (_chartType == ChartType.Bar)
     {
         <MudSlider @bind-Value="_innerGapRatio" Min="0" Max="1" Step="0.02">Gap: @_innerGapRatio.ToString("F2")</MudSlider>
     }
 </MudStack>
 
-@code {
+    @code {
     private int _index = -1;
     private bool _canHideSeries;
     private bool _matchParentSize;
@@ -85,18 +85,17 @@
     private Justify _selectedJustify = Justify.SpaceEvenly;
     private LineDisplayType _selectedDisplayType = LineDisplayType.Line;
     private AggregationOption _selectedAggregationOption = AggregationOption.GroupByLabel;
-    private List<ChartSeries> _series = DataSet.Take(1).ToList();
-    private List<string> strings = new() { "United Kingdom", "United States", "Greenland", "Germany", "Norway", "Italy", "Spain", "Sweden" };
-    private static List<ChartSeries> DataSet =>
+    private List<ChartSeries<double>> _series = DataSet.Take(1).ToList();
+    private static List<ChartSeries<double>> DataSet =>
     [
-        new() { Name = "United Kingdom", Data = [60, 54, 23, 42, 67, 31, 45, 72, 38, 51, 63, 29] },
-        new() { Name = "United States",  Data = [40, 12, 32, 58, 43, 65, 27, 49, 38, 74, 51, 68] },
-        new() { Name = "Greenland",      Data = [47, 30, 43, 25, 59, 63, 48, 36, 52, 69, 41, 55] },
-        new() { Name = "Germany",        Data = [19, 51, 54, 37, 62, 45, 58, 31, 74, 52, 67, 43] },
-        new() { Name = "Norway",         Data = [14, 27, 65, 43, 21, 58, 39, 76, 42, 55, 38, 61] },
-        new() { Name = "Italy",          Data = [20, 34, 76, 45, 57, 29, 63, 48, 71, 36, 59, 42] },
-        new() { Name = "Spain",          Data = [10, 48, 87, 35, 62, 29, 54, 43, 76, 31, 58, 67] },
-        new() { Name = "Sweden",         Data = [08, 14, 98, 45, 32, 67, 29, 53, 41, 72, 38, 61] }
+        new() { Name = "United Kingdom", Data = new([60, 54, 23, 42, 67, 31, 45, 72, 38, 51, 63, 29]) },
+        new() { Name = "United States",  Data = new([40, 12, 32, 58, 43, 65, 27, 49, 38, 74, 51, 68]) },
+        new() { Name = "Greenland",      Data = new([47, 30, 43, 25, 59, 63, 48, 36, 52, 69, 41, 55]) },
+        new() { Name = "Germany",        Data = new([19, 51, 54, 37, 62, 45, 58, 31, 74, 52, 67, 43]) },
+        new() { Name = "Norway",         Data = new([14, 27, 65, 43, 21, 58, 39, 76, 42, 55, 38, 61]) },
+        new() { Name = "Italy",          Data = new([20, 34, 76, 45, 57, 29, 63, 48, 71, 36, 59, 42]) },
+        new() { Name = "Spain",          Data = new([10, 48, 87, 35, 62, 29, 54, 43, 76, 31, 58, 67]) },
+        new() { Name = "Sweden",         Data = new([08, 14, 98, 45, 32, 67, 29, 53, 41, 72, 38, 61]) }
     ];
 
     private string[] _labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -109,14 +108,6 @@
             SeriesSpacingRatio = _spacingRatio,
             BarWidthRatio = _barWidthRatio,
             BarSpacingRatio = _innerGapRatio
-        },
-        ChartType.HorizontalBar => new HorizontalBarChartOptions
-        {
-            Justify = _selectedJustify,
-            SeriesSpacingRatio = _spacingRatio,
-            BarHeightRatio = _barWidthRatio,
-            BarSpacingRatio = _innerGapRatio,
-            BarGroupGap = _spacingRatio * 100,
         },
         ChartType.StackedBar => new StackedBarChartOptions
         {
@@ -154,7 +145,7 @@
             TimeLabelFormat = "dd-MMM",
             XAxisLabelRotation = 90,
             ShowDataMarkers = false,
-            SeriesDisplayOverrides = new Dictionary<ChartSeries, SeriesDisplayOverride>()
+            SeriesDisplayOverrides = new Dictionary<IChartSeries, SeriesDisplayOverride>()
             {
                 [DataSet[1]] = new SeriesDisplayOverride
                 {
@@ -169,27 +160,33 @@
             ShowToolTips = true,
             ShowLabels = false,
         },
+        ChartType.Sankey => new SankeyChartOptions
+        {
+            AggregationOption = _selectedAggregationOption,
+            MinVerticalSpacing = 10,
+            EdgeOpacity = 0.7,
+        },
         _ => throw new NotImplementedException()
     };
 
     private static readonly DateTime[] _dateLabels = Enumerable.Range(0, 12).Select(i => new DateTime(DateTime.Now.Year, 1, 1).AddMonths(i)).ToArray();
-    private List<ChartSeries> GetChartSeries()
+    private List<ChartSeries<double>> GetChartSeries()
     {
         if (_chartType == ChartType.Timeseries)
         {
-            return _series.Select(s => new ChartSeries()
-                {
-                    Name = s.Name,
-                    Data = s.Data.Values.Take(_dataPointCount).Select((y, i) => (_dateLabels[i], y)).ToArray()
-                }).ToList();
+            return _series.Select(s => new ChartSeries<double>()
+            {
+                Name = s.Name,
+                Data = s.Data.Values.Take(_dataPointCount).Select((y, i) => (_dateLabels[i], y)).ToArray()
+            }).ToList();
         }
         else
         {
-            return _series.Select(s => new ChartSeries
-                {
-                    Name = s.Name,
-                    Data = s.Data.Values.Take(_dataPointCount).ToArray()
-                }).ToList();
+            return _series.Select(s => new ChartSeries<double>
+            {
+                Name = s.Name,
+                Data = s.Data.Values.Take(_dataPointCount).ToArray()
+            }).ToList();
         }
     }
 

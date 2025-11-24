@@ -1,5 +1,4 @@
-comment:
-  require_changes: true
+comment: false
 coverage:
   status:
     project:
@@ -10,4 +9,3 @@ coverage:
       default:
         target: 100%
         threshold: 15%
-  

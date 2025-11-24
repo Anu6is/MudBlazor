@@ -1,4 +1,4 @@
-﻿// Copyright (c) MudBlazor 2021
+// Copyright (c) MudBlazor 2021
 // MudBlazor licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -27,6 +27,10 @@ public enum ChartType
     /// </summary>
     Bar,
     /// <summary>
+    /// Data is displayed as horizontal rectangles.
+    /// </summary>
+    HorizontalBar,
+    /// <summary>
     /// Data is displayed as connected rectangles.
     /// </summary>
     StackedBar,
@@ -47,7 +51,7 @@ public enum ChartType
     /// </summary>
     Radar,
     /// <summary>
-    /// Data is displayed as horizontal rectangles.
+    /// Data is displayed as nodes connected by edges.
     /// </summary>
-    HorizontalBar,
+    Sankey,
 }

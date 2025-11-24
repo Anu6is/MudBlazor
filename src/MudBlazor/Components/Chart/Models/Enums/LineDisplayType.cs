@@ -1,15 +1,17 @@
 ﻿#nullable enable
 namespace MudBlazor;
 
-[Obsolete("Use LineDisplayType instead. This will be removed in a future major version.", false)]
-public enum TimeSeriesDisplayType
-{
-    Line,
-    Area,
-}
-
+/// <summary>
+/// Specifies the type of graphical representation for a line or area.
+/// </summary>
 public enum LineDisplayType
 {
+    /// <summary>
+    /// Display as a plain line.
+    /// </summary>
     Line,
+    /// <summary>
+    /// Display as a line with the area below it filled.
+    /// </summary>
     Area,
 }

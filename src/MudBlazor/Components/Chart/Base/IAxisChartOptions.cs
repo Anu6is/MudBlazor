@@ -5,6 +5,9 @@
 #nullable enable
 namespace MudBlazor.Charts;
 
+/// <summary>
+/// Represents the options for a chart that has axes.
+/// </summary>
 public interface IAxisChartOptions : IChartOptions
 {
     /// <summary>
@@ -21,6 +24,13 @@ public interface IAxisChartOptions : IChartOptions
     /// The format applied to numbers on the vertical axis.
     /// </summary>
     public string? YAxisFormat { get; set; }
+
+    /// <summary>
+    /// Custom formatting function for vertical axis values.
+    /// If set, this function will be used to convert Y-axis values to strings for display purposes.
+    /// If not provided, <see cref="YAxisFormat"/> will be used instead.
+    /// </summary>
+    public Func<double, string>? YAxisToStringFunc { get; set; }
 
     /// <summary>
     /// Shows vertical axis lines.

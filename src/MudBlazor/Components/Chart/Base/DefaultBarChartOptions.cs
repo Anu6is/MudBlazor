@@ -4,10 +4,13 @@
 
 namespace MudBlazor.Charts;
 
+/// <summary>
+/// Represents the default options for a bar chart.
+/// </summary>
 public abstract class DefaultBarChartOptions : DefaultAxisChartOptions
 {
     private double _seriesSpacingRatio = 1;
-    private double _barWidthRatio = 0.20;
+    private double _barWidthRatio = 0.40;
 
     /// <summary>
     /// Specifies how bar groups are horizontally justified within the chart area.
@@ -22,7 +25,7 @@ public abstract class DefaultBarChartOptions : DefaultAxisChartOptions
     /// Defaults to <c>1</c> (100%). 
     /// This setting is only applicable when using <see cref="Justify.FlexStart"/>, <see cref="Justify.Center"/>, or <see cref="Justify.FlexEnd"/>.
     /// </remarks>
-    public double SeriesSpacingRatio
+    public virtual double SeriesSpacingRatio
     {
         get => _seriesSpacingRatio;
         set => _seriesSpacingRatio = Math.Clamp(value, 0.1, 1.0);
@@ -33,7 +36,7 @@ public abstract class DefaultBarChartOptions : DefaultAxisChartOptions
     /// Value should be between 0.01 and 1.0.
     /// </summary>
     /// <remarks>
-    /// Defaults to <c>0.20</c> (20%).
+    /// Defaults to <c>0.40</c> (40%).
     /// </remarks>
     public double BarWidthRatio
     {
@@ -49,5 +52,11 @@ public abstract class DefaultBarChartOptions : DefaultAxisChartOptions
     /// </remarks>
     public int? FixedBarWidth { get; set; }
 
+    /// <summary>
+    /// The format applied to the data marker tooltip title.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to "{{Y_VALUE}}"
+    /// </remarks>
     public override string TooltipTitleFormat { get; set; } = "{{Y_VALUE}}";
 }

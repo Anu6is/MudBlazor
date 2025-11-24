@@ -1,8 +1,12 @@
-﻿@using MudBlazor.Charts
+@using MudBlazor.Charts
+@using System.Numerics
 
 @namespace MudBlazor
 
-@inherits MudChartBase<IChartOptions>
+@inherits MudChartBase<T, IChartOptions>
+
+@typeparam T
+@attribute [CascadingTypeParameter(nameof(T))]
 
 <CascadingValue Value="@this" IsFixed="true">
     <div @attributes="UserAttributes" class="@Classname" style="@Style; width: @Width; height: @Height;" dir="ltr">
@@ -17,7 +21,7 @@
 </CascadingValue>
 
 @code {
-    private RenderFragment ChartContent => (ChartType, ChartOptions) switch
+    private RenderFragment ChartContent => (_chartType, _chartOptions) switch
     {
         (ChartType.Donut, DonutChartOptions donutOptions) => @<Donut ChartSeries="@ChartSeries"
                                                                      ChartLabels="@ChartLabels"
@@ -71,6 +75,19 @@
                                                              @ref="ChartReference"
                                                              @bind-SelectedIndex:get="this.SelectedIndexState.Value" 
                                                              @bind-SelectedIndex:set="this.SelectedIndexState.SetValueAsync" />,
+        (ChartType.HorizontalBar, HorizontalBarChartOptions barOptions) => @<HorizontalBar ChartSeries="@ChartSeries"
+                                                                                 ChartLabels="@ChartLabels"
+                                                                                 ChartOptions="barOptions"
+                                                                                 CanHideSeries="@CanHideSeries"
+                                                                                 LegendPosition="@LegendPosition"
+                                                                                 TooltipTemplate="@TooltipTemplate"
+                                                                                 TooltipPositionFunc="@TooltipPositionFunc"
+                                                                                 MatchBoundsToSize="@MatchBoundsToSize"
+                                                                                 CustomGraphics="@CustomGraphics"
+                                                                                 Width="@Width" Height="@Height"
+                                                                                 @ref="ChartReference"
+                                                                                 @bind-SelectedIndex:get="this.SelectedIndexState.Value"
+                                                                                 @bind-SelectedIndex:set="this.SelectedIndexState.SetValueAsync" />,
         (ChartType.StackedBar, StackedBarChartOptions stackedBarOptions) => @<StackedBar ChartSeries="@ChartSeries"
                                                                                          ChartLabels="@ChartLabels"
                                                                                          ChartOptions="stackedBarOptions"
@@ -136,19 +153,19 @@
                                                                      @ref="ChartReference"
                                                                      @bind-SelectedIndex:get="this.SelectedIndexState.Value"
                                                                      @bind-SelectedIndex:set="this.SelectedIndexState.SetValueAsync" />,
-        (ChartType.HorizontalBar, HorizontalBarChartOptions hBarOptions) => @<HorizontalBar ChartSeries="@ChartSeries"
-                                                                                            ChartLabels="@ChartLabels"
-                                                                                            ChartOptions="hBarOptions"
-                                                                                            CanHideSeries="@CanHideSeries"
-                                                                                            LegendPosition="@LegendPosition"
-                                                                                            TooltipTemplate="@TooltipTemplate"
-                                                                                            TooltipPositionFunc="@TooltipPositionFunc"
-                                                                                            MatchBoundsToSize="@MatchBoundsToSize"
-                                                                                            CustomGraphics="@CustomGraphics"
-                                                                                            Width="@Width" Height="@Height"
-                                                                                            @ref="ChartReference"
-                                                                                            @bind-SelectedIndex:get="this.SelectedIndexState.Value"
-                                                                                            @bind-SelectedIndex:set="this.SelectedIndexState.SetValueAsync" />,
+        (ChartType.Sankey, SankeyChartOptions sankeyOptions) => @<Sankey ChartSeries="@ChartSeries"
+                                                                       ChartLabels="@ChartLabels"
+                                                                       ChartOptions="sankeyOptions"
+                                                                       CanHideSeries="@CanHideSeries"
+                                                                       LegendPosition="@LegendPosition"
+                                                                       TooltipTemplate="@TooltipTemplate"
+                                                                       TooltipPositionFunc="@TooltipPositionFunc"
+                                                                       MatchBoundsToSize="@MatchBoundsToSize"
+                                                                       CustomGraphics="@CustomGraphics"
+                                                                       Width="@Width" Height="@Height"
+                                                                       @ref="ChartReference"
+                                                                       @bind-SelectedIndex:get="this.SelectedIndexState.Value"
+                                                                       @bind-SelectedIndex:set="this.SelectedIndexState.SetValueAsync" />,
         _ => throw new NotImplementedException($"{ChartType} chart is not supported")
     };
 }

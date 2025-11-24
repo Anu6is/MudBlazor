@@ -3,24 +3,36 @@
 // See the LICENSE file in the project root for more information.
 
 #nullable enable
+using System.Numerics;
+using MudBlazor.Charts;
+
 namespace MudBlazor;
 
-public class ChartPoint
+/// <summary>
+/// Represents the data point in a chart series, with optional X value and required Y value.
+/// </summary>
+/// <typeparam name="T"></typeparam>
+public class ChartPoint<T> where T : struct, INumber<T>, IMinMaxValue<T>, IFormattable
 {
+    /// <summary>
+    /// The X value of the data point.
+    /// </summary>
     public object? X { get; set; } = null;
-    public double Y { get; set; }
+    /// <summary>
+    /// The Y value of the data point.
+    /// </summary>
+    public T Y { get; set; }
 
-    public ChartPoint() { }
+    public ChartPoint(T y) => Y = y;
 
-    public ChartPoint(double y) => Y = y;
-
-    public ChartPoint(object x, double y)
+    public ChartPoint(object? x, T y)
     {
         X = x;
         Y = y;
     }
 
-    public static implicit operator ChartPoint((DateTime x, double y) value) => new(value.x, value.y);
-    public static implicit operator ChartPoint((double x, double y) value) => new(value.x, value.y);
-    public static implicit operator ChartPoint(double y) => new(y);
+    public static implicit operator ChartPoint<T>((SankeyLink x, T y) value) => new(value.x, value.y);
+    public static implicit operator ChartPoint<T>((DateTime x, T y) value) => new(value.x, value.y);
+    public static implicit operator ChartPoint<T>((T x, T y) value) => new(value.x, value.y);
+    public static implicit operator ChartPoint<T>(T y) => new(y);
 }

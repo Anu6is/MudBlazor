@@ -1,4 +1,6 @@
 ﻿#nullable enable
+using System.Diagnostics.CodeAnalysis;
+
 namespace MudBlazor
 {
     /// <summary>
@@ -36,7 +38,8 @@ namespace MudBlazor
         /// </summary>
         public double LabelY { get; set; }
 
-        public bool Equals(SvgPath? other)
+        ///<inheritdoc />
+        public virtual bool Equals(SvgPath? other)
         {
             if (other is null)
                 return false;
@@ -52,11 +55,13 @@ namespace MudBlazor
                    LabelY.Equals(other.LabelY);
         }
 
+        ///<inheritdoc />
         public override bool Equals(object? obj)
         {
             return Equals(obj as SvgPath);
         }
 
+        ///<inheritdoc />
         public override int GetHashCode()
         {
             return HashCode.Combine(Index, Data, LabelXValue, LabelYValue, LabelX, LabelY);

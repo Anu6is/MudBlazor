@@ -2,6 +2,7 @@
 // MudBlazor licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
 using AngleSharp.Dom;
 using Bunit;
 using FluentAssertions;
@@ -81,20 +82,30 @@ namespace MudBlazor.UnitTests.Components
         }
 
         [Test]
-        public void LineChartYAxisFormat()
+        [TestCase(ChartType.Bar)]
+        [TestCase(ChartType.Line)]
+        [TestCase(ChartType.StackedBar)]
+        public async Task ChartYAxisFormat(ChartType chartType)
         {
-            var options = new LineChartOptions();
-            var series = new List<ChartSeries>()
+            DefaultAxisChartOptions options = chartType switch
             {
-                new() { Name = "Series 1", Data = [90, 79, 72, 69, 62, 62, 55, 65, 70] },
-                new() { Name = "Series 2", Data = [10, 41, 35, 51, 49, 62, 69, 91, 148] },
+                ChartType.Bar => new BarChartOptions(),
+                ChartType.Line => new LineChartOptions(),
+                ChartType.StackedBar => new StackedBarChartOptions(),
+                _ => throw new NotImplementedException()
+            };
+
+            var series = new List<ChartSeries<double>>()
+            {
+                new() { Name = "Series 1", Data = new([90, 79, 72, 69, 62, 62, 55, 65, 70]) },
+                new() { Name = "Series 2", Data = new([10, 41, 35, 51, 49, 62, 69, 91, 148]) },
             };
             var xAxis = new string[] { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep" };
             var width = "100%";
             var height = "350px";
 
-            var comp = Context.RenderComponent<MudChart>(parameters => parameters
-                .Add(p => p.ChartType, ChartType.Line)
+            var comp = Context.RenderComponent<MudChart<double>>(parameters => parameters
+                .Add(p => p.ChartType, chartType)
                 .Add(p => p.ChartSeries, series)
                 .Add(p => p.ChartLabels, xAxis)
                 .Add(p => p.ChartOptions, options)
@@ -109,8 +120,8 @@ namespace MudBlazor.UnitTests.Components
 
             // now, we will apply currency format
             options.YAxisFormat = "c2";
-            comp.SetParametersAndRender(parameters => parameters
-                .Add(p => p.ChartType, ChartType.Line)
+            await comp.SetParametersAndRenderAsync(parameters => parameters
+                .Add(p => p.ChartType, chartType)
                 .Add(p => p.ChartSeries, series)
                 .Add(p => p.ChartLabels, xAxis)
                 .Add(p => p.ChartOptions, options)
@@ -123,8 +134,8 @@ namespace MudBlazor.UnitTests.Components
 
             //number format
             options.YAxisFormat = "n6";
-            comp.SetParametersAndRender(parameters => parameters
-                .Add(p => p.ChartType, ChartType.Line)
+            await comp.SetParametersAndRenderAsync(parameters => parameters
+                .Add(p => p.ChartType, chartType)
                 .Add(p => p.ChartSeries, series)
                 .Add(p => p.ChartLabels, xAxis)
                 .Add(p => p.ChartOptions, options)
@@ -183,7 +194,7 @@ namespace MudBlazor.UnitTests.Components
         [TestCase(ChartType.Pie, "henon")]
         public void ChartCustomGraphics(ChartType chartType, string text)
         {
-            var comp = Context.RenderComponent<MudChart>(parameters => parameters
+            var comp = Context.RenderComponent<MudChart<double>>(parameters => parameters
               .Add(p => p.ChartType, chartType)
               .Add(p => p.Width, "100%")
               .Add(p => p.Height, "300px")
@@ -197,14 +208,14 @@ namespace MudBlazor.UnitTests.Components
         [Test]
         public void HeatMap_ShouldInitializeCorrectly()
         {
-            var series = new List<ChartSeries>
+            var series = new List<ChartSeries<double>>
             {
-                new() { Name = "Series 1", Data = [1, 2, 3] },
-                new() { Name = "Series 2", Data = [4, 5, 6] }
+                new() { Name = "Series 1", Data = new([1, 2, 3]) },
+                new() { Name = "Series 2", Data = new([4, 5, 6]) }
             };
             var options = new HeatMapChartOptions { ShowLegend = true, ShowLegendLabels = true };
 
-            var comp = Context.RenderComponent<MudChart>(parameters => parameters
+            var comp = Context.RenderComponent<MudChart<double>>(parameters => parameters
                 .Add(p => p.ChartType, ChartType.HeatMap)
                 .Add(p => p.ChartSeries, series)
                 .Add(p => p.ChartOptions, options)
@@ -218,14 +229,14 @@ namespace MudBlazor.UnitTests.Components
         [Test]
         public void HeatMap_ShouldBuildLegendsCorrectly()
         {
-            var series = new List<ChartSeries>
+            var series = new List<ChartSeries<double>>
             {
-                new() { Name = "Series 1", Data = [1, 2, 3] },
-                new() { Name = "Series 2", Data = [4, 5, 6] }
+                new() { Name = "Series 1", Data = new([1, 2, 3]) },
+                new() { Name = "Series 2", Data = new([4, 5, 6]) }
             };
             var options = new ChartOptions() { ShowLegend = true };
 
-            var comp = Context.RenderComponent<MudChart>(parameters => parameters
+            var comp = Context.RenderComponent<MudChart<double>>(parameters => parameters
                 .Add(p => p.ChartType, ChartType.HeatMap)
                 .Add(p => p.ChartSeries, series)
                 .Add(p => p.ChartOptions, options)
@@ -238,15 +249,15 @@ namespace MudBlazor.UnitTests.Components
         [Test]
         public void HeatMap_ShouldFormatValueForDisplayCorrectly()
         {
-            var series = new List<ChartSeries>
+            var series = new List<ChartSeries<double>>
             {
-                new() { Name = "Series 1", Data = [ 1.176, 2, 3 ] },
-                new() { Name = "Series 2", Data = [ 4.152, 5, 6 ] }
+                new() { Name = "Series 1", Data = new([1.176, 2, 3]) },
+                new() { Name = "Series 2", Data = new([4.152, 5, 6]) }
             };
 
             var options = new HeatMapChartOptions() { ValueFormatString = "F2" };
 
-            var comp = Context.RenderComponent<MudChart>(parameters => parameters
+            var comp = Context.RenderComponent<MudChart<double>>(parameters => parameters
                 .Add(p => p.ChartType, ChartType.HeatMap)
                 .Add(p => p.ChartSeries, series)
                 .Add(p => p.ChartOptions, options)
@@ -265,14 +276,14 @@ namespace MudBlazor.UnitTests.Components
         [Test]
         public void HeatMap_ShouldHandleEmptyAndNullData()
         {
-            var series = new List<ChartSeries>
+            var series = new List<ChartSeries<double>>
             {
                 new() { Name = "Empty Series", Data = [] },
                 new() { Name = "Null Series", Data = null },
-                new() { Name = "Valid Series", Data = [1.0, 2.0] }
+                new() { Name = "Valid Series", Data = new([1.0, 2.0]) }
             };
 
-            var comp = Context.RenderComponent<MudChart>(parameters => parameters
+            var comp = Context.RenderComponent<MudChart<double>>(parameters => parameters
                 .Add(p => p.ChartType, ChartType.HeatMap)
                 .Add(p => p.ChartSeries, series)
             );
@@ -285,13 +296,13 @@ namespace MudBlazor.UnitTests.Components
         [Test]
         public void HeatMap_ShouldHandleSeriesVisibility()
         {
-            var series = new List<ChartSeries>
+            var series = new List<ChartSeries<double>>
             {
-                new() { Name = "Series 1", Data = [1, 2], Visible = false },
-                new() { Name = "Series 2", Data = [3, 4], Visible = true }
+                new() { Name = "Series 1", Data = new([1, 2]), Visible = false },
+                new() { Name = "Series 2", Data = new([3, 4]), Visible = true }
             };
 
-            var comp = Context.RenderComponent<MudChart>(parameters => parameters
+            var comp = Context.RenderComponent<MudChart<double>>(parameters => parameters
                 .Add(p => p.ChartType, ChartType.HeatMap)
                 .Add(p => p.ChartSeries, series)
             );
@@ -307,9 +318,9 @@ namespace MudBlazor.UnitTests.Components
         [TestCase(Position.Right)]
         public void HeatMap_ShouldRenderLegendInCorrectPosition(Position position)
         {
-            var series = new List<ChartSeries>
+            var series = new List<ChartSeries<double>>
             {
-                new() { Name = "Series 1", Data = [1, 2, 3] }
+                new() { Name = "Series 1", Data = new([1, 2, 3]) }
             };
 
             var options = new HeatMapChartOptions
@@ -318,7 +329,7 @@ namespace MudBlazor.UnitTests.Components
                 ShowLegendLabels = true
             };
 
-            var comp = Context.RenderComponent<MudChart>(parameters => parameters
+            var comp = Context.RenderComponent<MudChart<double>>(parameters => parameters
                 .Add(p => p.ChartType, ChartType.HeatMap)
                 .Add(p => p.ChartSeries, series)
                 .Add(p => p.ChartOptions, options)
@@ -337,15 +348,15 @@ namespace MudBlazor.UnitTests.Components
         [Test]
         public void HeatMap_ShouldHandleSmoothGradients()
         {
-            var series = new List<ChartSeries>
+            var series = new List<ChartSeries<double>>
             {
-                new() { Name = "Series 1", Data = [1, 2, 3] },
-                new() { Name = "Series 2", Data = [4, 5, 6] }
+                new() { Name = "Series 1", Data = new([1, 2, 3]) },
+                new() { Name = "Series 2", Data = new([4, 5, 6]) }
             };
 
             var options = new HeatMapChartOptions { EnableSmoothGradient = true };
 
-            var comp = Context.RenderComponent<MudChart>(parameters => parameters
+            var comp = Context.RenderComponent<MudChart<double>>(parameters => parameters
                 .Add(p => p.ChartType, ChartType.HeatMap)
                 .Add(p => p.ChartSeries, series)
                 .Add(p => p.ChartOptions, options)
@@ -366,9 +377,9 @@ namespace MudBlazor.UnitTests.Components
         [TestCase(YAxisLabelPosition.Right)]
         public void HeatMap_ShouldRenderAxisLabelsInCorrectPosition(Enum position)
         {
-            var series = new List<ChartSeries>
+            var series = new List<ChartSeries<double>>
             {
-                new() { Name = "Series 1", Data = [1, 2] }
+                new() { Name = "Series 1", Data = new([1, 2]) }
             };
             var xAxisLabels = new[] { "Label 1", "Label 2" };
 
@@ -378,7 +389,7 @@ namespace MudBlazor.UnitTests.Components
             else if (position is YAxisLabelPosition yPos)
                 options.YAxisLabelPosition = yPos;
 
-            var comp = Context.RenderComponent<MudChart>(parameters => parameters
+            var comp = Context.RenderComponent<MudChart<double>>(parameters => parameters
                 .Add(p => p.ChartType, ChartType.HeatMap)
                 .Add(p => p.ChartSeries, series)
                 .Add(p => p.ChartLabels, xAxisLabels)
@@ -393,14 +404,14 @@ namespace MudBlazor.UnitTests.Components
         [Test]
         public void HeatMap_ShouldShowTooltipsWhenEnabled()
         {
-            var series = new List<ChartSeries>
+            var series = new List<ChartSeries<double>>
             {
-                new() { Name = "Series 1", Data = [1, 2] }
+                new() { Name = "Series 1", Data = new([1, 2]) }
             };
 
             var options = new ChartOptions { ShowToolTips = true };
 
-            var comp = Context.RenderComponent<MudChart>(parameters => parameters
+            var comp = Context.RenderComponent<MudChart<double>>(parameters => parameters
                 .Add(p => p.ChartType, ChartType.HeatMap)
                 .Add(p => p.ChartSeries, series)
                 .Add(p => p.ChartOptions, options)
@@ -413,13 +424,13 @@ namespace MudBlazor.UnitTests.Components
         [Test]
         public void HeatMap_ShouldCalculateDynamicFontSize()
         {
-            var series = new List<ChartSeries>
+            var series = new List<ChartSeries<double>>
             {
-                new() { Name = "Series 1", Data = [1] }
+                new() { Name = "Series 1", Data = new([1]) }
             };
 
             // Test with different dimensions
-            var comp = Context.RenderComponent<MudChart>(parameters => parameters
+            var comp = Context.RenderComponent<MudChart<double>>(parameters => parameters
                 .Add(p => p.ChartType, ChartType.HeatMap)
                 .Add(p => p.ChartSeries, series)
                 .Add(p => p.Width, "200px") // Smaller width to test font size adaptation
@@ -439,11 +450,11 @@ namespace MudBlazor.UnitTests.Components
         {
             // Single color palette
             var singleColorOptions = new ChartOptions { ChartPalette = ["#587934"] };
-            var singleColorComp = Context.RenderComponent<MudChart>(parameters => parameters
+            var singleColorComp = Context.RenderComponent<MudChart<double>>(parameters => parameters
                 .Add(p => p.ChartType, ChartType.HeatMap)
                 .Add(p => p.ChartOptions, singleColorOptions)
                 .Add(p => p.ChartSeries, [
-                    new() { Name = "Series 1", Data = [1, 2, 3] }
+                    new() { Name = "Series 1", Data = new([1, 2, 3]) }
                 ])
             );
 
@@ -453,11 +464,11 @@ namespace MudBlazor.UnitTests.Components
 
             // Multi-color palette
             var multiColorOptions = new ChartOptions { ChartPalette = ["#587934", "#FF0000", "#00FF00"] };
-            var multiColorComp = Context.RenderComponent<MudChart>(parameters => parameters
+            var multiColorComp = Context.RenderComponent<MudChart<double>>(parameters => parameters
                 .Add(p => p.ChartType, ChartType.HeatMap)
                 .Add(p => p.ChartOptions, multiColorOptions)
                 .Add(p => p.ChartSeries, [
-                    new() { Name = "Series 1", Data = [1, 2, 3] }
+                    new() { Name = "Series 1", Data = new([1, 2, 3]) }
                 ])
             );
 
@@ -473,14 +484,14 @@ namespace MudBlazor.UnitTests.Components
         [TestCase(1000.123, "1000.")]
         public void HeatMap_ShouldFormatValuesCorrectly(double? input, string expected)
         {
-            var series = new List<ChartSeries>
+            var series = new List<ChartSeries<double>>
             {
-                new() { Name = "Series 1", Data = input.HasValue ? [input.Value] : [] }
+                new() { Name = "Series 1", Data = input.HasValue ? new([input.Value]) : [] }
             };
 
             var options = new HeatMapChartOptions { ValueFormatString = "G" };
 
-            var comp = Context.RenderComponent<MudChart>(parameters => parameters
+            var comp = Context.RenderComponent<MudChart<double>>(parameters => parameters
                 .Add(p => p.ChartType, ChartType.HeatMap)
                 .Add(p => p.ChartSeries, series)
                 .Add(p => p.ChartOptions, options)
@@ -505,7 +516,7 @@ namespace MudBlazor.UnitTests.Components
         {
             static void CellFragment(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
             {
-                builder.OpenComponent<MudHeatMapCell>(0);
+                builder.OpenComponent<MudHeatMapCell<double>>(0);
                 builder.AddAttribute(1, "Row", 0);
                 builder.AddAttribute(2, "Column", 0);
                 builder.AddAttribute(3, "Value", 10.05);
@@ -517,13 +528,13 @@ namespace MudBlazor.UnitTests.Components
                 builder.CloseComponent();
             }
 
-            var series = new List<ChartSeries>
+            var series = new List<ChartSeries<double>>
             {
-                new() { Name = "Series 1", Data = [1, 2, 3] },
-                new() { Name = "Series 2", Data = [4, 5, 6] }
+                new() { Name = "Series 1", Data = new([1, 2, 3]) },
+                new() { Name = "Series 2", Data = new([4, 5, 6]) }
             };
 
-            var comp = Context.RenderComponent<MudChart>(parameters => parameters
+            var comp = Context.RenderComponent<MudChart<double>>(parameters => parameters
                 .Add(p => p.ChartType, ChartType.HeatMap)
                 .Add(p => p.ChartSeries, series)
                 .Add(p => p.ChartOptions, new ChartOptions() { ShowToolTips = true })
@@ -548,7 +559,7 @@ namespace MudBlazor.UnitTests.Components
         {
             // Attempt to render MudHeatMapCell outside of MudChart
             var exception = Assert.Throws<InvalidOperationException>(() =>
-                Context.RenderComponent<MudHeatMapCell>(parameters => parameters
+                Context.RenderComponent<MudHeatMapCell<double>>(parameters => parameters
                     .Add(p => p.Row, 0)
                     .Add(p => p.Column, 0)
                 )
@@ -568,15 +579,15 @@ namespace MudBlazor.UnitTests.Components
         [Test]
         public void HeatMap_ShouldCorrectBadPositions(Position pos)
         {
-            var comp = Context.RenderComponent<MudChart>(parameters => parameters
+            var comp = Context.RenderComponent<MudChart<double>>(parameters => parameters
                 .Add(p => p.ChartType, ChartType.HeatMap)
                 .Add(p => p.LegendPosition, pos)
                 .Add(p => p.ChartSeries, [
-                    new() { Name = "Series 1", Data = [1, 2, 3] }
+                    new() { Name = "Series 1", Data = new([1, 2, 3]) }
                 ])
             );
 
-            var heatMap = comp.FindComponent<HeatMap>();
+            var heatMap = comp.FindComponent<HeatMap<double>>();
             heatMap.Instance._legendPosition.Should().BeOneOf(Position.Top, Position.Bottom, Position.Left, Position.Right);
         }
 
@@ -585,15 +596,15 @@ namespace MudBlazor.UnitTests.Components
         [TestCase(0, .95)]
         public void HeatMap_Override_Min_Max(double? min, double? max)
         {
-            var comp = Context.RenderComponent<MudChart>(parameters => parameters
+            var comp = Context.RenderComponent<MudChart<double>>(parameters => parameters
                 .Add(p => p.ChartType, ChartType.HeatMap)
-                .Add(p => p.ChartSeries, new List<ChartSeries>
+                .Add(p => p.ChartSeries, new List<ChartSeries<double>>
                 {
-                    new() { Name = "Series 1", Data = [-0.5, .5, .98] }
+                    new() { Name = "Series 1", Data = new([-0.5, .5, .98]) }
                 })
                 .Add(p => p.ChildContent, (RenderFragment)(builder =>
                 {
-                    builder.OpenComponent<MudHeatMapCell>(0);
+                    builder.OpenComponent<MudHeatMapCell<double>>(0);
                     builder.AddAttribute(1, "Row", 0);
                     builder.AddAttribute(2, "Column", 0);
                     builder.AddAttribute(3, "MinValue", min);
@@ -601,7 +612,7 @@ namespace MudBlazor.UnitTests.Components
                     builder.CloseComponent();
                 }))
             );
-            var heatmap = comp.FindComponent<HeatMap>();
+            var heatmap = comp.FindComponent<HeatMap<double>>();
             heatmap.Instance._minValue.Should().Be(min.HasValue ? min : -0.5);
             heatmap.Instance._maxValue.Should().Be(max.HasValue ? max : .98);
         }
@@ -616,10 +627,10 @@ namespace MudBlazor.UnitTests.Components
         [Test]
         public void NoLabel_Chart_IsValid(ChartType chart)
         {
-            var series = new List<ChartSeries>()
+            var series = new List<ChartSeries<double>>()
             {
-                new() { Name = "Series 1", Data = [90, 79, 72, 69, 62, 62, 55, 65, 70] },
-                new() { Name = "Series 2", Data = [10, 41, 35, 51, 49, 62, 69, 91, 148] },
+                new() { Name = "Series 1", Data = new([90, 79, 72, 69, 62, 62, 55, 65, 70]) },
+                new() { Name = "Series 2", Data = new([10, 41, 35, 51, 49, 62, 69, 91, 148]) },
             };
 
             IChartOptions options = new ChartOptions();
@@ -629,7 +640,7 @@ namespace MudBlazor.UnitTests.Components
             else if (chart == ChartType.Timeseries)
                 options = new TimeSeriesChartOptions() { InterpolationOption = InterpolationOption.Periodic };
 
-            var comp = Context.RenderComponent<MudChart>(parameters => parameters
+            var comp = Context.RenderComponent<MudChart<double>>(parameters => parameters
                               .Add(p => p.ChartType, chart)
                               .Add(p => p.ChartOptions, options)
                               .Add(p => p.ChartSeries, series));
@@ -639,7 +650,7 @@ namespace MudBlazor.UnitTests.Components
         [Test]
         public void HeatmapChart_CanHideSeries_Test()
         {
-            var chartSeries = new List<ChartSeries>()
+            var chartSeries = new List<ChartSeries<double>>()
             {
                 new () { Name = "Sensor Alpha", Data = new double[] { 10, 20, 30, 25 } }, // Row 1
                 new () { Name = "Sensor Beta", Data = new double[] { 15, 25, 35, 20 } },  // Row 2
@@ -647,7 +658,7 @@ namespace MudBlazor.UnitTests.Components
             };
             string[] xAxisLabels = { "Time 1", "Time 2", "Time 3", "Time 4" }; // Columns
 
-            var comp = Context.RenderComponent<MudChart>(parameters => parameters
+            var comp = Context.RenderComponent<MudChart<double>>(parameters => parameters
                 .Add(p => p.ChartType, ChartType.HeatMap)
                 .Add(p => p.Height, "300px")
                 .Add(p => p.Width, "400px")
@@ -694,6 +705,34 @@ namespace MudBlazor.UnitTests.Components
             seriesCheckboxes[2].IsChecked().Should().BeFalse("Sensor Gamma checkbox should be unchecked after hiding again");
             chartSeries[2].Visible.Should().BeFalse("Sensor Gamma Visible property should be false after hiding again");
             comp.FindAll(".mud-chart-cell").Count.Should().Be(chartSeries.Where(x => x.Visible).Sum(x => x.Data.Count()), "should equal count of visible cells");
+        }
+
+        public record YAxisTestCase(Func<double, string> YAxisToStringFunc, string ExpectedValue);
+
+        private const double YAxisTestValue = 20;
+
+        private static IEnumerable<YAxisTestCase> YAxisFuncs()
+        {
+            yield return new YAxisTestCase(x => "hardcoded", "hardcoded");
+            yield return new YAxisTestCase(x => $"{x}/tCO2e", "20/tCO2e");
+            yield return new YAxisTestCase(x => x.ToString("0.00", CultureInfo.InvariantCulture), "20.00");
+            yield return new YAxisTestCase(null!, "20");
+        }
+
+        [Test, TestCaseSource(nameof(YAxisFuncs))]
+        [SetCulture("en-US")]
+        public void YAxisToStringFuncTest(YAxisTestCase testCase)
+        {
+            var comp = Context.RenderComponent<MudChart<double>>(parameters => parameters
+                .Add(p => p.ChartType, ChartType.Line)
+                .Add(p => p.ChartLabels, [""])
+                .Add(p => p.ChartOptions, new LineChartOptions() { YAxisToStringFunc = testCase.YAxisToStringFunc })
+                .Add(p => p.ChartSeries, [new() { Data = new([YAxisTestValue]) }])
+            );
+
+            var yaxis = comp.FindAll("g.mud-charts-yaxis");
+            yaxis.Should().NotBeNull();
+            yaxis[0].Children[0].InnerHtml.Trim().Should().Be(testCase.ExpectedValue);
         }
     }
 }

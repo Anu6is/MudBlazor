@@ -3,8 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 #nullable enable
+using Microsoft.AspNetCore.Components;
+
 namespace MudBlazor.Charts;
 
+/// <summary>
+/// Represents the default options for a chart with axes.
+/// </summary>
 public abstract class DefaultAxisChartOptions : DefaultChartOptions, IAxisChartOptions
 {
     private int _yAxisTicks = 20;
@@ -55,6 +60,13 @@ public abstract class DefaultAxisChartOptions : DefaultChartOptions, IAxisChartO
     public string? YAxisFormat { get; set; }
 
     /// <summary>
+    /// Custom formatting function for vertical axis values.
+    /// If set, this function will be used to convert Y-axis values to strings for display purposes.
+    /// If not provided, <see cref="YAxisFormat"/> will be used instead.
+    /// </summary>
+    public Func<double, string>? YAxisToStringFunc { get; set; }
+
+    /// <summary>
     /// Shows vertical axis lines.
     /// </summary>
     /// <remarks>
@@ -74,4 +86,14 @@ public abstract class DefaultAxisChartOptions : DefaultChartOptions, IAxisChartO
     /// Rotation angle to rotate the labels in degrees.
     /// </summary>
     public int XAxisLabelRotation { get; set; }
+
+    /// <summary>
+    /// The title of the X-axis.
+    /// </summary>
+    public string? XAxisTitle { get; set; }
+
+    /// <summary>
+    /// The title of the Y-axis.
+    /// </summary>
+    public string? YAxisTitle { get; set; }
 }

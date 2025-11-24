@@ -7,6 +7,9 @@ using MudBlazor.Charts;
 #nullable enable
 namespace MudBlazor;
 
+/// <summary>
+/// Options specific to time series charts, extending <see cref="DefaultAxisLineChartOptions"/>.
+/// </summary>
 public class TimeSeriesChartOptions : DefaultAxisLineChartOptions
 {
     /// <summary>
@@ -47,19 +50,11 @@ public class TimeSeriesChartOptions : DefaultAxisLineChartOptions
     /// </remarks>
     public string TooltipTimeLabelFormat { get; set; } = "HH:mm";
 
+    ///<inheritdoc/>
     public override string TooltipTitleFormat { get; set; } = "{{X_VALUE}}";
 
+    ///<inheritdoc/>
     public override string? TooltipSubtitleFormat { get; set; } = "{{Y_VALUE}}";
-
-    /// <summary>
-    /// Specifies the title for the X axis.
-    /// </summary>
-    public string? XAxisTitle { get; set; }
-
-    /// <summary>
-    /// Specifies the title for the Y axis.
-    /// </summary>
-    public string? YAxisTitle { get; set; }
 
     public static implicit operator TimeSeriesChartOptions(ChartOptions options) => new()
     {

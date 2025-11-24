@@ -4,54 +4,67 @@
 
 #nullable enable
 using System.Collections;
-using System.Runtime.CompilerServices;
-using MudBlazor.Charts;
+using System.Numerics;
 
 namespace MudBlazor;
 
-[CollectionBuilder(typeof(ChartData), nameof(Create))]
-public class ChartData : IEnumerable<double>
+/// <summary>
+/// Data values used for a chart series.
+/// </summary>
+/// <remarks>
+/// Includes X and Y values based on the chart type.
+/// X values are optional and can be null.
+/// </remarks>
+/// <typeparam name="T">The data type of tye Y value</typeparam>
+public partial class ChartData<T> : IEnumerable<T> where T : struct, INumber<T>, IMinMaxValue<T>, IFormattable
 {
-    private List<ChartPoint> _points = [];
-
     public ChartData() { }
 
-    public ChartData(double value) => _points = [new ChartPoint(0, value)];
+    /// <summary>
+    /// Create a data series with a single Y value.
+    /// </summary>
+    /// <param name="value">The Y value of the chart series</param>
+    public ChartData(T value) => Points = [new ChartPoint<T>(null, value)];
 
-    public ChartData(IEnumerable<double> values) => _points = [.. values.Select(v => new ChartPoint(0, v))];
+    /// <summary>
+    /// Create a data series with multiple Y values.
+    /// </summary>
+    /// <param name="values">The Y values of the chart series</param>
+    public ChartData(IReadOnlyList<T> values) => Points = [.. values.Select(v => new ChartPoint<T>(null, v))];
 
-    public ChartData(TimeSeries.DataPoint point) => _points = [new ChartPoint(point.DateTime, point.Value)];
+    /// <summary>
+    /// A list of data points in the chart series.
+    /// </summary>
+    public IReadOnlyList<ChartPoint<T>> Points { get; } = [];
 
-    public ChartData(IEnumerable<TimeSeries.DataPoint> points) =>
-        _points = [.. points.Select(p => new ChartPoint(p.DateTime, p.Value))];
+    /// <summary>
+    /// A list of Y values in the chart series.
+    /// </summary>
+    public IReadOnlyList<T> Values => [.. Points.Select(p => p.Y)];
 
-    public ChartData(IEnumerable<ChartPoint> points) => _points = [.. points];
+    /// <summary>
+    /// The data point at the specified index.
+    /// </summary>
+    /// <param name="index"></param>
+    public ChartPoint<T> this[int index] => Points[index];
 
-    public ChartData((DateTime dateTime, double value) timeValue) =>
-        _points = [new ChartPoint(timeValue.dateTime, timeValue.value)];
+    /// <summary>
+    /// The Y value at the specified index.
+    /// </summary>
+    /// <param name="index"></param>
+    public T GetValue(int index) => Points[index].Y;
 
-    public ChartData(IEnumerable<(DateTime dateTime, double value)> timeValues) =>
-        _points = [.. timeValues.Select(tv => new ChartPoint(tv.dateTime, tv.value))];
+    /// <summary>
+    /// The number of data points in the chart series.
+    /// </summary>
+    public int Count => Points.Count;
 
-    public double[] Values => [.. _points.Select(p => p.Y)];
+    public static implicit operator ChartData<T>(T value) => new(value);
+    public static implicit operator ChartData<T>(T[] values) => new(values);
+    public static implicit operator ChartData<T>(List<T> values) => new(values);
 
-    public IReadOnlyList<ChartPoint> Points => _points;
+    ///<inheritdoc/>
+    public IEnumerator<T> GetEnumerator() => Values.GetEnumerator();
 
-    public double this[int index]
-    {
-        get => _points[index].Y;
-        set => _points[index].Y = value;
-    }
-
-    public static implicit operator ChartData(double value) => new(value);
-    public static implicit operator ChartData(double[] values) => new(values);
-    public static implicit operator ChartData(TimeSeries.DataPoint dataPoint) => new(dataPoint);
-    public static implicit operator ChartData(List<TimeSeries.DataPoint> dataPoints) => new(dataPoints);
-    public static implicit operator ChartData((DateTime dateTime, double value)[] timeValues) => new(timeValues);
-    public static implicit operator ChartData(List<(DateTime dateTime, double value)> timeValues) => new(timeValues);
-
-
-    public static ChartData Create(ReadOnlySpan<double> values) => new(values.ToArray());
-    public IEnumerator<double> GetEnumerator() => _points.Select(p => p.Y).GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

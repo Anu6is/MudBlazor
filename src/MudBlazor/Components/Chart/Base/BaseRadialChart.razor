@@ -1,17 +1,14 @@
 ﻿@namespace MudBlazor.Charts
-@using MudBlazor.Extensions
 
 @inherits MudComponentBase
+
+@typeparam T
 @typeparam TChartOptions
 
-@{
-    var style = HoveredSegment is not null ? "overflow: visible;" : "";
-}
-
-<svg @ref="_svgRef" @attributes="UserAttributes" class="@($"{ChartClass} mud-ltr")" width="@Width" height="@Height" viewBox="0 0 @(ToS(Radius * 2)) @(ToS(Radius * 2))" style="@style">
+<svg @ref="_svgRef" @attributes="UserAttributes" class="@($"{ChartClass} mud-ltr")" width="@Width" height="@Height" viewBox="0 0 @(ToS(Radius * 2)) @(ToS(Radius * 2))" style="@HoveredStylename">
     <Filters />
 
-    <g transform="translate(@Radius.ToS(), @Radius.ToS())">
+    <g transform="translate(@Radius.ToStr(), @Radius.ToStr())">
         <defs>
             <filter id="text-shadow" x="-50%" y="-50%" width="200%" height="200%">
                 <feDropShadow dx="0" dy="0" stdDeviation="1.0" flood-color="black" flood-opacity="1" />
@@ -34,12 +31,12 @@
                   @onmouseout="() => OnMouseOut.InvokeAsync()">
             </path>
 
-                @if (ChartOptions is IHasValueLabelOptions { ShowValues: true  })
+                @if (ChartOptions is IHasValueLabelOptions { ShowValues: true  } && item is SvgPetal petal)
                 {
                     <g class="mud-chart-labels">
                         @if (!string.IsNullOrEmpty(item.LabelXValue) || !string.IsNullOrEmpty(item.LabelYValue))
                         {
-                            @RenderValueLabel(item as SvgPetal);
+                            @RenderValueLabel(petal);
                         }
                     </g>
                 }
@@ -63,7 +60,7 @@
 
         if (TooltipTemplate is not null)
         {
-            <g class="mud-chart-tooltip" transform="translate(@tooltipX.ToS(), @tooltipY.ToS())">
+            <g class="mud-chart-tooltip" transform="translate(@tooltipX.ToStr(), @tooltipY.ToStr())">
                 @TooltipTemplate((HoveredSegment, color))
             </g>
         }
@@ -86,6 +83,7 @@
 
         builder.OpenElement(seq++, "text");
         builder.AddAttribute(seq++, "class", "mud-chart-label-value");
+        builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create(this, () => OnPathClick.InvokeAsync(path.Index)));
         builder.AddAttribute(seq++, "x", x);
         builder.AddAttribute(seq++, "y", y);
         builder.AddAttribute(seq++, "fill", "white");
@@ -95,7 +93,7 @@
         builder.AddAttribute(seq++, "filter", "url(#text-shadow)");
         builder.AddAttribute(seq++, "text-anchor", "middle");
         builder.AddAttribute(seq++, "dominant-baseline", "central");
-        builder.AddAttribute(seq++, "style", $"font-size:{fontSize.ToS()}px");
+        builder.AddAttribute(seq++, "style", $"font-size:{fontSize.ToStr()}px");
 
         if (hasX)
         {
@@ -106,20 +104,4 @@
 
         builder.CloseElement(); // </text>
     };
-
-    private static double EstimateFontSize(string text, double radius, double angleRadians)
-    {
-        if (string.IsNullOrWhiteSpace(text))
-            return 8;
-
-        text = text.Replace(".", "").Trim();
-
-        var arcLength = angleRadians * radius;
-        var avgCharWidth = 0.6;
-        var estimatedTextWidth = Math.Max(text.Length.EnsureRange(6), 2) * avgCharWidth * Math.Sqrt(arcLength / 3);
-        var size = (arcLength / estimatedTextWidth) + 1.6;
-
-        return size.EnsureRange(6, 30);
-    }
-
 }

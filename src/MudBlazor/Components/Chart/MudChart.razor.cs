@@ -2,6 +2,7 @@
 // MudBlazor licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Numerics;
 using MudBlazor.Charts;
 
 namespace MudBlazor;
@@ -10,20 +11,27 @@ namespace MudBlazor;
 /// <summary>
 /// Represents a graphic display of data values in a line, bar, stacked bar, pie, heat map, or donut shape.
 /// </summary>
-public partial class MudChart
+public partial class MudChart<T> where T : struct, INumber<T>, IMinMaxValue<T>, IFormattable
 {
+    private ChartType? _chartType;
+    private IChartOptions? _chartOptions;
+
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
 
-        if (ChartOptions is null)
+        if (ChartType != _chartType)
         {
-            ChartOptions = GetDefaultOptionsForChart();
+            _chartType = ChartType;
+            _chartOptions = null; // Reset options when chart type changes
         }
-        else if (ChartOptions is ChartOptions options)
+
+        _chartOptions = ChartOptions switch
         {
-            ChartOptions = GetChartTypeOptions(options);
-        }
+            null => GetDefaultOptionsForChart(),
+            ChartOptions options => GetChartTypeOptions(options),
+            _ => ChartOptions
+        };
     }
 
     protected override void OnAfterRender(bool firstRender)
@@ -47,7 +55,7 @@ public partial class MudChart
         ChartType.Timeseries => (TimeSeriesChartOptions)options,
         ChartType.Rose => (RoseChartOptions)options,
         ChartType.Radar => (RadarChartOptions)options,
-        ChartType.HorizontalBar => (HorizontalBarChartOptions)options,
+        ChartType.Sankey => (SankeyChartOptions)options,
         _ => ChartOptions!
     };
 
@@ -62,7 +70,7 @@ public partial class MudChart
         ChartType.Timeseries => new TimeSeriesChartOptions(),
         ChartType.Rose => new RoseChartOptions(),
         ChartType.Radar => new RadarChartOptions(),
-        ChartType.HorizontalBar => new HorizontalBarChartOptions(),
+        ChartType.Sankey => new SankeyChartOptions(),
         _ => throw new NotImplementedException($"{ChartType} chart is not supported")
     };
 

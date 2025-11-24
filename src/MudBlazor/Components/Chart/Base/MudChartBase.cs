@@ -2,6 +2,7 @@
 // MudBlazor licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Numerics;
 using Microsoft.AspNetCore.Components;
 using MudBlazor.Charts;
 using MudBlazor.State;
@@ -10,21 +11,34 @@ using MudBlazor.Utilities;
 #nullable enable
 namespace MudBlazor;
 
-public abstract class MudChartBase<TOptions> : MudComponentBase, IMudChart where TOptions : IChartOptions
+/// <summary>
+/// Represents a base class for chart components.
+/// </summary>
+/// <typeparam name="T">The data type of the chart.</typeparam>
+/// <typeparam name="TOptions">The type of options for the chart.</typeparam>
+public abstract class MudChartBase<T, TOptions> : MudComponentBase, IMudChart<T>
+    where T : struct, INumber<T>, IMinMaxValue<T>, IFormattable
+    where TOptions : IChartOptions
 {
+    /// <summary>
+    /// If true, the chart will be rendered from right to left.
+    /// </summary>
     [CascadingParameter(Name = "RightToLeft")]
     [Category(CategoryTypes.Chart.Behavior)]
     public bool RightToLeft { get; set; }
 
+    /// <summary>
+    /// A reference to the chart component.
+    /// </summary>
     [CascadingParameter]
     [Category(CategoryTypes.Chart.Behavior)]
-    public IMudChart? ChartReference { get; set; }
+    public IMudChart<T>? ChartReference { get; set; }
 
     /// <summary>
     /// The labels describing data values.
     /// </summary>
     /// <remarks>
-    /// The number of labels in this array is typically the same as the number of values in the <see cref="ChartSeries.Data"/> property.
+    /// The number of labels in this array is typically the same as the number of values in the <see cref="ChartSeries{T}.Data"/> property.
     /// </remarks>
     [Parameter]
     [Category(CategoryTypes.Chart.Behavior)]
@@ -35,7 +49,7 @@ public abstract class MudChartBase<TOptions> : MudComponentBase, IMudChart where
     /// </summary>
     [Parameter]
     [Category(CategoryTypes.Chart.Behavior)]
-    public List<ChartSeries> ChartSeries { get; set; } = [];
+    public List<ChartSeries<T>> ChartSeries { get; set; } = [];
 
     /// <summary>
     /// The display options applied to the chart.
@@ -150,15 +164,27 @@ public abstract class MudChartBase<TOptions> : MudComponentBase, IMudChart where
     [Category(CategoryTypes.Chart.Behavior)]
     public bool CanHideSeries { get; set; } = false;
 
+    /// <summary>
+    /// The palette of colors to be used for the legend.
+    /// </summary>
     public virtual string[] LegendPalette => ChartOptions?.ChartPalette ?? [];
 
+    /// <summary>
+    /// The CSS classes for the chart component.
+    /// </summary>
     protected string Classname => new CssBuilder("mud-chart")
         .AddClass($"mud-chart-legend-{ConvertLegendPosition(LegendPosition).ToDescriptionString()}")
         .AddClass(Class)
         .Build();
 
+    /// <summary>
+    /// The state of the selected index.
+    /// </summary>
     protected readonly ParameterState<int> SelectedIndexState;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MudChartBase{T, TOptions}"/> class.
+    /// </summary>
     protected MudChartBase()
     {
         using var registerScope = CreateRegisterScope();
@@ -167,6 +193,9 @@ public abstract class MudChartBase<TOptions> : MudComponentBase, IMudChart where
             .WithEventCallback(() => SelectedIndexChanged);
     }
 
+    /// <summary>
+    /// Rebuilds the chart.
+    /// </summary>
     public abstract void RebuildChart();
 
     private Position ConvertLegendPosition(Position position) => position switch
@@ -176,6 +205,11 @@ public abstract class MudChartBase<TOptions> : MudComponentBase, IMudChart where
         _ => position
     };
 
+    /// <summary>
+    /// Sets the selected index.
+    /// </summary>
+    /// <param name="index">The new selected index.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
     internal async Task SetSelectedIndexAsync(int index)
     {
         await SelectedIndexState.SetValueAsync(index);

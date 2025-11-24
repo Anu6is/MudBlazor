@@ -1,19 +1,27 @@
-﻿// Copyright (c) MudBlazor 2021
+// Copyright (c) MudBlazor 2021
 // MudBlazor licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 #nullable enable
-using System.Collections;
-using System.Runtime.CompilerServices;
+using System.Numerics;
 
 namespace MudBlazor;
 
-[CollectionBuilder(typeof(ChartSeries), nameof(Create))]
-public sealed class ChartSeries : IEquatable<ChartSeries>, IEnumerable<double>
+public interface IChartSeries
+{
+    string Name { get; }
+    bool Visible { get; }
+}
+
+/// <summary>
+/// Represents a series of data to be plotted on a chart.
+/// </summary>
+/// <typeparam name="T"></typeparam>
+public sealed class ChartSeries<T> : IChartSeries, IEquatable<ChartSeries<T>> where T : struct, INumber<T>, IMinMaxValue<T>, IFormattable
 {
     public ChartSeries() { }
 
-    public ChartSeries(double[] doubles) => Data = doubles;
+    public ChartSeries(IReadOnlyList<T> values) => Data = values.ToArray();
 
     /// <summary>
     /// The legend label for this data set.
@@ -23,7 +31,7 @@ public sealed class ChartSeries : IEquatable<ChartSeries>, IEnumerable<double>
     /// <summary>
     /// The values to display on the chart.
     /// </summary>
-    public ChartData Data { get; set; } = new();
+    public ChartData<T> Data { get; set; } = new();
 
     /// <summary>
     /// Displays this data set in the chart.
@@ -41,50 +49,75 @@ public sealed class ChartSeries : IEquatable<ChartSeries>, IEnumerable<double>
     public string? TooltipSubtitleFormat { get; set; }
 
     /// <summary>
+    /// Tooltip XValue format for the series. It is used to format the {{X_VALUE}} tag.
+    /// </summary>
+    public string? TooltipXValueFormat { get; set; }
+
+    /// <summary>
     /// Tooltip YValue format for the series. It is used to format the {{Y_VALUE}} tag.
     /// </summary>
     public string? TooltipYValueFormat { get; set; }
 
-
-    public static implicit operator ChartSeries(double[] values) => new() { Data = values };
-    public static ChartSeries Create(ReadOnlySpan<double> values) => new(values.ToArray());
-    public IEnumerator<double> GetEnumerator() => Data.GetEnumerator();
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-    public bool Equals(ChartSeries? other)
+    public bool Equals(ChartSeries<T>? other)
     {
-        if (other is null) return false;
+        if (other is null || other.Data is null) return false;
+        if (ReferenceEquals(this, other)) return true;
+        if (Data?.Values?.Count != other.Data.Values.Count) return false;
 
         return Name == other.Name &&
                Data.Values.SequenceEqual(other.Data.Values);
     }
 
-    public override bool Equals(object? obj) => Equals(obj as ChartSeries);
+    ///<inheritdoc />
+    public override bool Equals(object? obj) => Equals(obj as ChartSeries<T>);
 
+    ///<inheritdoc />
     public override int GetHashCode()
     {
         var hashCode = new HashCode();
+
         hashCode.Add(Name);
+
         if (Data?.Values != null)
         {
-            foreach (var value in Data.Values)
+            hashCode.Add(Data.Values.Count);
+
+            for (var i = 0; i < Math.Min(10, Data.Values.Count); i++)
             {
-                hashCode.Add(value);
+                hashCode.Add(Data.Values[i]);
             }
         }
+
         return hashCode.ToHashCode();
     }
+
+    public static implicit operator ChartSeries<T>(T[] values) => new() { Data = values };
 }
 
+/// <summary>
+/// Utility methods for <see cref="ChartSeries{T}"/>.
+/// </summary>
 public static class ChartDataSetExtensions
 {
-    public static List<ChartSeries> AsList(this ChartSeries dataSet)
+    /// <summary>
+    /// Converts a single <see cref="ChartSeries{T}"/> instance to a list containing that instance.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="dataSet"></param>
+    /// <returns></returns>
+    public static List<ChartSeries<T>> AsList<T>(this ChartSeries<T> dataSet) where T : struct, INumber<T>, IMinMaxValue<T>, IFormattable
     {
         return [dataSet];
     }
 
-    public static List<ChartSeries> AsChartDataSet(this double[] dataSet)
+    /// <summary>
+    /// Converts an array of values to a list containing a single <see cref="ChartSeries{T}"/> instance with those values.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="dataSet"></param>
+    /// <returns></returns>
+    public static List<ChartSeries<T>> AsChartDataSet<T>(this T[] dataSet) where T : struct, INumber<T>, IMinMaxValue<T>, IFormattable
     {
-        return new ChartSeries(dataSet).AsList();
+        return new ChartSeries<T>(dataSet).AsList();
     }
 }

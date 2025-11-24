@@ -2,12 +2,15 @@
 
 @namespace MudBlazor.Charts
 
-@inherits MudAxisChartBase<StackedBarChartOptions>
+@inherits MudAxisChartBase<T, StackedBarChartOptions>
+
+@typeparam T
 
 @if (!IsOverlayChart)
 {
     <div @attributes="UserAttributes" class="@Classname">
-        <BaseAxisChart TChartOptions="StackedBarChartOptions"
+        <BaseAxisChart T="T"
+                       TChartOptions="StackedBarChartOptions"
                        AxisChanged="AxisChanged"
                        ElementRefChanged="SetElementReference"
                        Width="@Width"
@@ -18,6 +21,8 @@
                        ChartSeries="@ChartSeries"
                        ChartLabels="@ChartLabels"
                        ChartOptions="@ChartOptions"
+                       XAxisTitle="@ChartOptions?.XAxisTitle"
+                       YAxisTitle="@ChartOptions?.YAxisTitle"
                        ChartType="@ChartType"
                        SeriesContent="@RenderStackedBars()"
                        TooltipContent="@RenderTooltip()"
@@ -31,7 +36,7 @@
                        UserAttributes="@UserAttributes">
         </BaseAxisChart>
 
-        <Legend Data="@Legends" ShowLegend="@ChartOptions?.ShowLegend" CanHideSeries="@CanHideSeries"
+        <Legend T="T" Data="@Legends" ShowLegend="@ChartOptions?.ShowLegend" CanHideSeries="@CanHideSeries"
                 ChartPalette="@LegendPalette" OnLegendSelected="async (i) => await SetSelectedIndexAsync(i)" />
     </div>
 }
@@ -54,7 +59,7 @@
             builder.AddAttribute(seq++, "class", "mud-chart-bar");
             builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create(this, () => SetSelectedIndexAsync(bar.Index)));
             builder.AddAttribute(seq++, "stroke", color);
-            builder.AddAttribute(seq++, "stroke-width", _barWidthStroke.ToS());
+            builder.AddAttribute(seq++, "stroke-width", _barWidthStroke.ToStr());
             builder.AddAttribute(seq++, "fill", "none");
             builder.AddAttribute(seq++, "d", bar.Data);
             builder.AddAttribute(seq++, "onmouseover", EventCallback.Factory.Create<MouseEventArgs>(this, e => OnBarMouseOver(e, bar)));
@@ -82,7 +87,7 @@
         {
             builder.OpenElement(seq++, "g");
             builder.AddAttribute(seq++, "class", "mud-chart-tooltip");
-            builder.AddAttribute(seq++, "transform", $"translate({tooltipX.ToS()},{tooltipY.ToS()})");
+            builder.AddAttribute(seq++, "transform", $"translate({tooltipX.ToStr()},{tooltipY.ToStr()})");
             builder.AddContent(seq++, TooltipTemplate((_hoveredBar, color)));
             builder.CloseElement();
         }
@@ -94,15 +99,8 @@
 
             if (!string.IsNullOrWhiteSpace(tooltipTitleFormat))
             {
-                var tooltipTitle = tooltipTitleFormat
-                    .Replace("{{SERIES_NAME}}", series.Name)
-                    .Replace("{{X_VALUE}}", _hoveredBar.LabelXValue)
-                    .Replace("{{Y_VALUE}}", _hoveredBar.LabelYValue);
-
-                var tooltipSubtitle = tooltipSubtitleFormat?
-                    .Replace("{{SERIES_NAME}}", series.Name)
-                    .Replace("{{X_VALUE}}", _hoveredBar.LabelXValue)
-                    .Replace("{{Y_VALUE}}", _hoveredBar.LabelYValue) ?? string.Empty;
+                var tooltipTitle = FormatTooltipText(tooltipTitleFormat, series, _hoveredBar);
+                var tooltipSubtitle = FormatTooltipText(tooltipSubtitleFormat, series, _hoveredBar);
 
                 builder.OpenComponent<ChartTooltip>(seq++);
                 builder.AddAttribute(seq++, "Title", tooltipTitle);

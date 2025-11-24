@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Numerics;
 using Microsoft.AspNetCore.Components;
@@ -252,7 +252,7 @@ public abstract class MudAxisChartBase<T, TOptions> : MudChartBase<T, TOptions>,
     /// <param name="lowestHorizontalLine">The lowest horizontal line.</param>
     /// <param name="gridYUnits">The Y-axis grid units.</param>
     /// <param name="verticalSpace">The vertical space between lines.</param>
-    protected void GenerateHorizontalGridLines(int numHorizontalLines, int lowestHorizontalLine, T gridYUnits, double verticalSpace)
+    protected virtual void GenerateHorizontalGridLines(int numHorizontalLines, int lowestHorizontalLine, T gridYUnits, double verticalSpace)
     {
         HorizontalLines.Clear();
         HorizontalValues.Clear();

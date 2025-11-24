@@ -3,15 +3,15 @@
 @using MudBlazor.Charts
 @using System.Numerics
 
-@inherits MudBarChartBase<T, BarChartOptions>
+@inherits MudBarChartBase<T, HorizontalBarChartOptions>
 
 @typeparam T where T : struct, INumber<T>, IMinMaxValue<T>, IFormattable
 
 @if (!IsOverlayChart)
 {
     <div @attributes="UserAttributes" class="@Classname">
-        <BaseAxisChart T="T" 
-                       TChartOptions="BarChartOptions"
+        <BaseAxisChart T="T"
+                       TChartOptions="HorizontalBarChartOptions"
                        AxisChanged="AxisChanged"
                        ElementRefChanged="SetElementReference"
                        Width="@Width"

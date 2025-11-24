@@ -1,4 +1,4 @@
-﻿// Copyright (c) MudBlazor 2021
+// Copyright (c) MudBlazor 2021
 // MudBlazor licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -47,6 +47,11 @@ public sealed class ChartSeries<T> : IChartSeries, IEquatable<ChartSeries<T>> wh
     /// Tooltip subtitle format for the data set. Supported tags are {{SERIES_NAME}}, {{X_VALUE}} and {{Y_VALUE}}.
     /// </summary>
     public string? TooltipSubtitleFormat { get; set; }
+
+    /// <summary>
+    /// Tooltip XValue format for the series. It is used to format the {{X_VALUE}} tag.
+    /// </summary>
+    public string? TooltipXValueFormat { get; set; }
 
     /// <summary>
     /// Tooltip YValue format for the series. It is used to format the {{Y_VALUE}} tag.

@@ -1,4 +1,4 @@
-using System.Numerics;
+﻿using System.Numerics;
 using MudBlazor.Charts.Base;
 
 #nullable enable

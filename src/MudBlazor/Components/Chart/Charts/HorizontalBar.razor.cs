@@ -38,8 +38,8 @@ namespace MudBlazor.Charts
                     {
                         Index = i,
                         Data = $"M {ToS(gridValueX)} {ToS(gridValueY)} L {ToS(gridValue)} {ToS(gridValueY)}",
-                        LabelXValue = dataValue.ToString(series.TooltipXValueFormat, null),
-                        LabelYValue = ChartLabels.Length > j ? ChartLabels[j] : string.Empty,
+                        LabelXValue = ChartLabels.Length > j ? ChartLabels[j] : string.Empty,
+                        LabelYValue = dataValue.ToString(series.TooltipXValueFormat, null),
                         LabelY = gridValueY,
                         LabelX = dataValue <= T.Zero ? gridValueX : gridValue
                     };

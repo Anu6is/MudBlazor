@@ -63,8 +63,8 @@ namespace MudBlazor.Charts
             var tickHeight = verticalSpace / numVerticalLines;
 
             ComputeBarDimensions(tickHeight);
-            GenerateHorizontalGridLines(numHorizontalLines, lowestHorizontalLine, gridXUnits, horizontalSpace);
-            GenerateVerticalGridLines(numVerticalLines, verticalSpace);
+            GenerateValueAxisGridLines(numHorizontalLines, lowestHorizontalLine, gridXUnits, horizontalSpace);
+            GenerateCategoryAxisGridLines(numVerticalLines, verticalSpace);
         }
 
         /// <summary>
@@ -115,7 +115,7 @@ namespace MudBlazor.Charts
         /// <summary>
         /// Overridden to handle the horizontal orientation. This method generates the vertical grid lines for the X-axis.
         /// </summary>
-        protected override void GenerateHorizontalGridLines(int numHorizontalLines, int lowestHorizontalLine, T gridXUnits, double horizontalSpace)
+        protected override void GenerateValueAxisGridLines(int numHorizontalLines, int lowestHorizontalLine, T gridXUnits, double horizontalSpace)
         {
             VerticalLines.Clear();
             VerticalValues.Clear();
@@ -144,7 +144,7 @@ namespace MudBlazor.Charts
         /// <summary>
         /// Overridden to handle the horizontal orientation. This method generates the horizontal grid lines for the Y-axis.
         /// </summary>
-        protected override void GenerateVerticalGridLines(int numVerticalLines, double verticalSpace)
+        protected override void GenerateCategoryAxisGridLines(int numVerticalLines, double verticalSpace)
         {
             HorizontalLines.Clear();
             HorizontalValues.Clear();

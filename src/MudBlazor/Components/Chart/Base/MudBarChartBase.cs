@@ -83,8 +83,8 @@ namespace MudBlazor.Charts.Base
             var tickWidth = horizontalSpace / numVerticalLines;
 
             ComputeBarDimensions(tickWidth);
-            GenerateHorizontalGridLines(numHorizontalLines, lowestHorizontalLine, gridYUnits, verticalSpace);
-            GenerateVerticalGridLines(numVerticalLines, horizontalSpace);
+            GenerateValueAxisGridLines(numHorizontalLines, lowestHorizontalLine, gridYUnits, verticalSpace);
+            GenerateCategoryAxisGridLines(numVerticalLines, horizontalSpace);
         }
 
         protected virtual void ComputeUnitsAndNumberOfLines(out T gridYUnits, out int numHorizontalLines, out int lowestHorizontalLine, out int numVerticalLines)
@@ -130,7 +130,7 @@ namespace MudBlazor.Charts.Base
             }
         }
 
-        protected virtual void GenerateVerticalGridLines(int numVerticalLines, double horizontalSpace)
+        protected virtual void GenerateCategoryAxisGridLines(int numVerticalLines, double horizontalSpace)
         {
             VerticalLines.Clear();
             VerticalValues.Clear();

@@ -12,16 +12,16 @@ internal class SpaceBetweenStrategy : IBarGroupPositionStrategy
 
         if (ctx.ColumnsPerDataSet == 1)
         {
-            positions[0] = ctx.HorizontalStartSpace + (ctx.BarGroupWidth / 2) +
-                           (ctx.HorizontalSpace - (ctx.BarWidth * ctx.DataSetCount) - (ctx.BarGap * ctx.SpacesPerGroup)) / 2;
+            positions[0] = ctx.StartSpaceBuffer + (ctx.BarGroupWidth / 2) +
+                           (ctx.AvailableSpace - (ctx.BarWidth * ctx.DataSetCount) - (ctx.BarGap * ctx.SpacesPerGroup)) / 2;
             return positions;
         }
 
-        var availableSpace = ctx.HorizontalSpace - ((ctx.BarWidth * ctx.DataSetCount * ctx.ColumnsPerDataSet) +
+        var availableSpace = ctx.AvailableSpace - ((ctx.BarWidth * ctx.DataSetCount * ctx.ColumnsPerDataSet) +
                                                        (ctx.BarGap * ctx.SpacesPerGroup * ctx.ColumnsPerDataSet));
 
         var spaceBetween = availableSpace / Math.Max(1, ctx.GapsPerDataSet);
-        var start = ctx.HorizontalStartSpace + (ctx.BarGroupWidth / 2);
+        var start = ctx.StartSpaceBuffer + (ctx.BarGroupWidth / 2);
 
         for (var i = 0; i < ctx.ColumnsPerDataSet; i++)
         {

@@ -1,5 +1,7 @@
 ﻿using System.Numerics;
 using MudBlazor.Charts.Base;
+using MudBlazor.Extensions;
+using MudBlazor.Justification.BarGroup;
 
 #nullable enable
 namespace MudBlazor.Charts
@@ -178,6 +180,46 @@ namespace MudBlazor.Charts
                 };
                 HorizontalValues.Add(lineValue);
             }
+        }
+
+        /// <summary>
+        /// Calculates bar group positions along the vertical axis for horizontal bars.
+        /// </summary>
+        protected new double[] CalculateBarGroupPositions(double availableSpace, int columnsPerDataSet)
+        {
+            var dataSetCount = Series.Count;
+
+            if (dataSetCount == 0) return [];
+
+            var context = new BarGroupContext
+            {
+                ColumnsPerDataSet = columnsPerDataSet,
+                DataSetCount = dataSetCount,
+                AvailableSpace = availableSpace,
+                BarWidth = _barWidth,
+                BarGap = _barGap,
+                BarGroupWidth = _barGroupWidth,
+                StartSpaceBuffer = VerticalStartSpace,
+                EndSpaceBuffer = VerticalEndSpace,
+                SeriesSpacingRatio = ChartOptions!.SeriesSpacingRatio,
+                CalculateSpaceWidth = CalculateSpaceWidthVertical
+            };
+
+            var strategy = BarGroupStrategyFactory.GetStrategy(ChartOptions.Justify);
+
+            return strategy.CalculatePositions(context);
+        }
+
+        private int CalculateSpaceWidthVertical(double availableSpace, int groupCount)
+        {
+            if (groupCount <= 1) return 0;
+
+            var spaceCount = groupCount - 1;
+            var remainingSpace = availableSpace - VerticalStartSpace - VerticalEndSpace - ((_barGroupWidth + (_barWidth / 2)) * groupCount);
+            var spaceWidth = remainingSpace * ChartOptions!.SeriesSpacingRatio.EnsureRange(0.01, 1.0);
+            var spaceBetweenGroups = spaceWidth / spaceCount;
+
+            return (int)Math.Max(0, spaceBetweenGroups);
         }
 
         private string BuildXAxisValueString(T value)

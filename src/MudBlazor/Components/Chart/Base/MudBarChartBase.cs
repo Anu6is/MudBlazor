@@ -166,7 +166,7 @@ namespace MudBlazor.Charts.Base
             }
         }
 
-        protected double[] CalculateBarGroupPositions(double horizontalSpace, int columnsPerDataSet)
+        protected double[] CalculateBarGroupPositions(double availableSpace, int columnsPerDataSet)
         {
             var dataSetCount = Series.Count;
 
@@ -176,12 +176,12 @@ namespace MudBlazor.Charts.Base
             {
                 ColumnsPerDataSet = columnsPerDataSet,
                 DataSetCount = dataSetCount,
-                HorizontalSpace = horizontalSpace,
+                AvailableSpace = availableSpace,
                 BarWidth = _barWidth,
                 BarGap = _barGap,
                 BarGroupWidth = _barGroupWidth,
-                HorizontalStartSpace = HorizontalStartSpace,
-                HorizontalEndSpace = HorizontalEndSpace,
+                StartSpaceBuffer = HorizontalStartSpace,
+                EndSpaceBuffer = HorizontalEndSpace,
                 SeriesSpacingRatio = ChartOptions!.SeriesSpacingRatio,
                 CalculateSpaceWidth = CalculateSpaceWidth
             };
@@ -191,12 +191,12 @@ namespace MudBlazor.Charts.Base
             return strategy.CalculatePositions(context);
         }
 
-        private int CalculateSpaceWidth(double horizontalSpace, int groupCount)
+        private int CalculateSpaceWidth(double availableSpace, int groupCount)
         {
             if (groupCount <= 1) return 0;
 
             var spaceCount = groupCount - 1;
-            var remainingWidth = horizontalSpace - HorizontalStartSpace - HorizontalEndSpace - ((_barGroupWidth + (_barWidth / 2)) * groupCount);
+            var remainingWidth = availableSpace - HorizontalStartSpace - HorizontalEndSpace - ((_barGroupWidth + (_barWidth / 2)) * groupCount);
             var spaceWidth = remainingWidth * ChartOptions!.SeriesSpacingRatio.EnsureRange(0.01, 1.0);
             var spaceBetweenGroups = spaceWidth / spaceCount;
 
@@ -226,6 +226,7 @@ namespace MudBlazor.Charts.Base
             _barGap = seriesCount > 1 ? groupWidthRelative * barWidthRelative * ChartOptions!.BarSpacingRatio : 0;
             _barGroupWidth = Math.Max(MinBarWidth * seriesCount - 2, groupWidthRelative - _barWidth);
         }
+
         protected void OnBarMouseOver(MouseEventArgs _, SvgPath bar)
         {
             _hoveredBar = bar;

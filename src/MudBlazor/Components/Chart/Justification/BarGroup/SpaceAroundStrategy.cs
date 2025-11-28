@@ -9,9 +9,9 @@ internal class SpaceAroundStrategy : IBarGroupPositionStrategy
     public double[] CalculatePositions(BarGroupContext ctx)
     {
         var positions = new double[ctx.ColumnsPerDataSet];
-        var spaceAround = ctx.HorizontalSpace / (ctx.ColumnsPerDataSet * 2);
+        var spaceAround = ctx.AvailableSpace / (ctx.ColumnsPerDataSet * 2);
         var barWidthOffset = ctx.DataSetCount == 1 ? 0 : ctx.BarWidth / 2;
-        var offset = ctx.HorizontalStartSpace + spaceAround - barWidthOffset;
+        var offset = ctx.StartSpaceBuffer + spaceAround - barWidthOffset;
 
         for (var i = 0; i < ctx.ColumnsPerDataSet; i++)
         {

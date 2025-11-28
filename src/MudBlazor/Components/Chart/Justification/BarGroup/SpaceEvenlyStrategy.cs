@@ -10,12 +10,12 @@ internal class SpaceEvenlyStrategy : IBarGroupPositionStrategy
     {
         var positions = new double[ctx.ColumnsPerDataSet];
 
-        var availableSpace = ctx.HorizontalSpace - ((ctx.BarWidth * ctx.DataSetCount * ctx.ColumnsPerDataSet) +
+        var availableSpace = ctx.AvailableSpace - ((ctx.BarWidth * ctx.DataSetCount * ctx.ColumnsPerDataSet) +
                                                     (ctx.BarGap * ctx.SpacesPerGroup * ctx.ColumnsPerDataSet));
 
         var evenSpace = availableSpace / (ctx.ColumnsPerDataSet + 1);
 
-        positions[0] = ctx.HorizontalStartSpace + evenSpace + (ctx.BarGroupWidth / 2);
+        positions[0] = ctx.StartSpaceBuffer + evenSpace + (ctx.BarGroupWidth / 2);
 
         for (var i = 1; i < ctx.ColumnsPerDataSet; i++)
         {

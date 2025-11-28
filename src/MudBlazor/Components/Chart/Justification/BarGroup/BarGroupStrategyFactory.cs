@@ -29,12 +29,12 @@ internal class BarGroupContext
     public int DataSetCount { get; init; }
     public int SpacesPerGroup => DataSetCount - 1;
     public int GapsPerDataSet => ColumnsPerDataSet - 1;
-    public double HorizontalSpace { get; init; }
+    public double AvailableSpace { get; init; }
     public double BarWidth { get; init; }
     public double BarGap { get; init; }
     public double BarGroupWidth { get; init; }
-    public double HorizontalStartSpace { get; init; }
-    public double HorizontalEndSpace { get; init; }
+    public double StartSpaceBuffer { get; init; }
+    public double EndSpaceBuffer { get; init; }
     public double SeriesSpacingRatio { get; init; }
     public Func<double, int, int> CalculateSpaceWidth { get; init; }
 }

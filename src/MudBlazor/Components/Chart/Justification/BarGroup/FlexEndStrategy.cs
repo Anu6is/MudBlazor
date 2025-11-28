@@ -11,9 +11,9 @@ internal class FlexEndStrategy : IBarGroupPositionStrategy
         var positions = new double[ctx.ColumnsPerDataSet];
         var barGapOffset = ctx.BarGap / 2;
         var spaceBetweenGroups = Math.Max(ctx.DataSetCount == 1 ? 0 : ctx.BarGroupWidth,
-                                          ctx.CalculateSpaceWidth(ctx.HorizontalSpace, ctx.ColumnsPerDataSet));
+                                          ctx.CalculateSpaceWidth(ctx.AvailableSpace, ctx.ColumnsPerDataSet));
 
-        var start = ctx.HorizontalSpace + ctx.HorizontalEndSpace -
+        var start = ctx.AvailableSpace + ctx.EndSpaceBuffer -
                        (ctx.DataSetCount * ctx.BarGroupWidth + ctx.GapsPerDataSet * (spaceBetweenGroups + ctx.BarWidth)) +
                        ctx.SpacesPerGroup * barGapOffset;
 

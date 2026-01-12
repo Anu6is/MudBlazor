@@ -1,6 +1,8 @@
+using System.Globalization;
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor.Utilities;
+using MudBlazor.Utilities.Converter;
 
 namespace MudBlazor
 {
@@ -10,7 +12,7 @@ namespace MudBlazor
     /// A component similar to <see cref="MudTextField{T}"/> which supports custom content.
     /// </summary>
     /// <seealso cref="MudTextField{T}"/>
-    public partial class MudField : MudComponentBase
+    public partial class MudField : MudFormComponent<string, string>
     {
         protected string Classname =>
             new CssBuilder("mud-input")
@@ -26,8 +28,13 @@ namespace MudBlazor
                     !ShrinkLabel &&
                          (ChildContent != null || Adornment == Adornment.Start))
                 .AddClass("mud-disabled", Disabled)
-                .AddClass("mud-input-error", Error && !string.IsNullOrEmpty(ErrorText))
+                .AddClass("mud-input-error", HasErrors)
                 .AddClass($"mud-typography-{Typo.ToDescriptionString()}")
+                .Build();
+
+        protected string InputControlClassname =>
+            new CssBuilder("mud-field")
+                .AddClass(Class)
                 .Build();
 
         protected string InnerClassname =>
@@ -44,11 +51,6 @@ namespace MudBlazor
                 .AddClass($"mud-input-adornment-{Adornment.ToDescriptionString()}", Adornment != Adornment.None)
                 .AddClass($"mud-text", !string.IsNullOrEmpty(AdornmentText))
                 .AddClass($"mud-input-root-filled-shrink", Variant == Variant.Filled)
-                .Build();
-
-        protected string InputControlClassname =>
-            new CssBuilder("mud-field")
-                .AddClass(Class)
                 .Build();
 
         /// <summary>
@@ -74,23 +76,6 @@ namespace MudBlazor
         [Parameter]
         [Category(CategoryTypes.Field.Appearance)]
         public Typo Typo { get; set; } = Typo.subtitle1;
-
-        /// <summary>
-        /// Displays the error in <see cref="ErrorText"/>.
-        /// </summary>
-        /// <remarks>
-        /// Defaults to <c>false</c>.
-        /// </remarks>
-        [Parameter]
-        [Category(CategoryTypes.Field.Validation)]
-        public bool Error { get; set; }
-
-        /// <summary>
-        /// A description of this field's error that is displayed under the field when <see cref="Error"/> is <c>true</c>.
-        /// </summary>
-        [Parameter]
-        [Category(CategoryTypes.Field.Validation)]
-        public string? ErrorText { get; set; }
 
         /// <summary>
         /// The text displayed below the text field.
@@ -239,5 +224,30 @@ namespace MudBlazor
         [Parameter]
         [Category(CategoryTypes.FormComponent.Appearance)]
         public bool ShrinkLabel { get; set; }
+
+        /// <summary>
+        /// The value of this input.
+        /// </summary>
+        [Parameter]
+        [Category(CategoryTypes.Field.Data)]
+        public string? Value { get; set; }
+
+        /// <summary>
+        /// Occurs when the value has changed.
+        /// </summary>
+        [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+        protected override IConverter<string?, string?> GetDefaultConverter() => new DefaultConverter<string?>();
+
+        protected internal override string? ReadValue => Value;
+
+        protected override Task SetValueAsync(string? value)
+        {
+            if (EqualityComparer<string?>.Default.Equals(Value, value))
+                return Task.CompletedTask;
+
+            Value = value;
+            return ValueChanged.InvokeAsync(value);
+        }
     }
 }

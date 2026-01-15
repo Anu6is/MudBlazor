@@ -18,10 +18,10 @@
             <MudIcon Icon="@Icon" class="@(_expandedState.Value ? "mud-expand-panel-icon mud-transform" : "mud-expand-panel-icon")" />
         }
     </div>
-    <MudCollapse Expanded="_expandedState.Value" MaxHeight="@MaxHeight">
-        @if (KeepContentAlive || _expandedState.Value)
+    <MudCollapse Expanded="_expandedState.Value" MaxHeight="@MaxHeight" OnAnimationEnd="@(() => OnAnimationEnd(_expandedState.Value))">
+        @if (_renderContent)
         {
-            <div class="@PanelContentClassname" hidden="@(!_expandedState.Value)">
+            <div class="@PanelContentClassname">
                 @ChildContent
             </div>
         }

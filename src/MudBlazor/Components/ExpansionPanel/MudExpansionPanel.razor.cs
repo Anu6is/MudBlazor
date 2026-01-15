@@ -19,6 +19,9 @@ namespace MudBlazor
     {
         internal readonly ParameterState<bool> _expandedState;
 
+        private bool _renderContent;
+        private bool _hidden;
+
         [CascadingParameter]
         private MudExpansionPanels? Parent { get; set; }
 
@@ -178,14 +181,44 @@ namespace MudBlazor
                 .WithChangeHandler(OnExpandedParameterChangedAsync);
         }
 
+        protected override void OnParametersSet()
+        {
+            base.OnParametersSet();
+
+            // Set initial content rendering state
+            _renderContent = KeepContentAlive || Expanded;
+            _hidden = !Expanded;
+        }
+
         private Task OnExpandedParameterChangedAsync(ParameterChangedEventArgs<bool> args)
         {
+            var expanded = args.Value;
+            if (KeepContentAlive || expanded)
+            {
+                _renderContent = true;
+            }
+
             if (Parent is null)
             {
                 return Task.CompletedTask;
             }
 
             return Parent.NotifyPanelsChanged(this);
+        }
+
+        private void OnAnimationEnd()
+        {
+            if (KeepContentAlive)
+            {
+                _hidden = !_expandedState.Value;
+                return;
+            }
+
+            if (!_expandedState.Value)
+            {
+                _renderContent = false;
+                StateHasChanged();
+            }
         }
 
         /// <summary>

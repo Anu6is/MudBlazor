@@ -21,6 +21,13 @@ class MudElementReference {
         }
     }
 
+    getCursorPosition(element) {
+        if (element) {
+            return element.selectionStart;
+        }
+        return -1;
+    }
+
     focusFirst (element, skip = 0, min = 0) {
         if (element)
         {

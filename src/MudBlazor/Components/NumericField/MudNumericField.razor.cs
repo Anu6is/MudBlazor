@@ -28,6 +28,7 @@ namespace MudBlazor
         private bool _maxHasValue = false;
         private bool _minHasValue = false;
         private bool _stepHasValue = false;
+        private int? _sigCharsBeforeCaret;
         private MudInput<string> _elementReference = null!;
         private readonly string _elementId = Identifier.Create("numericField");
 
@@ -179,6 +180,29 @@ namespace MudBlazor
         }
 
         /// <inheritdoc />
+        protected override async Task UpdateTextPropertyAsync(bool updateValue)
+        {
+            if (_isFocused && _elementReference != null && (Immediate || DebounceInterval > 0) && IsFormatted)
+            {
+                try
+                {
+                    var caretPos = await _elementReference.ElementReference.MudGetCursorPositionAsync();
+                    if (caretPos >= 0)
+                    {
+                        var text = ReadText ?? "";
+                        _sigCharsBeforeCaret = CountSignificantChars(text.Substring(0, Math.Min(caretPos, text.Length)));
+                    }
+                }
+                catch
+                {
+                    // Ignore failures in JS interop
+                }
+            }
+
+            await base.UpdateTextPropertyAsync(updateValue);
+        }
+
+        /// <inheritdoc />
         protected internal override async Task OnBlurredAsync(FocusEventArgs obj)
         {
             await base.OnBlurredAsync(obj);
@@ -312,6 +336,20 @@ namespace MudBlazor
             }
 
             await base.OnAfterRenderAsync(firstRender);
+
+            if (_sigCharsBeforeCaret.HasValue && _elementReference != null)
+            {
+                var pos = GetPositionAfterSignificantChars(ReadText, _sigCharsBeforeCaret.Value);
+                _sigCharsBeforeCaret = null;
+                try
+                {
+                    await _elementReference.SelectRangeAsync(pos, pos);
+                }
+                catch
+                {
+                    // Ignore failures in JS interop
+                }
+            }
 
             if (!firstRender)
             {
@@ -495,6 +533,61 @@ namespace MudBlazor
         private static long FromInt64(T? v) => Convert.ToInt64((long?)(object?)v);
 
         private static ulong FromUInt64(T? v) => Convert.ToUInt64((ulong?)(object?)v);
+
+        protected int CountSignificantChars(string? text)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                return 0;
+            }
+
+            var separator = GetCulture().NumberFormat.NumberDecimalSeparator;
+            var count = 0;
+            for (var i = 0; i < text.Length; i++)
+            {
+                if (char.IsDigit(text[i]) || text[i] == '-')
+                {
+                    count++;
+                }
+                else if (text.Substring(i).StartsWith(separator))
+                {
+                    count++;
+                    i += separator.Length - 1;
+                }
+            }
+
+            return count;
+        }
+
+        protected int GetPositionAfterSignificantChars(string? text, int targetCount)
+        {
+            if (string.IsNullOrEmpty(text) || targetCount <= 0)
+            {
+                return 0;
+            }
+
+            var separator = GetCulture().NumberFormat.NumberDecimalSeparator;
+            var count = 0;
+            for (var i = 0; i < text.Length; i++)
+            {
+                if (char.IsDigit(text[i]) || text[i] == '-')
+                {
+                    count++;
+                }
+                else if (text.Substring(i).StartsWith(separator))
+                {
+                    count++;
+                    i += separator.Length - 1;
+                }
+
+                if (count == targetCount)
+                {
+                    return i + 1;
+                }
+            }
+
+            return text?.Length ?? 0;
+        }
 
         /// <inheritdoc />
         protected override async ValueTask DisposeAsyncCore()

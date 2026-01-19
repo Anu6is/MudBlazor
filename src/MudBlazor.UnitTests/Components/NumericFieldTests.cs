@@ -1218,6 +1218,48 @@ namespace MudBlazor.UnitTests.Components
         /// <summary>
         /// Test that reset method clears conversion errors.
         /// </summary>
+#nullable enable
+        [Test]
+        public async Task NumericField_CursorPreservationLogic()
+        {
+            var comp = Context.Render<MudNumericFieldTestHelper<int>>(parameters => parameters
+                .Add(x => x.Culture, CultureInfo.GetCultureInfo("de-DE"))); // German uses . for thousands and , for decimal
+            var field = comp.Instance;
+
+            // Test German culture: 1.234,56
+            // Significant chars: digits, minus, and , (decimal separator)
+
+            // 1.234,56
+            // Sigs: 1, 2, 3, 4, , , 5, 6 (Wait, , is decimal) -> 1, 2, 3, 4, ,, 5, 6
+            field.CountSignificantCharsPublic("1.234,56").Should().Be(7);
+
+            // Positions
+            field.GetPositionAfterSignificantCharsPublic("1.234,56", 1).Should().Be(1); // after 1
+            field.GetPositionAfterSignificantCharsPublic("1.234,56", 2).Should().Be(3); // after 2 (skipped .)
+            field.GetPositionAfterSignificantCharsPublic("1.234,56", 4).Should().Be(5); // after 4
+            field.GetPositionAfterSignificantCharsPublic("1.234,56", 5).Should().Be(6); // after ,
+            field.GetPositionAfterSignificantCharsPublic("1.234,56", 7).Should().Be(8); // after 6
+
+            // Test minus sign
+            field.CountSignificantCharsPublic("-123").Should().Be(4);
+            field.GetPositionAfterSignificantCharsPublic("-123", 1).Should().Be(1); // after -
+
+            // Test multi-char decimal separator (just in case)
+            // I don't know a culture with multi-char decimal separator offhand, but let's mock it if possible
+            // Actually, let's just test English too
+            await comp.SetParametersAndRenderAsync(parameters => parameters.Add(x => x.Culture, CultureInfo.InvariantCulture));
+            field.CountSignificantCharsPublic("1,234.56").Should().Be(7);
+            field.GetPositionAfterSignificantCharsPublic("1,234.56", 1).Should().Be(1); // after 1
+            field.GetPositionAfterSignificantCharsPublic("1,234.56", 2).Should().Be(3); // after 2 (skipped ,)
+        }
+
+        public class MudNumericFieldTestHelper<T> : MudNumericField<T>
+        {
+            public int CountSignificantCharsPublic(string? text) => CountSignificantChars(text);
+            public int GetPositionAfterSignificantCharsPublic(string? text, int targetCount) => GetPositionAfterSignificantChars(text, targetCount);
+        }
+#nullable restore
+
         [Test]
         public async Task NumericFieldConverterErrorReset()
         {

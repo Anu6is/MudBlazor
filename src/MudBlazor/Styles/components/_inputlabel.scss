@@ -5,6 +5,17 @@
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+
+  &.mud-input-label-show-on-hover {
+    pointer-events: auto !important;
+
+    &:hover {
+      overflow: visible;
+      max-width: unset;
+      width: max-content;
+      z-index: 10;
+    }
+  }
 }
 
 .mud-input-label-inputcontrol {

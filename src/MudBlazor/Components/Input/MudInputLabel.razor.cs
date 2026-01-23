@@ -16,6 +16,7 @@ namespace MudBlazor
             .AddClass($"mud-input-label-margin-{Margin.ToStringFast(true)}", when: () => Margin != Margin.None)
             .AddClass("mud-disabled", Disabled)
             .AddClass("mud-input-error", Error)
+            .AddClass("mud-input-label-show-on-hover", ShowLabelOnHover)
             .AddClass(Class)
             .Build();
 
@@ -69,5 +70,14 @@ namespace MudBlazor
         /// </remarks>
         [Parameter]
         public string ForId { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Show the full label on hover when it is truncated.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to <c>false</c>.
+        /// </remarks>
+        [Parameter]
+        public bool ShowLabelOnHover { get; set; }
     }
 }

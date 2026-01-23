@@ -239,5 +239,15 @@ namespace MudBlazor
         [Parameter]
         [Category(CategoryTypes.FormComponent.Appearance)]
         public bool ShrinkLabel { get; set; }
+
+        /// <summary>
+        /// Show the full label on hover when it is truncated.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to <c>false</c>.
+        /// </remarks>
+        [Parameter]
+        [Category(CategoryTypes.FormComponent.Appearance)]
+        public bool ShowLabelOnHover { get; set; }
     }
 }

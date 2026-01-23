@@ -433,6 +433,16 @@ namespace MudBlazor
         public bool ShrinkLabel { get; set; }
 
         /// <summary>
+        /// Show the full label on hover when it is truncated.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to <c>false</c>.
+        /// </remarks>
+        [Parameter]
+        [Category(CategoryTypes.FormComponent.Appearance)]
+        public bool ShowLabelOnHover { get; set; }
+
+        /// <summary>
         /// The mask to apply to input values when <see cref="Editable"/> is <c>true</c>.
         /// </summary>
         [Parameter]

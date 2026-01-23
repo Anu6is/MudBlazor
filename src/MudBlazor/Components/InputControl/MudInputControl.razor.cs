@@ -160,5 +160,14 @@ namespace MudBlazor
         /// </summary>
         [Parameter]
         public string? ForId { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Show the full label on hover when it is truncated.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to <c>false</c>.
+        /// </remarks>
+        [Parameter]
+        public bool ShowLabelOnHover { get; set; }
     }
 }

@@ -1,0 +1,41 @@
+@using MudBlazor.Utilities
+@namespace MudBlazor.Charts
+
+@if (HoverContext is not null)
+{
+    <g class="mud-chart-shared-tooltip" transform="translate(@HoverContext.PixelX.ToStr(), @VerticalEndSpace.ToStr())" style="pointer-events: none;">
+        <defs>
+            <filter id="shared-tooltip-shadow" x="-50%" y="-50%" width="200%" height="200%">
+                <feDropShadow dx="0" dy="0" stdDeviation="1.0" flood-color="black" flood-opacity="0.5" />
+            </filter>
+        </defs>
+
+        @{
+            var rowHeight = 20.0;
+            var headerHeight = 25.0;
+            var padding = 10.0;
+            var width = 150.0;
+            var height = headerHeight + (HoverContext.Values.Count * rowHeight) + padding;
+        }
+
+        <rect x="@((-width / 2).ToStr())" y="0" width="@width.ToStr()" height="@height.ToStr()"
+              rx="4" ry="4" fill="var(--mud-palette-surface)" stroke="var(--mud-palette-divider)" stroke-width="1" filter="url(#shared-tooltip-shadow)" />
+
+        <text x="0" y="17" font-size="12" text-anchor="middle" font-weight="bold" fill="var(--mud-palette-text-primary)">
+            @HoverContext.XLabel
+        </text>
+
+        <line x1="@((-width / 2 + 5).ToStr())" y1="@headerHeight.ToStr()" x2="@((width / 2 - 5).ToStr())" y2="@headerHeight.ToStr()" stroke="var(--mud-palette-divider)" stroke-width="0.5" />
+
+        @for (int i = 0; i < HoverContext.Values.Count; i++)
+        {
+            var val = HoverContext.Values[i];
+            <g transform="translate(@((-width / 2 + padding).ToStr()), @((headerHeight + padding + i * rowHeight).ToStr()))">
+                <circle cx="5" cy="-4" r="4" fill="@val.Color" />
+                <text x="15" y="0" font-size="11" fill="var(--mud-palette-text-secondary)" dominant-baseline="middle">
+                    @val.SeriesName: @val.Value
+                </text>
+            </g>
+        }
+    </g>
+}

@@ -42,6 +42,36 @@ public abstract class MudAxisLineChartBase<T, TOptions> : MudAxisChartBase<T, TO
     protected SvgPath? HoveredDataPointPath { get; set; }
 
     /// <summary>
+    /// The current hover context, containing information about the pointer position and hovered data.
+    /// </summary>
+    protected HoverContext? HoverContext { get; set; }
+
+    /// <summary>
+    /// The horizontal space between points.
+    /// </summary>
+    protected double HorizontalSpace { get; set; }
+
+    /// <summary>
+    /// The vertical space between points.
+    /// </summary>
+    protected double VerticalSpace { get; set; }
+
+    /// <summary>
+    /// The Y-axis grid units.
+    /// </summary>
+    protected T GridYUnits { get; set; }
+
+    /// <summary>
+    /// The lowest horizontal line index.
+    /// </summary>
+    protected int LowestHorizontalLine { get; set; }
+
+    /// <summary>
+    /// Indicates whether the interaction layer should be enabled.
+    /// </summary>
+    protected bool InteractionEnabled => ChartOptions is not null && (ChartOptions.TooltipMode == TooltipMode.Shared || ChartOptions.ShowCrosshair);
+
+    /// <summary>
     /// Indicates whether the chart should be interpolated.
     /// </summary>
     protected abstract bool ShouldInterpolate { get; }
@@ -452,6 +482,81 @@ public abstract class MudAxisLineChartBase<T, TOptions> : MudAxisChartBase<T, TO
     protected void OnDataPointMouseOut()
     {
         HoveredDataPointPath = null;
+
+        if (IsOverlayChart && ChartReference is IMudStateHasChanged chart)
+            chart.StateHasChanged();
+    }
+
+    /// <summary>
+    /// Handles the pointer move event on the interaction layer.
+    /// </summary>
+    /// <param name="e">The pointer event arguments.</param>
+    protected virtual void HandlePointerMove(PointerEventArgs e)
+    {
+        if (ChartOptions is null || HorizontalSpace == 0)
+            return;
+
+        var mouseX = e.OffsetX;
+        var mouseY = e.OffsetY;
+
+        if (_elementSize is not null && _elementSize.Width > 0 && _elementSize.Height > 0)
+        {
+            mouseX = mouseX * _boundWidth / _elementSize.Width;
+            mouseY = mouseY * _boundHeight / _elementSize.Height;
+        }
+
+        // Resolve the nearest index
+        var index = (int)Math.Round((mouseX - HorizontalStartSpace) / HorizontalSpace);
+        var maxIndex = Series.Where(s => s.Visible).Max(s => (int?)s.Data.Points.Count - 1) ?? 0;
+        index = Math.Clamp(index, 0, maxIndex);
+
+        var pixelX = ChartOptions.CrosshairSnap == CrosshairSnap.Index
+            ? HorizontalStartSpace + (index * HorizontalSpace)
+            : mouseX;
+
+        var values = new List<SeriesHoverValue>();
+        for (var i = 0; i < Series.Count; i++)
+        {
+            var series = Series[i];
+            if (series.Visible && index < series.Data.Points.Count)
+            {
+                var color = ChartOptions.ChartPalette?.Length > 0
+                    ? ChartOptions.ChartPalette[i % ChartOptions.ChartPalette.Length]
+                    : string.Empty;
+
+                values.Add(new SeriesHoverValue
+                {
+                    SeriesName = series.Name,
+                    Value = double.CreateSaturating(series.Data.Points[index].Y),
+                    Color = color
+                });
+            }
+        }
+
+        HoverContext = new HoverContext
+        {
+            XIndex = index,
+            XLabel = index < ChartLabels.Length ? ChartLabels[index] : string.Empty,
+            PixelX = pixelX,
+            PixelY = mouseY,
+            Values = values
+        };
+
+        StateHasChanged();
+
+        if (IsOverlayChart && ChartReference is IMudStateHasChanged chart)
+            chart.StateHasChanged();
+    }
+
+    /// <summary>
+    /// Handles the pointer leave event on the interaction layer.
+    /// </summary>
+    /// <param name="e">The pointer event arguments.</param>
+    protected virtual void HandlePointerLeave(PointerEventArgs e)
+    {
+        HoverContext = null;
+
+        StateHasChanged();
 
         if (IsOverlayChart && ChartReference is IMudStateHasChanged chart)
             chart.StateHasChanged();

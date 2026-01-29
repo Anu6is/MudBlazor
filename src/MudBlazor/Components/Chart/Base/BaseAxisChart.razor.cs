@@ -4,6 +4,7 @@
 
 using System.Numerics;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using MudBlazor.Interop;
 using MudBlazor.Utilities;
@@ -198,6 +199,20 @@ public partial class BaseAxisChart<T, TChartOptions> : MudComponentBase
     [Parameter]
     [Category(CategoryTypes.Chart.Behavior)]
     public EventCallback<ElementReference> ElementRefChanged { get; set; }
+
+    /// <summary>
+    /// Occurs when a pointer moves over the chart.
+    /// </summary>
+    [Parameter]
+    [Category(CategoryTypes.Chart.Behavior)]
+    public EventCallback<PointerEventArgs> OnPointerMove { get; set; }
+
+    /// <summary>
+    /// Occurs when a pointer leaves the chart.
+    /// </summary>
+    [Parameter]
+    [Category(CategoryTypes.Chart.Behavior)]
+    public EventCallback<PointerEventArgs> OnPointerLeave { get; set; }
 
     private string HoveredStylename =>
         new StyleBuilder()

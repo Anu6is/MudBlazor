@@ -1,0 +1,19 @@
+@namespace MudBlazor.UnitTests.Viewer.TestComponents.Charts
+
+<MudChart ChartType="ChartType.Line" ChartSeries="@_series" ChartLabels="@_labels"
+          ChartOptions="@_options" Width="100%" Height="350px" />
+
+@code {
+    private List<ChartSeries<double>> _series = new()
+    {
+        new() { Name = "Series 1", Data = new double[] { 10, 20, 30, 25, 40 } },
+        new() { Name = "Series 2", Data = new double[] { 5, 15, 25, 20, 35 } }
+    };
+    private string[] _labels = { "A", "B", "C", "D", "E" };
+    private LineChartOptions _options = new()
+    {
+        TooltipMode = TooltipMode.Shared,
+        ShowCrosshair = true,
+        CrosshairMode = CrosshairMode.Both
+    };
+}

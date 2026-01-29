@@ -24,9 +24,11 @@
                        ChartType="@ChartType"
                        SeriesContent="@RenderChartLines()"
                        TooltipContent="@RenderTooltip()"
-                       ChildContent="@OverlayContent"
+                       OnPointerMove="@(InteractionEnabled ? EventCallback.Factory.Create<PointerEventArgs>(this, HandlePointerMove) : default)"
+                       OnPointerLeave="@(InteractionEnabled ? EventCallback.Factory.Create<PointerEventArgs>(this, HandlePointerLeave) : default)"
+                       ChildContent="@RenderChildContent()"
                        CustomGraphics="@CustomGraphics"
-                       HoveredSegment="@HoveredDataPointPath"
+                       HoveredSegment="@(HoveredDataPointPath ?? (HoverContext is not null ? new SvgPath() : null))"
                        HorizontalLines="@HorizontalLines"
                        VerticalLines="@VerticalLines"
                        HorizontalValues="@HorizontalValues"
@@ -106,6 +108,10 @@
                 // Hoverable point (invisible until hovered)
                 builder.OpenElement(seq++, "circle");
                 builder.AddAttribute(seq++, "class", "mud-chart-serie mud-chart-point");
+                if (InteractionEnabled)
+                {
+                    builder.AddAttribute(seq++, "style", "pointer-events: none;");
+                }
                 builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create(this, () => SetSelectedIndexAsync(chartLine.Index)));
                 builder.AddAttribute(seq++, "fill", item.Equals(HoveredDataPointPath) ? color : string.Empty);
                 builder.AddAttribute(seq++, "stroke", color);
@@ -121,8 +127,35 @@
         }
     };
 
+    private RenderFragment RenderChildContent() => builder =>
+    {
+        if (InteractionEnabled && HoverContext is not null)
+        {
+            builder.OpenComponent<CrosshairRenderer>(0);
+            builder.AddAttribute(1, "HoverContext", HoverContext);
+            builder.AddAttribute(2, "Mode", ChartOptions!.CrosshairMode);
+            builder.AddAttribute(3, "BoundWidth", _boundWidth);
+            builder.AddAttribute(4, "BoundHeight", _boundHeight);
+            builder.AddAttribute(5, "HorizontalStartSpace", HorizontalStartSpace);
+            builder.AddAttribute(6, "HorizontalEndSpace", HorizontalEndSpace);
+            builder.AddAttribute(7, "VerticalStartSpace", VerticalStartSpace);
+            builder.AddAttribute(8, "VerticalEndSpace", VerticalEndSpace);
+            builder.CloseComponent();
+        }
+        builder.AddContent(9, OverlayContent);
+    };
+
     private RenderFragment RenderTooltip() => builder =>
     {
+        if (ChartOptions?.TooltipMode == TooltipMode.Shared && HoverContext is not null)
+        {
+            builder.OpenComponent<SharedChartTooltip>(0);
+            builder.AddAttribute(1, "HoverContext", HoverContext);
+            builder.AddAttribute(2, "VerticalEndSpace", VerticalEndSpace);
+            builder.CloseComponent();
+            return;
+        }
+
         if (HoveredDataPointPath is null)
             return;
 

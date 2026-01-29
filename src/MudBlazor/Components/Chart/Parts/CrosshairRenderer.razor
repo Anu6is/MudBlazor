@@ -1,0 +1,18 @@
+@using MudBlazor.Utilities
+@namespace MudBlazor.Charts
+
+@if (HoverContext is not null && Mode != CrosshairMode.None)
+{
+    @if (Mode == CrosshairMode.Vertical || Mode == CrosshairMode.Both)
+    {
+        <line x1="@HoverContext.PixelX.ToStr()" y1="@VerticalEndSpace.ToStr()"
+              x2="@HoverContext.PixelX.ToStr()" y2="@(BoundHeight - VerticalStartSpace).ToStr()"
+              class="mud-chart-crosshair" />
+    }
+    @if (Mode == CrosshairMode.Horizontal || Mode == CrosshairMode.Both)
+    {
+        <line x1="@HorizontalStartSpace.ToStr()" y1="@HoverContext.PixelY.ToStr()"
+              x2="@(BoundWidth - HorizontalEndSpace).ToStr()" y2="@HoverContext.PixelY.ToStr()"
+              class="mud-chart-crosshair" />
+    }
+}

@@ -60,6 +60,11 @@ namespace MudBlazor.Charts
                 _boundHeight = area.BoundHeight;
             }
 
+            GridYUnits = gridYUnits;
+            LowestHorizontalLine = lowestHorizontalLine;
+            HorizontalSpace = horizontalSpace;
+            VerticalSpace = verticalSpace;
+
             GenerateChartLines(lowestHorizontalLine, gridYUnits, horizontalSpace, verticalSpace);
             GenerateLegends();
             RenderOverlay();

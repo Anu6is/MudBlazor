@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using Microsoft.AspNetCore.Components;
@@ -16,9 +16,10 @@ namespace MudBlazor;
 /// <seealso cref="MudTheme"/>
 partial class MudThemeProvider : ComponentBaseWithState, IAsyncDisposable
 {
-    // private const string Breakpoint = "mud-breakpoint";
     private bool _disposed;
     private bool _observing;
+    private bool _isInitialized;
+    private bool? _lastResolvedIsDarkMode;
     private const string Palette = "mud-palette";
     private const string Ripple = "mud-ripple";
     private const string Elevation = "mud-elevation";
@@ -30,6 +31,7 @@ partial class MudThemeProvider : ComponentBaseWithState, IAsyncDisposable
     private readonly ParameterState<bool> _isDarkModeState;
     private readonly ParameterState<Palette?> _currentPaletteState;
     private readonly ParameterState<bool> _observeSystemDarkModeChangeState;
+    private readonly ParameterState<ColorScheme> _colorSchemeState;
     private readonly Lazy<DotNetObjectReference<MudThemeProvider>> _lazyDotNetRef;
 
     private event Func<bool, Task>? DarkModeChanged;
@@ -53,6 +55,21 @@ partial class MudThemeProvider : ComponentBaseWithState, IAsyncDisposable
     public bool DefaultScrollbar { get; set; }
 
     /// <summary>
+    /// The preference for dark or light mode.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to <see cref="ColorScheme.System"/>.
+    /// </remarks>
+    [Parameter, ParameterState]
+    public ColorScheme ColorScheme { get; set; } = ColorScheme.System;
+
+    /// <summary>
+    /// Occurs when <see cref="ColorScheme"/> has changed.
+    /// </summary>
+    [Parameter]
+    public EventCallback<ColorScheme> ColorSchemeChanged { get; set; }
+
+    /// <summary>
     /// Detects when the system theme has changed between Light Mode and Dark Mode.
     /// </summary>
     /// <remarks>
@@ -60,6 +77,7 @@ partial class MudThemeProvider : ComponentBaseWithState, IAsyncDisposable
     /// When <c>true</c>, the theme will automatically change to Light Mode or Dark Mode as the system theme changes.
     /// </remarks>
     [Parameter, ParameterState]
+    [Obsolete("Use ColorScheme instead.")]
     public bool ObserveSystemDarkModeChange { get; set; } = true;
 
     /// <summary>
@@ -70,13 +88,26 @@ partial class MudThemeProvider : ComponentBaseWithState, IAsyncDisposable
     /// When this value changes, <see cref="IsDarkModeChanged"/> occurs.
     /// </remarks>
     [Parameter, ParameterState]
+    [Obsolete("Use ColorScheme instead.")]
     public bool IsDarkMode { get; set; }
 
     /// <summary>
     /// Occurs when <see cref="IsDarkMode"/> has changed.
     /// </summary>
     [Parameter]
+    [Obsolete("Use ColorSchemeChanged instead.")]
     public EventCallback<bool> IsDarkModeChanged { get; set; }
+
+    /// <summary>
+    /// Gets the currently resolved dark mode state.
+    /// </summary>
+    public bool ResolvedIsDarkMode => _isDarkModeState.Value;
+
+    /// <summary>
+    /// Occurs when the resolved dark mode state has changed.
+    /// </summary>
+    [Parameter]
+    public EventCallback<bool> ResolvedIsDarkModeChanged { get; set; }
 
     /// <summary>
     /// Gets the currently active palette based on the <see cref="IsDarkMode"/> setting.
@@ -98,12 +129,19 @@ partial class MudThemeProvider : ComponentBaseWithState, IAsyncDisposable
     public MudThemeProvider()
     {
         using var registerScope = CreateRegisterScope();
+#pragma warning disable CS0618
         _isDarkModeState = registerScope.RegisterParameter<bool>(nameof(IsDarkMode))
             .WithParameter(() => IsDarkMode)
-            .WithEventCallback(() => IsDarkModeChanged);
+            .WithEventCallback(() => IsDarkModeChanged)
+            .WithChangeHandler(OnIsDarkModeChanged);
         _observeSystemDarkModeChangeState = registerScope.RegisterParameter<bool>(nameof(ObserveSystemDarkModeChange))
             .WithParameter(() => ObserveSystemDarkModeChange)
             .WithChangeHandler(OnObserveSystemDarkModeChangeChanged);
+#pragma warning restore CS0618
+        _colorSchemeState = registerScope.RegisterParameter<ColorScheme>(nameof(ColorScheme))
+            .WithParameter(() => ColorScheme)
+            .WithEventCallback(() => ColorSchemeChanged)
+            .WithChangeHandler(OnColorSchemeChanged);
         _currentPaletteState = registerScope.RegisterParameter<Palette?>(nameof(CurrentPalette))
             .WithParameter(() => CurrentPalette)
             .WithEventCallback(() => CurrentPaletteChanged);
@@ -118,8 +156,8 @@ partial class MudThemeProvider : ComponentBaseWithState, IAsyncDisposable
     /// </returns>
     public async Task<bool> GetSystemDarkModeAsync()
     {
-        var (_, value) = await JsRuntime.InvokeAsyncWithErrorHandling(false, "mudThemeProvider.isDarkMode");
-        return value;
+        var (_, isDarkMode) = await JsRuntime.InvokeAsyncWithErrorHandling(false, "mudThemeProvider.isDarkMode");
+        return isDarkMode;
     }
 
     /// <summary>
@@ -142,12 +180,17 @@ partial class MudThemeProvider : ComponentBaseWithState, IAsyncDisposable
     [JSInvokable]
     public async Task SystemDarkModeChangedAsync(bool isDarkMode)
     {
-        await _isDarkModeState.SetValueAsync(isDarkMode);
-        var handler = DarkModeChanged;
-        if (handler is not null)
+#pragma warning disable CS0618
+        if (_colorSchemeState.Value == ColorScheme.System || _observeSystemDarkModeChangeState.Value)
         {
-            await handler(isDarkMode);
+            await _isDarkModeState.SetValueAsync(isDarkMode);
+            var handler = DarkModeChanged;
+            if (handler is not null)
+            {
+                await handler(isDarkMode);
+            }
         }
+#pragma warning restore CS0618
     }
 
     // <inheritdoc />
@@ -155,11 +198,8 @@ partial class MudThemeProvider : ComponentBaseWithState, IAsyncDisposable
     {
         if (firstRender)
         {
-            if (_observeSystemDarkModeChangeState.Value && !_observing)
-            {
-                _observing = true;
-                await WatchDarkMode();
-            }
+            _isInitialized = true;
+            await UpdateThemeStateAsync();
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -168,7 +208,17 @@ partial class MudThemeProvider : ComponentBaseWithState, IAsyncDisposable
     // <inheritdoc />
     protected override async Task OnParametersSetAsync()
     {
-        await _currentPaletteState.SetValueAsync(GetCurrentPalette());
+#pragma warning disable CS0618
+        if (_colorSchemeState.Value == ColorScheme.System && !_observeSystemDarkModeChangeState.Value)
+        {
+            await _colorSchemeState.SetValueAsync(_isDarkModeState.Value ? ColorScheme.Dark : ColorScheme.Light);
+        }
+#pragma warning restore CS0618
+
+        if (_isInitialized)
+        {
+            await SyncThemeStateAsync(_isDarkModeState.Value);
+        }
 
         await base.OnParametersSetAsync();
     }
@@ -574,13 +624,73 @@ partial class MudThemeProvider : ComponentBaseWithState, IAsyncDisposable
         return _isDarkModeState.Value ? theme.PaletteDark : theme.PaletteLight;
     }
 
-    private async Task OnObserveSystemDarkModeChangeChanged(ParameterChangedEventArgs<bool> arg)
+    private async Task OnIsDarkModeChanged(ParameterChangedEventArgs<bool> arg)
     {
-        // The _observing flag prevents attempting to stop observation when it hasn't been started.
-        // For example, ObserveSystemDarkModeChange is true by default, and if it's set to false in the initial component setup 
-        // like <MudThemeProvider ObserveSystemDarkModeChange="false" />, the ChangeHandler of ParameterState will be invoked.
-        // Therefore, it's not desirable to stop an observation that hasn't been started.
-        if (arg.Value)
+        if (_colorSchemeState.Value != ColorScheme.System)
+        {
+            await _colorSchemeState.SetValueAsync(arg.Value ? ColorScheme.Dark : ColorScheme.Light);
+        }
+        await UpdateThemeStateAsync();
+    }
+
+    private async Task SyncThemeStateAsync(bool isDarkMode)
+    {
+        var theme = GetTheme();
+        await _currentPaletteState.SetValueAsync(isDarkMode ? theme.PaletteDark : theme.PaletteLight);
+
+        if (_lastResolvedIsDarkMode != isDarkMode)
+        {
+            _lastResolvedIsDarkMode = isDarkMode;
+            await ResolvedIsDarkModeChanged.InvokeAsync(isDarkMode);
+        }
+    }
+
+    private async Task OnColorSchemeChanged(ParameterChangedEventArgs<ColorScheme> arg)
+    {
+        await UpdateThemeStateAsync();
+    }
+
+    private async Task UpdateThemeStateAsync()
+    {
+#pragma warning disable CS0618
+        var colorScheme = _colorSchemeState.Value;
+        var observeSystem = _observeSystemDarkModeChangeState.Value;
+        var isDarkMode = _isDarkModeState.Value;
+
+        switch (colorScheme)
+        {
+            case ColorScheme.Light:
+                isDarkMode = false;
+                observeSystem = false;
+                break;
+            case ColorScheme.Dark:
+                isDarkMode = true;
+                observeSystem = false;
+                break;
+            case ColorScheme.System:
+                observeSystem = true;
+                // For backward compatibility: if IsDarkMode was already true, we don't immediately override it with system preference.
+                if (!isDarkMode && _isInitialized)
+                {
+                    isDarkMode = await GetSystemDarkModeAsync();
+                }
+                break;
+        }
+
+        await _isDarkModeState.SetValueAsync(isDarkMode);
+        await _observeSystemDarkModeChangeState.SetValueAsync(observeSystem);
+
+        await SyncThemeStateAsync(isDarkMode);
+        await SyncThemeWatchingAsync();
+#pragma warning restore CS0618
+    }
+
+    private async Task SyncThemeWatchingAsync()
+    {
+#pragma warning disable CS0618
+        bool shouldObserve = _colorSchemeState.Value == ColorScheme.System && _observeSystemDarkModeChangeState.Value;
+#pragma warning restore CS0618
+        if (shouldObserve)
         {
             if (!_observing)
             {
@@ -596,6 +706,27 @@ partial class MudThemeProvider : ComponentBaseWithState, IAsyncDisposable
                 await StopWatchingDarkMode();
             }
         }
+    }
+
+    private async Task OnObserveSystemDarkModeChangeChanged(ParameterChangedEventArgs<bool> arg)
+    {
+        // Update ColorScheme to match ObserveSystemDarkModeChange for backward compatibility
+        if (arg.Value)
+        {
+            if (_colorSchemeState.Value != ColorScheme.System)
+            {
+                await _colorSchemeState.SetValueAsync(ColorScheme.System);
+            }
+        }
+        else
+        {
+            if (_colorSchemeState.Value == ColorScheme.System)
+            {
+                await _colorSchemeState.SetValueAsync(_isDarkModeState.Value ? ColorScheme.Dark : ColorScheme.Light);
+            }
+        }
+
+        await UpdateThemeStateAsync();
     }
 
     private ValueTask WatchDarkMode() => JsRuntime.InvokeVoidAsyncIgnoreErrors("mudThemeProvider.watchDarkMode", _lazyDotNetRef.Value);

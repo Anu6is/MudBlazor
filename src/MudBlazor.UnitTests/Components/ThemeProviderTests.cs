@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using AngleSharp.Html.Dom;
 using AwesomeAssertions;
 using Bunit;
@@ -11,9 +11,17 @@ using NUnit.Framework;
 namespace MudBlazor.UnitTests.Components
 {
 #nullable enable
+#pragma warning disable CS0618
     [TestFixture]
     public class ThemeProviderTests : BunitTest
     {
+        [SetUp]
+        public override void Setup()
+        {
+            base.Setup();
+            Context.JSInterop.Setup<bool>("mudThemeProvider.isDarkMode").SetResult(false);
+        }
+
         [Test]
         [TestCase("en-us")]
         [TestCase("de-DE")]
@@ -403,31 +411,34 @@ namespace MudBlazor.UnitTests.Components
             styleLines.Should().Contain(expectedPrimaryDarkenLine);
         }
 
+
         [Test]
         public async Task ObserveSystemDarkModeChange()
         {
             // Arrange & Act
             Context.JSInterop.SetupVoid("mudThemeProvider.stopWatchingDarkMode");
             Context.JSInterop.SetupVoid("mudThemeProvider.watchDarkMode");
-            var themeProvider = Context.Render<ThemeProviderObserveSystemDarkModeChangeTest>();
+            var themeProvider = Context.Render<MudThemeProvider>(parameters => parameters
+                .Add(p => p.ColorScheme, ColorScheme.Light));
 
             // Assert
             Context.JSInterop.VerifyNotInvoke("mudThemeProvider.watchDarkMode");
             Context.JSInterop.VerifyNotInvoke("mudThemeProvider.stopWatchingDarkMode");
 
             // Act
-            await themeProvider.InvokeAsync(themeProvider.Instance.EnableObserve);
+            await themeProvider.SetParametersAndRenderAsync(parameters => parameters
+                .Add(p => p.ColorScheme, ColorScheme.System));
 
             // Assert
-            Context.JSInterop.VerifyInvoke("mudThemeProvider.watchDarkMode", 1);
+            themeProvider.WaitForAssertion(() => Context.JSInterop.VerifyInvoke("mudThemeProvider.watchDarkMode", 1));
             Context.JSInterop.VerifyNotInvoke("mudThemeProvider.stopWatchingDarkMode");
 
             // Act
-            await themeProvider.InvokeAsync(themeProvider.Instance.DisableObserve);
+            await themeProvider.SetParametersAndRenderAsync(parameters => parameters
+                .Add(p => p.ColorScheme, ColorScheme.Light));
 
             // Assert
-            Context.JSInterop.VerifyInvoke("mudThemeProvider.watchDarkMode", 1);
-            Context.JSInterop.VerifyInvoke("mudThemeProvider.stopWatchingDarkMode", 1);
+            themeProvider.WaitForAssertion(() => Context.JSInterop.VerifyInvoke("mudThemeProvider.stopWatchingDarkMode", 1));
         }
 
         [Test]
@@ -672,4 +683,5 @@ namespace MudBlazor.UnitTests.Components
             comp.Instance.GetCurrentPalette().Should().BeOfType<PaletteLight>();
         }
     }
+#pragma warning restore CS0618
 }

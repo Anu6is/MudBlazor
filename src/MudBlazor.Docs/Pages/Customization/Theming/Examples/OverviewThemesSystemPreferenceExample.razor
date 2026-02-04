@@ -1,17 +1,20 @@
-﻿@namespace MudBlazor.Docs.Examples
+@namespace MudBlazor.Docs.Examples
 
-<MudThemeProvider @ref="_mudThemeProvider" @bind-IsDarkMode="_isDarkMode"/>
+<MudThemeProvider @ref="_mudThemeProvider" ColorScheme="ColorScheme.System" />
+
+<MudText>Initial system theme preference: @(_isDarkMode ? "Dark" : "Light")</MudText>
 
 @code {
     private bool _isDarkMode;
-    private MudThemeProvider _mudThemeProvider;
+    private MudThemeProvider _mudThemeProvider = null!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             _isDarkMode = await _mudThemeProvider.GetSystemDarkModeAsync();
-            StateHasChanged();
+            await InvokeAsync(StateHasChanged);
         }
+        await base.OnAfterRenderAsync(firstRender);
     }
 }

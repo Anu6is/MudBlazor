@@ -1,10 +1,11 @@
-﻿@page "/"
+@page "/"
+@using MudBlazor
 @using System.Reflection
 @using FuzzySharp
 @inject NavigationManager NavManager
 @implements IDisposable
 
-<MudThemeProvider Theme="@_customTheme" IsDarkMode="@_isDarkMode" />
+<MudThemeProvider Theme="@_customTheme" ColorScheme="@_colorScheme" />
 
 <MudLayout>
     <MudRTLProvider RightToLeft="_rightToLeft">
@@ -217,7 +218,7 @@
     private bool _canShowAllLink;
     private CancellationTokenSource? _searchCts;
     private Task? _searchTask;
-    private bool _isDarkMode;
+    private MudBlazor.ColorScheme _colorScheme = MudBlazor.ColorScheme.Light;
     private readonly MudTheme _customTheme = new()
     {
         LayoutProperties = new LayoutProperties
@@ -227,11 +228,11 @@
         }
     };
 
-    private void ToggleTheme() => _isDarkMode = !_isDarkMode;
+    private void ToggleTheme() => _colorScheme = _colorScheme == MudBlazor.ColorScheme.Dark ? MudBlazor.ColorScheme.Light : MudBlazor.ColorScheme.Dark;
 
-    private string ThemeIcon => _isDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode;
+    private string ThemeIcon => _colorScheme == MudBlazor.ColorScheme.Dark ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode;
 
-    private string ThemeLabel => _isDarkMode ? "Light mode" : "Dark mode";
+    private string ThemeLabel => _colorScheme == MudBlazor.ColorScheme.Dark ? "Light mode" : "Dark mode";
 
     private string SearchText
     {

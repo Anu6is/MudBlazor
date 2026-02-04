@@ -1,11 +1,16 @@
-﻿@namespace MudBlazor.Docs.Examples
+@namespace MudBlazor.Docs.Examples
 
-<MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme"/>
-<MudSwitch @bind-Value="_isDarkMode" Color="Color.Primary" Class="ma-4" T="bool" Label="Toggle Light/Dark Mode"/>
+<MudThemeProvider @bind-ColorScheme="@_colorScheme" Theme="_theme"/>
+<MudSwitch Value="@(_colorScheme == ColorScheme.Dark)" ValueChanged="@OnDarkModeChanged" Color="Color.Primary" Class="ma-4" T="bool" Label="Toggle Light/Dark Mode"/>
 
 <MudText Class="ma-4">This is an example text!</MudText>
 
 @code{
     private MudTheme _theme = new();
-    private bool _isDarkMode;
+    private ColorScheme _colorScheme = ColorScheme.Light;
+
+    private void OnDarkModeChanged(bool isDark)
+    {
+        _colorScheme = isDark ? ColorScheme.Dark : ColorScheme.Light;
+    }
 }

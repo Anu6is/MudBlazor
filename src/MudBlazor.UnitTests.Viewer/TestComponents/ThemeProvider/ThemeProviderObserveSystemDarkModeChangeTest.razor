@@ -1,17 +1,18 @@
-﻿<MudThemeProvider ObserveSystemDarkModeChange="@_observeSystemDarkModeChange" />
+@using MudBlazor
+<MudThemeProvider ColorScheme="@_colorScheme" />
 
 @code {
-    private bool _observeSystemDarkModeChange;
+    private ColorScheme _colorScheme = ColorScheme.Light;
 
     public void EnableObserve()
     {
-        _observeSystemDarkModeChange = true;
+        _colorScheme = ColorScheme.System;
         StateHasChanged();
     }
 
     public void DisableObserve()
     {
-        _observeSystemDarkModeChange = false;
+        _colorScheme = ColorScheme.Light;
         StateHasChanged();
     }
 }

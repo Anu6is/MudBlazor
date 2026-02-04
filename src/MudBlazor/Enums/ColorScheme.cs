@@ -1,9 +1,9 @@
-﻿namespace MudBlazor.Docs.Enums;
+namespace MudBlazor;
 
 /// <summary>
 /// Represents the theme preference for dark or light mode.
 /// </summary>
-public enum DarkLightMode
+public enum ColorScheme
 {
     /// <summary>
     /// The theme is determined by the operating system or browser.

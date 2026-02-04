@@ -1,9 +1,9 @@
-﻿// Copyright (c) MudBlazor 2021
+// Copyright (c) MudBlazor 2021
 // MudBlazor licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.AspNetCore.Components;
-using MudBlazor.Docs.Enums;
+using MudBlazor;
 using MudBlazor.Docs.Services;
 using MudBlazor.Docs.Services.Notifications;
 
@@ -31,22 +31,22 @@ public partial class AppbarButtons
     public string RtlButtonIcon => LayoutService.IsRTL ? @Icons.Material.Filled.FormatTextdirectionLToR : @Icons.Material.Filled.FormatTextdirectionRToL;
 
     /// <summary>
-    /// Gets the text for the dark/light mode toggle button, indicating the next mode.
+    /// Gets the text for the color scheme toggle button, indicating the next mode.
     /// </summary>
-    public string DarkLightModeButtonText => LayoutService.CurrentDarkLightMode switch
+    public string ColorSchemeButtonText => LayoutService.CurrentColorScheme switch
     {
-        DarkLightMode.Dark => "Auto mode",
-        DarkLightMode.Light => "Dark mode",
+        ColorScheme.Dark => "Auto mode",
+        ColorScheme.Light => "Dark mode",
         _ => "Light mode"
     };
 
     /// <summary>
-    /// Gets the icon for the dark/light mode toggle button.
+    /// Gets the icon for the color scheme toggle button.
     /// </summary>
-    public string DarkLightModeButtonIcon => LayoutService.CurrentDarkLightMode switch
+    public string ColorSchemeButtonIcon => LayoutService.CurrentColorScheme switch
     {
-        DarkLightMode.Dark => Icons.Material.Rounded.AutoMode,
-        DarkLightMode.Light => Icons.Material.Outlined.DarkMode,
+        ColorScheme.Dark => Icons.Material.Rounded.AutoMode,
+        ColorScheme.Light => Icons.Material.Outlined.DarkMode,
         _ => Icons.Material.Filled.LightMode
     };
 

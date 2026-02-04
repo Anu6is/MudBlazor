@@ -1,8 +1,8 @@
-﻿// Copyright (c) MudBlazor 2021
+// Copyright (c) MudBlazor 2021
 // MudBlazor licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using MudBlazor.Docs.Enums;
+using MudBlazor;
 using MudBlazor.Docs.Models;
 using MudBlazor.Docs.Services.UserPreferences;
 
@@ -20,21 +20,14 @@ public class LayoutService
     public bool IsRTL { get; private set; }
 
     /// <summary>
-    /// The user's preferred dark/light mode setting.
-    /// This preference is used to determine the actual <see cref="IsDarkMode"/> state.
+    /// The user's preferred color scheme setting.
     /// </summary>
-    public DarkLightMode CurrentDarkLightMode { get; private set; }
+    public ColorScheme CurrentColorScheme { get; private set; }
 
     /// <summary>
     /// Dark mode is currently active.
-    /// This is determined by <see cref="UpdateDarkModeAsync"/> based on user and system preferences and should not be modified directly.
     /// </summary>
     public bool IsDarkMode { get; private set; }
-
-    /// <summary>
-    /// Observes system theme changes to update dark/light mode.
-    /// </summary>
-    public bool ObserveSystemDarkModeChange { get; private set; }
 
     /// <summary>
     /// The currently active MudBlazor theme.
@@ -64,10 +57,10 @@ public class LayoutService
             _systemDarkMode = systemMode.Value;
         }
 
-        IsDarkMode = CurrentDarkLightMode switch
+        IsDarkMode = CurrentColorScheme switch
         {
-            DarkLightMode.Dark => true,
-            DarkLightMode.Light => false,
+            ColorScheme.Dark => true,
+            ColorScheme.Light => false,
             _ => _systemDarkMode,
         };
     }
@@ -81,14 +74,14 @@ public class LayoutService
             _userPreferences = new()
             {
                 RightToLeft = false,
-                DarkLightTheme = DarkLightMode.System,
+                DarkLightTheme = ColorScheme.System,
             };
             await _userPreferencesService.SaveUserPreferences(_userPreferences);
         }
         else
         {
             IsRTL = _userPreferences.RightToLeft;
-            CurrentDarkLightMode = _userPreferences.DarkLightTheme;
+            CurrentColorScheme = _userPreferences.DarkLightTheme;
             UpdateDarkModeState();
         }
     }
@@ -106,22 +99,21 @@ public class LayoutService
     }
 
     /// <summary>
-    /// Cycles through the available dark/light mode options (System, Light, Dark) and saves the new preference.
+    /// Cycles through the available color scheme options (System, Light, Dark) and saves the new preference.
     /// </summary>
-    public async Task CycleDarkLightModeAsync()
+    public async Task CycleColorSchemeAsync()
     {
-        CurrentDarkLightMode = CurrentDarkLightMode switch
+        CurrentColorScheme = CurrentColorScheme switch
         {
-            DarkLightMode.System => DarkLightMode.Light,
-            DarkLightMode.Light => DarkLightMode.Dark,
-            DarkLightMode.Dark => DarkLightMode.System,
-            _ => DarkLightMode.System, // Default case, should not happen.
+            ColorScheme.System => ColorScheme.Light,
+            ColorScheme.Light => ColorScheme.Dark,
+            ColorScheme.Dark => ColorScheme.System,
+            _ => ColorScheme.System, // Default case, should not happen.
         };
 
-        ObserveSystemDarkModeChange = CurrentDarkLightMode == DarkLightMode.System;
         UpdateDarkModeState();
 
-        _userPreferences.DarkLightTheme = CurrentDarkLightMode;
+        _userPreferences.DarkLightTheme = CurrentColorScheme;
         await _userPreferencesService.SaveUserPreferences(_userPreferences);
         OnMajorUpdateOccurred();
     }

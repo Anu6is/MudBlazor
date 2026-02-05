@@ -1,4 +1,4 @@
-namespace MudBlazor;
+﻿namespace MudBlazor;
 
 /// <summary>
 /// Represents the theme preference for dark or light mode.

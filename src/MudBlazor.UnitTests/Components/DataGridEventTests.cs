@@ -162,5 +162,88 @@ namespace MudBlazor.UnitTests.Components
             comp.Instance.ReorderEvents[0].OldIndex.Should().Be(1);
             comp.Instance.ReorderEvents[0].NewIndex.Should().Be(0);
         }
+
+        [Test]
+        public async Task DataGrid_SortChanged_EventFires()
+        {
+            var items = new List<DataGridEventsTest.Model> { new("John", 30) };
+            RenderFragment columns = builder =>
+            {
+                builder.OpenComponent<PropertyColumn<DataGridEventsTest.Model, string>>(0);
+                builder.AddAttribute(1, nameof(PropertyColumn<DataGridEventsTest.Model, string>.Property), (System.Linq.Expressions.Expression<Func<DataGridEventsTest.Model, string>>)(x => x.Name));
+                builder.CloseComponent();
+            };
+
+            var comp = Context.Render<DataGridEventsTest>(parameters => parameters
+                .Add(p => p.Items, items)
+                .Add(p => p.Columns, columns)
+            );
+
+            var headerCell = comp.FindComponent<HeaderCell<DataGridEventsTest.Model>>();
+
+            // Click to sort
+            await headerCell.InvokeAsync(() => headerCell.Instance.SortChangedAsync(new MouseEventArgs()));
+
+            comp.Instance.SortEvents.Should().HaveCount(1);
+            comp.Instance.SortEvents[0].Field.Should().Be("Name");
+            comp.Instance.SortEvents[0].SortDirection.Should().Be(SortDirection.Ascending);
+
+            comp.Instance.SortEvents.Clear();
+
+            // Click again to change sort
+            await headerCell.InvokeAsync(() => headerCell.Instance.SortChangedAsync(new MouseEventArgs()));
+
+            comp.Instance.SortEvents.Should().HaveCount(1);
+            comp.Instance.SortEvents[0].SortDirection.Should().Be(SortDirection.Descending);
+
+            comp.Instance.SortEvents.Clear();
+
+            // Alt+Click to remove sort
+            await headerCell.InvokeAsync(() => headerCell.Instance.SortChangedAsync(new MouseEventArgs { AltKey = true }));
+
+            comp.Instance.SortEvents.Should().HaveCount(1);
+            comp.Instance.SortEvents[0].SortDirection.Should().Be(SortDirection.None);
+        }
+
+        [Test]
+        public async Task DataGrid_FilterChanged_EventFires()
+        {
+            var items = new List<DataGridEventsTest.Model> { new("John", 30) };
+            RenderFragment columns = builder =>
+            {
+                builder.OpenComponent<PropertyColumn<DataGridEventsTest.Model, string>>(0);
+                builder.AddAttribute(1, nameof(PropertyColumn<DataGridEventsTest.Model, string>.Property), (System.Linq.Expressions.Expression<Func<DataGridEventsTest.Model, string>>)(x => x.Name));
+                builder.AddAttribute(2, nameof(PropertyColumn<DataGridEventsTest.Model, string>.Filterable), true);
+                builder.CloseComponent();
+            };
+
+            var comp = Context.Render<DataGridEventsTest>(parameters => parameters
+                .Add(p => p.Items, items)
+                .Add(p => p.Columns, columns)
+            );
+
+            var dataGrid = comp.Instance.DataGrid;
+
+            // Add filter
+            var filterDefinition = new FilterDefinition<DataGridEventsTest.Model>
+            {
+                Column = dataGrid.RenderedColumns.First(),
+                Operator = FilterOperator.String.Contains,
+                Value = "Jo"
+            };
+
+            await comp.InvokeAsync(() => dataGrid.AddFilterAsync(filterDefinition));
+
+            comp.Instance.FilterEvents.Should().HaveCount(1);
+            comp.Instance.FilterEvents[0].FilterDefinition.Value.Should().Be("Jo");
+
+            comp.Instance.FilterEvents.Clear();
+
+            // Clear filters
+            await comp.InvokeAsync(() => dataGrid.ClearFiltersAsync());
+
+            comp.Instance.FilterEvents.Should().HaveCount(1);
+            comp.Instance.FilterEvents[0].FilterDefinition.Id.Should().Be(filterDefinition.Id);
+        }
     }
 }

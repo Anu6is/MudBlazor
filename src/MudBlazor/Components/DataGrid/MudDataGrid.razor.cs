@@ -360,6 +360,18 @@ namespace MudBlazor
         [Parameter]
         public EventCallback<DataGridColumnReorderEventArgs<T>> ColumnReordered { get; set; }
 
+        /// <summary>
+        /// Occurs when sorting has been changed.
+        /// </summary>
+        [Parameter]
+        public EventCallback<DataGridSortChangedEventArgs<T>> SortChanged { get; set; }
+
+        /// <summary>
+        /// Occurs when filtering has been changed.
+        /// </summary>
+        [Parameter]
+        public EventCallback<DataGridFilterChangedEventArgs<T>> FilterChanged { get; set; }
+
         #endregion
 
         #region Parameters
@@ -1792,11 +1804,17 @@ namespace MudBlazor
         /// <summary>
         /// Removes all filters from all columns.
         /// </summary>
-        public Task ClearFiltersAsync()
+        public async Task ClearFiltersAsync()
         {
+            var definitions = FilterDefinitions.ToList();
             FilterDefinitions.ForEach(x => x.Value = null);
             FilterDefinitions.Clear();
-            return InvokeServerLoadFunc();
+            await InvokeServerLoadFunc();
+
+            foreach (var definition in definitions)
+            {
+                await FireFilterChangedEventAsync(definition);
+            }
         }
 
         /// <summary>
@@ -1812,6 +1830,7 @@ namespace MudBlazor
             _filtersMenuVisible = true;
             await InvokeServerLoadFunc();
             if (!HasServerData) StateHasChanged();
+            await FireFilterChangedEventAsync(definition);
         }
 
         internal async Task RemoveFilterAsync(Guid? id)
@@ -1822,10 +1841,12 @@ namespace MudBlazor
                 return;
             }
 
+            var definition = FilterDefinitions[index];
             FilterDefinitions[index].Value = null;
             FilterDefinitions.RemoveAt(index);
             await InvokeServerLoadFunc();
             GroupItems();
+            await FireFilterChangedEventAsync(definition);
         }
 
         internal async Task SetSelectedItemAsync(bool value, T item)
@@ -2092,6 +2113,7 @@ namespace MudBlazor
             removedSortDefinitions.Remove(field);
 
             await InvokeSortUpdates(SortDefinitions, removedSortDefinitions);
+            await FireSortChangedEventAsync(field, direction);
         }
 
         /// <summary>
@@ -2123,6 +2145,7 @@ namespace MudBlazor
             }
 
             await InvokeSortUpdates(SortDefinitions, null);
+            await FireSortChangedEventAsync(field, direction);
         }
 
         /// <summary>
@@ -2138,6 +2161,7 @@ namespace MudBlazor
                     SortDefinitions[defToUpdate.Key] = defToUpdate.Value with { Index = defToUpdate.Value.Index - 1 };
 
                 await InvokeSortUpdates(SortDefinitions, new HashSet<string>() { field });
+                await FireSortChangedEventAsync(field, SortDirection.None);
             }
         }
 
@@ -2657,6 +2681,23 @@ namespace MudBlazor
             var gridRect = await _gridElement.MudGetBoundingClientRectAsync();
             var gridHeight = gridRect.Height;
             return gridHeight;
+        }
+
+        internal async Task FireSortChangedEventAsync(string field, SortDirection direction)
+        {
+            if (SortChanged.HasDelegate)
+            {
+                var column = this.GetColumnByPropertyName(field);
+                await SortChanged.InvokeAsync(new DataGridSortChangedEventArgs<T>(column, field, direction));
+            }
+        }
+
+        internal async Task FireFilterChangedEventAsync(IFilterDefinition<T> definition)
+        {
+            if (FilterChanged.HasDelegate)
+            {
+                await FilterChanged.InvokeAsync(new DataGridFilterChangedEventArgs<T>(definition.Column, definition));
+            }
         }
 
         #endregion

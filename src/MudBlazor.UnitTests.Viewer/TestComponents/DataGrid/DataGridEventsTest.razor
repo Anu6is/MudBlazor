@@ -2,7 +2,7 @@
 
 <MudPopoverProvider />
 
-<MudDataGrid @ref="DataGrid" T="DataGridEventsTest.Model" Items="@Items" ColumnResized="@OnColumnResized" ColumnReordered="@OnColumnReordered" ColumnResizeMode="@ColumnResizeMode" DragDropColumnReordering="@DragDropColumnReordering" ColumnsPanelReordering="@ColumnsPanelReordering">
+<MudDataGrid @ref="DataGrid" T="DataGridEventsTest.Model" Items="@Items" ColumnResized="@OnColumnResized" ColumnReordered="@OnColumnReordered" SortChanged="@OnSortChanged" FilterChanged="@OnFilterChanged" ColumnResizeMode="@ColumnResizeMode" DragDropColumnReordering="@DragDropColumnReordering" ColumnsPanelReordering="@ColumnsPanelReordering">
     <Columns>
         @Columns
     </Columns>
@@ -20,6 +20,8 @@
     public MudDataGrid<Model> DataGrid { get; private set; } = null!;
     public List<DataGridColumnResizeEventArgs<Model>> ResizeEvents { get; } = new();
     public List<DataGridColumnReorderEventArgs<Model>> ReorderEvents { get; } = new();
+    public List<DataGridSortChangedEventArgs<Model>> SortEvents { get; } = new();
+    public List<DataGridFilterChangedEventArgs<Model>> FilterEvents { get; } = new();
 
     private void OnColumnResized(DataGridColumnResizeEventArgs<Model> args)
     {
@@ -29,5 +31,15 @@
     private void OnColumnReordered(DataGridColumnReorderEventArgs<Model> args)
     {
         ReorderEvents.Add(args);
+    }
+
+    private void OnSortChanged(DataGridSortChangedEventArgs<Model> args)
+    {
+        SortEvents.Add(args);
+    }
+
+    private void OnFilterChanged(DataGridFilterChangedEventArgs<Model> args)
+    {
+        FilterEvents.Add(args);
     }
 }

@@ -609,6 +609,10 @@ namespace MudBlazor
             }
             _filtersMenuVisible = false;
             DataGrid.DropContainerHasChanged();
+            if (Column?.FilterContext.FilterDefinition is not null)
+            {
+                await DataGrid.FireFilterChangedEventAsync(Column.FilterContext.FilterDefinition);
+            }
         }
 
         internal async Task ApplyFilterAsync(IFilterDefinition<T> filterDefinition)
@@ -628,6 +632,7 @@ namespace MudBlazor
             }
             _filtersMenuVisible = false;
             DataGrid.DropContainerHasChanged();
+            await DataGrid.FireFilterChangedEventAsync(filterDefinition);
         }
 
         internal async Task ApplyFiltersAsync(IEnumerable<IFilterDefinition<T>> filterDefinitions)
@@ -645,6 +650,11 @@ namespace MudBlazor
             }
             _filtersMenuVisible = false;
             DataGrid.DropContainerHasChanged();
+
+            foreach (var filterDefinition in filterDefinitionsToApply)
+            {
+                await DataGrid.FireFilterChangedEventAsync(filterDefinition);
+            }
         }
 
         internal async Task ClearFilterAsync()
@@ -684,6 +694,11 @@ namespace MudBlazor
             }
             _filtersMenuVisible = false;
             DataGrid.DropContainerHasChanged();
+
+            foreach (var filterDefinition in filterDefinitions)
+            {
+                await DataGrid.FireFilterChangedEventAsync(filterDefinition);
+            }
         }
 
         private async Task CheckedChangedAsync(bool value)

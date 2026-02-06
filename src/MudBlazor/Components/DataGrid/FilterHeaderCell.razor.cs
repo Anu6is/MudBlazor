@@ -193,6 +193,7 @@ namespace MudBlazor
 
             DataGrid.GroupItems();
             ((IMudStateHasChanged)DataGrid).StateHasChanged();
+            await DataGrid.FireFilterChangedEventAsync(filterDefinition);
         }
 
         private async Task ClearFilterAsync()

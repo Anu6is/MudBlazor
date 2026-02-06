@@ -1,8 +1,8 @@
-// Copyright (c) MudBlazor 2021
+﻿// Copyright (c) MudBlazor 2021
 // MudBlazor licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace MudBlazor;
 
@@ -10,7 +10,7 @@ namespace MudBlazor;
 /// Represents the information related to a <see cref="MudDataGrid{T}.SortChanged"/> event.
 /// </summary>
 /// <typeparam name="T">The item managed by the <see cref="MudDataGrid{T}"/>.</typeparam>
-public class DataGridSortChangedEventArgs<T> : EventArgs
+public class DataGridSortChangedEventArgs<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] T> : EventArgs
 {
     /// <summary>
     /// The column whose sorting was changed.

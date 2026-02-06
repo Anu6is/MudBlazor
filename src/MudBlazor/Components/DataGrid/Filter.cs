@@ -62,44 +62,49 @@ namespace MudBlazor
             await _dataGrid.RemoveFilterAsync(_filterDefinition.Id);
         }
 
-        internal void FieldChanged(Column<T> column)
+        internal async Task FieldChanged(Column<T> column)
         {
             _filterDefinition.Column = column;
             var operators = column.GetFilterOperators(FieldType.Identify(column.PropertyType));
             _filterDefinition.Operator = operators.FirstOrDefault();
             _filterDefinition.Title = column.Title;
             _filterDefinition.Value = null;
+            await _dataGrid.FireFilterChangedEventAsync(_filterDefinition);
         }
 
-        internal void StringValueChanged(string value)
+        internal async Task StringValueChanged(string value)
         {
             _valueString = value;
             _filterDefinition.Value = _valueString;
             _dataGrid.GroupItems();
+            await _dataGrid.FireFilterChangedEventAsync(_filterDefinition);
         }
 
-        internal void NumberValueChanged(double? value)
+        internal async Task NumberValueChanged(double? value)
         {
             _valueNumber = value;
             _filterDefinition.Value = _valueNumber;
             _dataGrid.GroupItems();
+            await _dataGrid.FireFilterChangedEventAsync(_filterDefinition);
         }
 
-        internal void EnumValueChanged(Enum value)
+        internal async Task EnumValueChanged(Enum value)
         {
             _valueEnum = value;
             _filterDefinition.Value = _valueEnum;
             _dataGrid.GroupItems();
+            await _dataGrid.FireFilterChangedEventAsync(_filterDefinition);
         }
 
-        internal void BoolValueChanged(bool? value)
+        internal async Task BoolValueChanged(bool? value)
         {
             _valueBool = value;
             _filterDefinition.Value = _valueBool;
             _dataGrid.GroupItems();
+            await _dataGrid.FireFilterChangedEventAsync(_filterDefinition);
         }
 
-        internal void DateValueChanged(DateTime? value)
+        internal async Task DateValueChanged(DateTime? value)
         {
             _valueDateTimeForPicker = value;
 
@@ -119,9 +124,10 @@ namespace MudBlazor
                 _filterDefinition.Value = null;
 
             _dataGrid.GroupItems();
+            await _dataGrid.FireFilterChangedEventAsync(_filterDefinition);
         }
 
-        internal void TimeValueChanged(TimeSpan? value)
+        internal async Task TimeValueChanged(TimeSpan? value)
         {
             _valueTime = value;
 
@@ -139,9 +145,10 @@ namespace MudBlazor
             }
 
             _dataGrid.GroupItems();
+            await _dataGrid.FireFilterChangedEventAsync(_filterDefinition);
         }
 
-        internal void DateOnlyValueChanged(DateTime? value)
+        internal async Task DateOnlyValueChanged(DateTime? value)
         {
             _valueDateOnlyForPicker = value;
 
@@ -153,13 +160,15 @@ namespace MudBlazor
                 _filterDefinition.Value = null;
 
             _dataGrid.GroupItems();
+            await _dataGrid.FireFilterChangedEventAsync(_filterDefinition);
         }
 
-        internal void GuidValueChanged(Guid? value)
+        internal async Task GuidValueChanged(Guid? value)
         {
             _valueGuid = value;
             _filterDefinition.Value = _valueGuid;
             _dataGrid.GroupItems();
+            await _dataGrid.FireFilterChangedEventAsync(_filterDefinition);
         }
     }
 }

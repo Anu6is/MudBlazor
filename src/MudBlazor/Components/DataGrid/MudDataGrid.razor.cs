@@ -1783,7 +1783,7 @@ namespace MudBlazor
         /// <summary>
         /// Occurs when the "Add Filter" button is pressed.
         /// </summary>
-        public void AddFilter()
+        public async Task AddFilter()
         {
             var column = RenderedColumns.FirstOrDefault(x => x.filterable);
             var filterDefinition = CreateFilterDefinitionInstance();
@@ -1793,6 +1793,7 @@ namespace MudBlazor
             FilterDefinitions.Add(filterDefinition);
             _filtersMenuVisible = true;
             StateHasChanged();
+            await FireFilterChangedEventAsync(filterDefinition);
         }
 
         internal Task ApplyFiltersAsync()
@@ -2170,9 +2171,15 @@ namespace MudBlazor
         /// </summary>
         private async Task ClearCurrentSortings()
         {
-            var removedSortDefinitions = new HashSet<string>(SortDefinitions.Keys);
+            var removedSortFields = SortDefinitions.Keys.ToList();
+            var removedSortDefinitions = new HashSet<string>(removedSortFields);
             SortDefinitions.Clear();
             await InvokeSortUpdates(SortDefinitions, removedSortDefinitions);
+
+            foreach (var field in removedSortFields)
+            {
+                await FireSortChangedEventAsync(field, SortDirection.None);
+            }
         }
 
         private async Task InvokeSortUpdates(Dictionary<string, SortDefinition<T>> activeSortDefinitions, HashSet<string>? removedSortDefinitions)

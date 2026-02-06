@@ -2,7 +2,7 @@
 
 <MudPopoverProvider />
 
-<MudDataGrid @ref="DataGrid" T="DataGridEventsTest.Model" Items="@Items" ColumnResized="@OnColumnResized" ColumnReordered="@OnColumnReordered" SortChanged="@OnSortChanged" FilterChanged="@OnFilterChanged" ColumnResizeMode="@ColumnResizeMode" DragDropColumnReordering="@DragDropColumnReordering" ColumnsPanelReordering="@ColumnsPanelReordering">
+<MudDataGrid @ref="DataGrid" T="DataGridEventsTest.Model" Items="@Items" ColumnResized="@OnColumnResized" ColumnReordered="@OnColumnReordered" SortChanged="@OnSortChanged" FilterChanged="@OnFilterChanged" ColumnResizeMode="@ColumnResizeMode" DragDropColumnReordering="@DragDropColumnReordering" ColumnsPanelReordering="@ColumnsPanelReordering" FilterMode="@FilterMode">
     <Columns>
         @Columns
     </Columns>
@@ -16,6 +16,7 @@
     [Parameter] public ResizeMode ColumnResizeMode { get; set; } = ResizeMode.Container;
     [Parameter] public bool DragDropColumnReordering { get; set; }
     [Parameter] public bool ColumnsPanelReordering { get; set; }
+    [Parameter] public DataGridFilterMode FilterMode { get; set; } = DataGridFilterMode.Simple;
 
     public MudDataGrid<Model> DataGrid { get; private set; } = null!;
     public List<DataGridColumnResizeEventArgs<Model>> ResizeEvents { get; } = new();

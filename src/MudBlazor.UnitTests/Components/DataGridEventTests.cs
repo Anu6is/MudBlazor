@@ -245,5 +245,42 @@ namespace MudBlazor.UnitTests.Components
             comp.Instance.FilterEvents.Should().HaveCount(1);
             comp.Instance.FilterEvents[0].FilterDefinition.Id.Should().Be(filterDefinition.Id);
         }
+
+        [Test]
+        public async Task DataGrid_FilterChanged_FilterPanel_EventFires()
+        {
+            var items = new List<DataGridEventsTest.Model> { new("John", 30) };
+            RenderFragment columns = builder =>
+            {
+                builder.OpenComponent<PropertyColumn<DataGridEventsTest.Model, string>>(0);
+                builder.AddAttribute(1, nameof(PropertyColumn<DataGridEventsTest.Model, string>.Property), (System.Linq.Expressions.Expression<Func<DataGridEventsTest.Model, string>>)(x => x.Name));
+                builder.AddAttribute(2, nameof(PropertyColumn<DataGridEventsTest.Model, string>.Filterable), true);
+                builder.CloseComponent();
+            };
+
+            var comp = Context.Render<DataGridEventsTest>(parameters => parameters
+                .Add(p => p.Items, items)
+                .Add(p => p.Columns, columns)
+                .Add(p => p.FilterMode, DataGridFilterMode.Simple)
+            );
+
+            var dataGrid = comp.Instance.DataGrid;
+
+            // Open filter menu and add filter
+            await comp.InvokeAsync(() => dataGrid.AddFilter());
+
+            comp.Instance.FilterEvents.Should().HaveCount(1);
+            var filterDefinition = comp.Instance.FilterEvents[0].FilterDefinition;
+            filterDefinition.Column.PropertyName.Should().Be("Name");
+
+            comp.Instance.FilterEvents.Clear();
+
+            // Simulate typing in the filter input
+            var filter = new Filter<DataGridEventsTest.Model>(dataGrid, filterDefinition, (Column<DataGridEventsTest.Model>)filterDefinition.Column);
+            await comp.InvokeAsync(() => filter.StringValueChanged("Jo"));
+
+            comp.Instance.FilterEvents.Should().HaveCount(1);
+            comp.Instance.FilterEvents[0].FilterDefinition.Value.Should().Be("Jo");
+        }
     }
 }

@@ -245,7 +245,6 @@ namespace MudBlazor
                 if (ColumnReordered.HasDelegate)
                 {
                     await ColumnReordered.InvokeAsync(new DataGridColumnReorderEventArgs<T>(dragAndDropSource, dragAndDropSourceIndex, dragAndDropDestinationIndex));
-                    await ColumnReordered.InvokeAsync(new DataGridColumnReorderEventArgs<T>(dragAndDropDestination, dragAndDropDestinationIndex, dragAndDropSourceIndex));
                 }
             }
         }

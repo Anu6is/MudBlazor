@@ -245,6 +245,7 @@ namespace MudBlazor
                 if (ColumnReordered.HasDelegate)
                 {
                     await ColumnReordered.InvokeAsync(new DataGridColumnReorderEventArgs<T>(dragAndDropSource, dragAndDropSourceIndex, dragAndDropDestinationIndex));
+                    await ColumnReordered.InvokeAsync(new DataGridColumnReorderEventArgs<T>(dragAndDropDestination, dragAndDropDestinationIndex, dragAndDropSourceIndex));
                 }
             }
         }
@@ -2342,7 +2343,13 @@ namespace MudBlazor
         {
             Debug.Assert(dropItem.Item is not null);
             var oldIndex = RenderedColumns.IndexOf(dropItem.Item);
-            await ReorderColumnAsync(dropItem.Item, oldIndex, dropItem.IndexInZone);
+
+            if (oldIndex < 0)
+                return;
+
+            var newIndex = Math.Clamp(dropItem.IndexInZone, 0, Math.Max(0, RenderedColumns.Count - 1));
+
+            await ReorderColumnAsync(dropItem.Item, oldIndex, newIndex);
         }
 
         private async Task ColumnUp(Column<T> column)
@@ -2365,6 +2372,14 @@ namespace MudBlazor
 
         private async Task ReorderColumnAsync(Column<T> column, int oldIndex, int newIndex)
         {
+            if (oldIndex < 0 || oldIndex >= RenderedColumns.Count)
+                return;
+
+            newIndex = Math.Clamp(newIndex, 0, RenderedColumns.Count - 1);
+
+            if (oldIndex == newIndex)
+                return;
+
             RenderedColumns.RemoveAt(oldIndex);
             RenderedColumns.Insert(newIndex, column);
             DropContainerHasChanged();

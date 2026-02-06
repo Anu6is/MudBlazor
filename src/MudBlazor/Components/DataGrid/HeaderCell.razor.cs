@@ -424,11 +424,11 @@ namespace MudBlazor
             if (DataGrid.ColumnResizeMode == ResizeMode.Container)
             {
                 // Simple case: just resize this column
-                await UpdateColumnWidth(targetWidth, gridHeight, finish);
+                var actualWidth = await UpdateColumnWidth(targetWidth, gridHeight, finish);
 
                 if (finish && Column is not null)
                 {
-                    await FireColumnResizedEventAsync(Column);
+                    await FireColumnResizedEventAsync(Column, actualWidth);
                 }
             }
             else if (DataGrid.ColumnResizeMode == ResizeMode.Column && _resizeNextColumn?.HeaderCell is not null)
@@ -451,22 +451,19 @@ namespace MudBlazor
                 {
                     if (Column is not null)
                     {
-                        await FireColumnResizedEventAsync(Column);
+                        await FireColumnResizedEventAsync(Column, Column.HeaderCell?.Width);
                     }
 
-                    if (_resizeNextColumn.HeaderCell is not null)
-                    {
-                        await FireColumnResizedEventAsync(_resizeNextColumn);
-                    }
+                    await FireColumnResizedEventAsync(_resizeNextColumn, _resizeNextColumn.HeaderCell.Width);
                 }
             }
         }
 
-        private async Task FireColumnResizedEventAsync(Column<T> column)
+        private async Task FireColumnResizedEventAsync(Column<T> column, double? width)
         {
-            if (DataGrid.ColumnResized.HasDelegate && column.HeaderCell is not null)
+            if (DataGrid.ColumnResized.HasDelegate)
             {
-                var actualWidth = await column.HeaderCell.GetCurrentCellWidth();
+                var actualWidth = width ?? (column.HeaderCell is not null ? await column.HeaderCell.GetCurrentCellWidth() : 0d);
                 await DataGrid.ColumnResized.InvokeAsync(new DataGridColumnResizeEventArgs<T>(column, actualWidth));
             }
         }

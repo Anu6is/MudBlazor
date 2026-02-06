@@ -101,13 +101,18 @@ namespace MudBlazor.UnitTests.Components
             await firstDropItem.DragStartAsync(new DragEventArgs());
             await secondDropItem.DropAsync(new DragEventArgs());
 
-            // Drag and drop on headers uses ItemUpdatedAsync which is a swap, but now fires only one event
-            comp.Instance.ReorderEvents.Should().HaveCount(1);
+            // Drag and drop on headers uses ItemUpdatedAsync which is a swap, firing an event for each column.
+            comp.Instance.ReorderEvents.Should().HaveCount(2);
 
             var nameEvent = comp.Instance.ReorderEvents.FirstOrDefault(e => e.Column.PropertyName == "Name");
             nameEvent.Should().NotBeNull();
             nameEvent.OldIndex.Should().Be(0);
             nameEvent.NewIndex.Should().Be(1);
+
+            var ageEvent = comp.Instance.ReorderEvents.FirstOrDefault(e => e.Column.PropertyName == "Age");
+            ageEvent.Should().NotBeNull();
+            ageEvent.OldIndex.Should().Be(1);
+            ageEvent.NewIndex.Should().Be(0);
         }
 
         [Test]

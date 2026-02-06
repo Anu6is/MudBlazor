@@ -242,8 +242,11 @@ namespace MudBlazor
 
                 StateHasChanged();
 
-                await ColumnReordered.InvokeAsync(new DataGridColumnReorderEventArgs<T>(dragAndDropSource, dragAndDropSourceIndex, dragAndDropDestinationIndex));
-                await ColumnReordered.InvokeAsync(new DataGridColumnReorderEventArgs<T>(dragAndDropDestination, dragAndDropDestinationIndex, dragAndDropSourceIndex));
+                if (ColumnReordered.HasDelegate)
+                {
+                    await ColumnReordered.InvokeAsync(new DataGridColumnReorderEventArgs<T>(dragAndDropSource, dragAndDropSourceIndex, dragAndDropDestinationIndex));
+                    await ColumnReordered.InvokeAsync(new DataGridColumnReorderEventArgs<T>(dragAndDropDestination, dragAndDropDestinationIndex, dragAndDropSourceIndex));
+                }
             }
         }
 
@@ -2309,11 +2312,7 @@ namespace MudBlazor
         {
             Debug.Assert(dropItem.Item is not null);
             var oldIndex = RenderedColumns.IndexOf(dropItem.Item);
-            RenderedColumns.Remove(dropItem.Item);
-            RenderedColumns.Insert(dropItem.IndexInZone, dropItem.Item);
-            DropContainerHasChanged();
-
-            await ColumnReordered.InvokeAsync(new DataGridColumnReorderEventArgs<T>(dropItem.Item, oldIndex, dropItem.IndexInZone));
+            await ReorderColumnAsync(dropItem.Item, oldIndex, dropItem.IndexInZone);
         }
 
         private async Task ColumnUp(Column<T> column)
@@ -2321,12 +2320,7 @@ namespace MudBlazor
             var index = RenderedColumns.IndexOf(column);
             if (index > 0)
             {
-                var oldIndex = index;
-                var newIndex = index - 1;
-                RenderedColumns.RemoveAt(oldIndex);
-                RenderedColumns.Insert(newIndex, column);
-                DropContainerHasChanged();
-                await ColumnReordered.InvokeAsync(new DataGridColumnReorderEventArgs<T>(column, oldIndex, newIndex));
+                await ReorderColumnAsync(column, index, index - 1);
             }
         }
 
@@ -2335,11 +2329,18 @@ namespace MudBlazor
             var index = RenderedColumns.IndexOf(column);
             if (index < RenderedColumns.Count - 1)
             {
-                var oldIndex = index;
-                var newIndex = index + 1;
-                RenderedColumns.RemoveAt(oldIndex);
-                RenderedColumns.Insert(newIndex, column);
-                DropContainerHasChanged();
+                await ReorderColumnAsync(column, index, index + 1);
+            }
+        }
+
+        private async Task ReorderColumnAsync(Column<T> column, int oldIndex, int newIndex)
+        {
+            RenderedColumns.RemoveAt(oldIndex);
+            RenderedColumns.Insert(newIndex, column);
+            DropContainerHasChanged();
+
+            if (ColumnReordered.HasDelegate)
+            {
                 await ColumnReordered.InvokeAsync(new DataGridColumnReorderEventArgs<T>(column, oldIndex, newIndex));
             }
         }

@@ -428,8 +428,7 @@ namespace MudBlazor
 
                 if (finish && Column is not null)
                 {
-                    var actualWidth = await GetCurrentCellWidth();
-                    await DataGrid.ColumnResized.InvokeAsync(new DataGridColumnResizeEventArgs<T>(Column, actualWidth));
+                    await FireColumnResizedEventAsync(Column);
                 }
             }
             else if (DataGrid.ColumnResizeMode == ResizeMode.Column && _resizeNextColumn?.HeaderCell is not null)
@@ -452,16 +451,23 @@ namespace MudBlazor
                 {
                     if (Column is not null)
                     {
-                        var actualWidth = await GetCurrentCellWidth();
-                        await DataGrid.ColumnResized.InvokeAsync(new DataGridColumnResizeEventArgs<T>(Column, actualWidth));
+                        await FireColumnResizedEventAsync(Column);
                     }
 
                     if (_resizeNextColumn.HeaderCell is not null)
                     {
-                        var nextActualWidth = await _resizeNextColumn.HeaderCell.GetCurrentCellWidth();
-                        await DataGrid.ColumnResized.InvokeAsync(new DataGridColumnResizeEventArgs<T>(_resizeNextColumn, nextActualWidth));
+                        await FireColumnResizedEventAsync(_resizeNextColumn);
                     }
                 }
+            }
+        }
+
+        private async Task FireColumnResizedEventAsync(Column<T> column)
+        {
+            if (DataGrid.ColumnResized.HasDelegate && column.HeaderCell is not null)
+            {
+                var actualWidth = await column.HeaderCell.GetCurrentCellWidth();
+                await DataGrid.ColumnResized.InvokeAsync(new DataGridColumnResizeEventArgs<T>(column, actualWidth));
             }
         }
 

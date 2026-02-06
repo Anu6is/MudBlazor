@@ -1,0 +1,33 @@
+@using MudBlazor
+
+<MudPopoverProvider />
+
+<MudDataGrid @ref="DataGrid" T="DataGridEventsTest.Model" Items="@Items" ColumnResized="@OnColumnResized" ColumnReordered="@OnColumnReordered" ColumnResizeMode="@ColumnResizeMode" DragDropColumnReordering="@DragDropColumnReordering" ColumnsPanelReordering="@ColumnsPanelReordering">
+    <Columns>
+        @Columns
+    </Columns>
+</MudDataGrid>
+
+@code {
+    public record Model(string Name, int Age);
+
+    [Parameter] public IEnumerable<Model>? Items { get; set; }
+    [Parameter] public RenderFragment? Columns { get; set; }
+    [Parameter] public ResizeMode ColumnResizeMode { get; set; } = ResizeMode.Container;
+    [Parameter] public bool DragDropColumnReordering { get; set; }
+    [Parameter] public bool ColumnsPanelReordering { get; set; }
+
+    public MudDataGrid<Model> DataGrid { get; private set; } = null!;
+    public List<DataGridColumnResizeEventArgs<Model>> ResizeEvents { get; } = new();
+    public List<DataGridColumnReorderEventArgs<Model>> ReorderEvents { get; } = new();
+
+    private void OnColumnResized(DataGridColumnResizeEventArgs<Model> args)
+    {
+        ResizeEvents.Add(args);
+    }
+
+    private void OnColumnReordered(DataGridColumnReorderEventArgs<Model> args)
+    {
+        ReorderEvents.Add(args);
+    }
+}

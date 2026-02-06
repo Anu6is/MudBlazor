@@ -425,6 +425,12 @@ namespace MudBlazor
             {
                 // Simple case: just resize this column
                 await UpdateColumnWidth(targetWidth, gridHeight, finish);
+
+                if (finish && Column is not null)
+                {
+                    var actualWidth = await GetCurrentCellWidth();
+                    await DataGrid.ColumnResized.InvokeAsync(new DataGridColumnResizeEventArgs<T>(Column, actualWidth));
+                }
             }
             else if (DataGrid.ColumnResizeMode == ResizeMode.Column && _resizeNextColumn?.HeaderCell is not null)
             {
@@ -440,6 +446,21 @@ namespace MudBlazor
                 {
                     // Enlarging current column (shrink next column first)
                     await ResizeColumns(_resizeNextColumn.HeaderCell, this, nextTargetWidth, targetWidth, gridHeight, finish);
+                }
+
+                if (finish)
+                {
+                    if (Column is not null)
+                    {
+                        var actualWidth = await GetCurrentCellWidth();
+                        await DataGrid.ColumnResized.InvokeAsync(new DataGridColumnResizeEventArgs<T>(Column, actualWidth));
+                    }
+
+                    if (_resizeNextColumn.HeaderCell is not null)
+                    {
+                        var nextActualWidth = await _resizeNextColumn.HeaderCell.GetCurrentCellWidth();
+                        await DataGrid.ColumnResized.InvokeAsync(new DataGridColumnResizeEventArgs<T>(_resizeNextColumn, nextActualWidth));
+                    }
                 }
             }
         }

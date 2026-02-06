@@ -216,7 +216,7 @@ namespace MudBlazor
             (list[indexB], list[indexA]) = (list[indexA], list[indexB]);
         }
 
-        private Task ItemUpdatedAsync(MudItemDropInfo<Column<T>> dropItem)
+        private async Task ItemUpdatedAsync(MudItemDropInfo<Column<T>> dropItem)
         {
             Debug.Assert(dropItem.Item is not null);
             dropItem.Item.Identifier = dropItem.DropzoneIdentifier;
@@ -241,8 +241,10 @@ namespace MudBlazor
                 dragAndDropDestination.HeaderCell.Width = src;
 
                 StateHasChanged();
+
+                await ColumnReordered.InvokeAsync(new DataGridColumnReorderEventArgs<T>(dragAndDropSource, dragAndDropSourceIndex, dragAndDropDestinationIndex));
+                await ColumnReordered.InvokeAsync(new DataGridColumnReorderEventArgs<T>(dragAndDropDestination, dragAndDropDestinationIndex, dragAndDropSourceIndex));
             }
-            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -343,6 +345,18 @@ namespace MudBlazor
         /// </summary>
         [Parameter]
         public EventCallback<DataGridHierarchyVisibilityToggledEventArgs<T>> HierarchyVisibilityToggled { get; set; }
+
+        /// <summary>
+        /// Occurs when a column has been resized.
+        /// </summary>
+        [Parameter]
+        public EventCallback<DataGridColumnResizeEventArgs<T>> ColumnResized { get; set; }
+
+        /// <summary>
+        /// Occurs when a column has been reordered.
+        /// </summary>
+        [Parameter]
+        public EventCallback<DataGridColumnReorderEventArgs<T>> ColumnReordered { get; set; }
 
         #endregion
 
@@ -2291,36 +2305,43 @@ namespace MudBlazor
             StateHasChanged();
         }
 
-        private Task ColumnOrderUpdated(MudItemDropInfo<Column<T>> dropItem)
+        private async Task ColumnOrderUpdated(MudItemDropInfo<Column<T>> dropItem)
         {
             Debug.Assert(dropItem.Item is not null);
+            var oldIndex = RenderedColumns.IndexOf(dropItem.Item);
             RenderedColumns.Remove(dropItem.Item);
             RenderedColumns.Insert(dropItem.IndexInZone, dropItem.Item);
             DropContainerHasChanged();
 
-            return Task.CompletedTask;
+            await ColumnReordered.InvokeAsync(new DataGridColumnReorderEventArgs<T>(dropItem.Item, oldIndex, dropItem.IndexInZone));
         }
 
-        private void ColumnUp(Column<T> column)
+        private async Task ColumnUp(Column<T> column)
         {
             var index = RenderedColumns.IndexOf(column);
             if (index > 0)
             {
-                RenderedColumns.RemoveAt(index);
-                RenderedColumns.Insert(index - 1, column);
+                var oldIndex = index;
+                var newIndex = index - 1;
+                RenderedColumns.RemoveAt(oldIndex);
+                RenderedColumns.Insert(newIndex, column);
+                DropContainerHasChanged();
+                await ColumnReordered.InvokeAsync(new DataGridColumnReorderEventArgs<T>(column, oldIndex, newIndex));
             }
-            DropContainerHasChanged();
         }
 
-        private void ColumnDown(Column<T> column)
+        private async Task ColumnDown(Column<T> column)
         {
             var index = RenderedColumns.IndexOf(column);
             if (index < RenderedColumns.Count - 1)
             {
-                RenderedColumns.RemoveAt(index);
-                RenderedColumns.Insert(index + 1, column);
+                var oldIndex = index;
+                var newIndex = index + 1;
+                RenderedColumns.RemoveAt(oldIndex);
+                RenderedColumns.Insert(newIndex, column);
+                DropContainerHasChanged();
+                await ColumnReordered.InvokeAsync(new DataGridColumnReorderEventArgs<T>(column, oldIndex, newIndex));
             }
-            DropContainerHasChanged();
         }
 
         internal void DropContainerHasChanged()

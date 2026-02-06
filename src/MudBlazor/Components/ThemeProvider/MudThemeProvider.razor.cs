@@ -77,7 +77,7 @@ partial class MudThemeProvider : ComponentBaseWithState, IAsyncDisposable
     /// When <c>true</c>, the theme will automatically change to Light Mode or Dark Mode as the system theme changes.
     /// </remarks>
     [Parameter, ParameterState]
-    [Obsolete("Use ColorScheme instead.")]
+    [Obsolete("Use ColorScheme.System instead.")]
     public bool ObserveSystemDarkModeChange { get; set; } = true;
 
     /// <summary>
@@ -88,7 +88,7 @@ partial class MudThemeProvider : ComponentBaseWithState, IAsyncDisposable
     /// When this value changes, <see cref="IsDarkModeChanged"/> occurs.
     /// </remarks>
     [Parameter, ParameterState]
-    [Obsolete("Use ColorScheme instead.")]
+    [Obsolete("Use ColorScheme.Dark or ColorScheme.Light instead.")]
     public bool IsDarkMode { get; set; }
 
     /// <summary>
@@ -624,12 +624,15 @@ partial class MudThemeProvider : ComponentBaseWithState, IAsyncDisposable
         return _isDarkModeState.Value ? theme.PaletteDark : theme.PaletteLight;
     }
 
+    // Handler to sync IsDarkMode -> ColorScheme
+    //TODO: remove when obsolete parameter IsDarkMode is removed
     private async Task OnIsDarkModeChanged(ParameterChangedEventArgs<bool> arg)
     {
         if (_colorSchemeState.Value != ColorScheme.System)
         {
             await _colorSchemeState.SetValueAsync(arg.Value ? ColorScheme.Dark : ColorScheme.Light);
         }
+
         await UpdateThemeStateAsync();
     }
 
@@ -708,6 +711,8 @@ partial class MudThemeProvider : ComponentBaseWithState, IAsyncDisposable
         }
     }
 
+    // Handler to sync ObserveSystemDarkModeChange -> ColorScheme
+    //TODO: remove when obsolete parameter ObserveSystemDarkModeChange is removed
     private async Task OnObserveSystemDarkModeChangeChanged(ParameterChangedEventArgs<bool> arg)
     {
         // Update ColorScheme to match ObserveSystemDarkModeChange for backward compatibility

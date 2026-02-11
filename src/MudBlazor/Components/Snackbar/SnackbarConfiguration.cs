@@ -8,7 +8,6 @@ namespace MudBlazor
         private bool _newestOnTop;
         private bool _preventDuplicates;
         private int _maxDisplayedSnackbars;
-        private string _positionClass = string.Empty;
         private bool _clearAfterNavigation;
 
         internal event Action? OnUpdate;
@@ -43,12 +42,18 @@ namespace MudBlazor
             }
         }
 
-        public string PositionClass
+        /// <summary>
+        /// The CSS classes used to position the snackbar.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to <see cref="Defaults.Classes.Position.TopRight"/>.
+        /// </remarks>
+        public new string PositionClass
         {
-            get => _positionClass;
+            get => base.PositionClass ?? Defaults.Classes.Position.TopRight;
             set
             {
-                _positionClass = value;
+                base.PositionClass = value;
                 OnUpdate?.Invoke();
             }
         }

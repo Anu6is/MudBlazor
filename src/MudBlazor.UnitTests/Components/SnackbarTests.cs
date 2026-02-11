@@ -20,7 +20,7 @@ namespace MudBlazor.UnitTests.Components
         {
             _service = Context.Services.GetService<ISnackbar>();
             _provider = Context.Render<MudSnackbarProvider>();
-            _provider.Find("#mud-snackbar-container").InnerHtml.Trimmed().Should().BeEmpty();
+            _provider.Find(".mud-snackbar-container").InnerHtml.Trimmed().Should().BeEmpty();
         }
 
         [TearDown]
@@ -34,7 +34,7 @@ namespace MudBlazor.UnitTests.Components
         public async Task Simple()
         {
             await _provider.InvokeAsync(() => _service.Add("Boom, big reveal. Im a pickle!"));
-            _provider.Find("#mud-snackbar-container").InnerHtml.Trim().Should().NotBeEmpty();
+            _provider.Find(".mud-snackbar-container").InnerHtml.Trim().Should().NotBeEmpty();
             _provider.Find("div.mud-snackbar-content-message").TrimmedText().Should().Be("Boom, big reveal. Im a pickle!");
         }
 
@@ -48,7 +48,7 @@ namespace MudBlazor.UnitTests.Components
             });
 
             await _provider.InvokeAsync(() => _service.Add(renderFragment));
-            _provider.Find("#mud-snackbar-container").InnerHtml.Trim().Should().NotBeEmpty();
+            _provider.Find(".mud-snackbar-container").InnerHtml.Trim().Should().NotBeEmpty();
             _provider.Find("div.mud-snackbar-content-message").TrimmedText().Should().Be(testText);
         }
 
@@ -82,7 +82,7 @@ namespace MudBlazor.UnitTests.Components
             });
             // shoot out a snackbar
             await _provider.InvokeAsync(() => _service.Add(renderFragment));
-            _provider.Find("#mud-snackbar-container").InnerHtml.Trim().Should().NotBeEmpty();
+            _provider.Find(".mud-snackbar-container").InnerHtml.Trim().Should().NotBeEmpty();
             _provider.Find("div.mud-snackbar-content-message").InnerHtml.Should().Be($"<ul><li>{testText}</li></ul>");
         }
 
@@ -238,7 +238,7 @@ namespace MudBlazor.UnitTests.Components
                 _provider.Find("div.mud-snackbar-content-message").Should().NotBe(null)
             );
 
-            var svg = _provider.Find("#mud-snackbar-container .mud-snackbar").FirstElementChild.FirstElementChild;
+            var svg = _provider.Find(".mud-snackbar-container .mud-snackbar").FirstElementChild.FirstElementChild;
             svg.ClassName.Should().Contain("mud-icon-size-large");
             svg.InnerHtml.Should().Contain("M15.73,3H8.27L3,8.27v7.46L8.27,21h7.46L21,15.73V8.27L15.73,3z M19,14.9L14.9,19H9.1L5,14.9V9.1L9.1,5h5.8L19,9.1V14.9z");
         }
@@ -247,14 +247,14 @@ namespace MudBlazor.UnitTests.Components
         public async Task Icon()
         {
             await _provider.InvokeAsync(() => _service.Add("Boom, big reveal. Im a pickle!"));
-            _provider.Find("#mud-snackbar-container .mud-snackbar .mud-snackbar-icon").InnerHtml.Trim().Should().NotBeEmpty();
+            _provider.Find(".mud-snackbar-container .mud-snackbar .mud-snackbar-icon").InnerHtml.Trim().Should().NotBeEmpty();
         }
 
         [Test]
         public async Task HideIcon()
         {
             await _provider.InvokeAsync(() => _service.Add("Boom, big reveal. Im a pickle!", Severity.Success, config => { config.HideIcon = true; }));
-            var hasIcon = _provider.Find("#mud-snackbar-container .mud-snackbar").FirstElementChild.ClassName.Contains("mud-snackbar-icon");
+            var hasIcon = _provider.Find(".mud-snackbar-container .mud-snackbar").FirstElementChild.ClassName.Contains("mud-snackbar-icon");
             hasIcon.Should().BeFalse();
         }
 
@@ -263,7 +263,7 @@ namespace MudBlazor.UnitTests.Components
         {
             await _provider.InvokeAsync(() => _service.Add("Boom, big reveal. Im a pickle!", Severity.Success, config => { config.IconColor = Color.Tertiary; config.IconSize = Size.Large; }));
 
-            var svgClassNames = _provider.Find("#mud-snackbar-container .mud-snackbar").FirstElementChild.FirstElementChild.ClassName;
+            var svgClassNames = _provider.Find(".mud-snackbar-container .mud-snackbar").FirstElementChild.FirstElementChild.ClassName;
             svgClassNames.Should().Contain("mud-icon-size-large");
             svgClassNames.Should().Contain("mud-tertiary-text");
         }
@@ -273,7 +273,7 @@ namespace MudBlazor.UnitTests.Components
         {
             await _provider.InvokeAsync(() => _service.Add("Boom, big reveal. Im a pickle!", Severity.Success));
 
-            var svgClassNames = _provider.Find("#mud-snackbar-container .mud-snackbar").FirstElementChild.FirstElementChild.ClassName;
+            var svgClassNames = _provider.Find(".mud-snackbar-container .mud-snackbar").FirstElementChild.FirstElementChild.ClassName;
             svgClassNames.Should().Contain("mud-icon-size-medium");
 
             // Ensure no color classes are present, like "mud-primary-text", "mud-error-text", etc.
@@ -313,7 +313,7 @@ namespace MudBlazor.UnitTests.Components
 
             snackbar?.Dispose();
 
-            _provider.Find("#mud-snackbar-container").InnerHtml.Trim().Should().NotBeEmpty();
+            _provider.Find(".mud-snackbar-container").InnerHtml.Trim().Should().NotBeEmpty();
             _provider.Find("div.mud-snackbar-content-message").TrimmedText().Should().Be("Boom, big reveal. Im a pickle!");
         }
 

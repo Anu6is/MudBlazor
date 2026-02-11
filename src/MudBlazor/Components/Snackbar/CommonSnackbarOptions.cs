@@ -130,6 +130,14 @@ public abstract class CommonSnackbarOptions
     /// </remarks>
     public bool HideIcon { get; set; }
 
+    /// <summary>
+    /// The CSS classes used to position the snackbar.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to <c>null</c>.
+    /// </remarks>
+    public string? PositionClass { get; set; }
+
     protected CommonSnackbarOptions() { }
 
     protected CommonSnackbarOptions(CommonSnackbarOptions options)
@@ -149,5 +157,6 @@ public abstract class CommonSnackbarOptions
         WarningIcon = options.WarningIcon;
         ErrorIcon = options.ErrorIcon;
         HideIcon = options.HideIcon;
+        PositionClass = options.PositionClass;
     }
 }

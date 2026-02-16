@@ -197,7 +197,9 @@ public abstract class MudRadialChartBase<T, TOptions> : MudChartBase<T, TOptions
     /// <param name="chartLabels">The labels for the chart.</param>
     protected void BuildLegends(string[] chartLabels)
     {
-        for (var i = 0; i < chartLabels.Length; i++)
+        var actualDataLength = GetActualDataLength();
+        var legendCount = Math.Min(chartLabels.Length, actualDataLength);
+        for (var i = 0; i < legendCount; i++)
         {
             var label = chartLabels[i];
 
@@ -214,6 +216,22 @@ public abstract class MudRadialChartBase<T, TOptions> : MudChartBase<T, TOptions
                 OnVisibilityChanged = EventCallback.Factory.Create<SvgLegend>(this, HandleLegendVisibilityChanged)
             });
         }
+    }
+
+    private int GetActualDataLength()
+    {
+        if (ChartSeries == null || ChartSeries.Count == 0)
+        {
+            return 0;
+        }
+
+        if (ChartOptions!.AggregationOption == AggregationOption.GroupByDataSet)
+        {
+            return ChartSeries.Count;
+        }
+
+        return ChartSeries.Where(s => s.Visible).DefaultIfEmpty()
+            .Max(s => s?.Data?.Values?.Count ?? 0);
     }
 
     /// <summary>

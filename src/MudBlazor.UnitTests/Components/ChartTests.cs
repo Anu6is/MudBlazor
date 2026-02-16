@@ -734,5 +734,75 @@ namespace MudBlazor.UnitTests.Components
             yaxis.Should().NotBeNull();
             yaxis[0].Children[0].InnerHtml.Trim().Should().Be(testCase.ExpectedValue);
         }
+
+        [Test]
+        public void PieChart_LegendShouldOnlyShowVisibleItems()
+        {
+            var labels = new[] { "A", "B", "C", "D", "E" };
+            var data = new double[] { 10, 20, 30 }; // 3 data points, 5 labels
+
+            var comp = Context.Render<MudChart<double>>(parameters => parameters
+                .Add(p => p.ChartType, ChartType.Pie)
+                .Add(p => p.ChartSeries, data.AsChartDataSet())
+                .Add(p => p.ChartLabels, labels)
+            );
+
+            var legendItems = comp.FindAll(".mud-chart-legend-item");
+            legendItems.Count.Should().Be(3);
+            legendItems[0].TextContent.Trim().Should().Be("A");
+            legendItems[1].TextContent.Trim().Should().Be("B");
+            legendItems[2].TextContent.Trim().Should().Be("C");
+        }
+
+        [Test]
+        public void PieChart_LegendShouldIncludeZeroValues()
+        {
+            var labels = new[] { "A", "B", "C" };
+            var data = new double[] { 10, 0, 30 }; // Zero value in the middle
+
+            var comp = Context.Render<MudChart<double>>(parameters => parameters
+                .Add(p => p.ChartType, ChartType.Pie)
+                .Add(p => p.ChartSeries, data.AsChartDataSet())
+                .Add(p => p.ChartLabels, labels)
+            );
+
+            var legendItems = comp.FindAll(".mud-chart-legend-item");
+            legendItems.Count.Should().Be(3);
+            legendItems[1].TextContent.Trim().Should().Be("B");
+        }
+
+        [Test]
+        public async Task PieChart_LegendShouldUpdateWhenSeriesVisibilityChanges()
+        {
+            var labels = new[] { "A", "B", "C", "D" };
+            var series1 = new ChartSeries<double> { Name = "S1", Data = new double[] { 10, 20, 30 }, Visible = true };
+            var series2 = new ChartSeries<double> { Name = "S2", Data = new double[] { 10, 20, 30, 40 }, Visible = false };
+
+            var comp = Context.Render<MudChart<double>>(parameters => parameters
+                .Add(p => p.ChartType, ChartType.Pie)
+                .Add(p => p.ChartSeries, new List<ChartSeries<double>> { series1, series2 })
+                .Add(p => p.ChartLabels, labels)
+            );
+
+            // Initially only series1 is visible, so 3 legend items
+            var legendItems = comp.FindAll(".mud-chart-legend-item");
+            legendItems.Count.Should().Be(3);
+
+            // Make series2 visible
+            series2.Visible = true;
+            comp.Instance.RebuildChart(); // Ensure rebuild
+            comp.Render();
+
+            legendItems = comp.FindAll(".mud-chart-legend-item");
+            legendItems.Count.Should().Be(4);
+
+            // Hide series1
+            series1.Visible = false;
+            comp.Instance.RebuildChart();
+            comp.Render();
+
+            legendItems = comp.FindAll(".mud-chart-legend-item");
+            legendItems.Count.Should().Be(4); // Series 2 is still visible and has 4 items
+        }
     }
 }

@@ -3,18 +3,39 @@
   display: grid;
   grid-template-rows: minmax(0, 0fr);
   transition: grid-template-rows 300ms ease-in-out;
+
+  &.mud-collapse-horizontal {
+    width: fit-content;
+    grid-template-rows: initial;
+    grid-template-columns: minmax(0, 0fr);
+    transition: grid-template-columns 300ms ease-in-out;
+  }
 }
 
 .mud-collapse-entering {
   grid-template-rows: minmax(0, 1fr);
+
+  &.mud-collapse-horizontal {
+    grid-template-rows: initial;
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .mud-collapse-entered {
   overflow: initial;
   grid-template-rows: minmax(0, 1fr);
 
+  &.mud-collapse-horizontal {
+    grid-template-rows: initial;
+    grid-template-columns: minmax(0, 1fr);
+
+    & .mud-collapse-wrapper {
+      overflow-x: auto;
+    }
+  }
+
   & .mud-collapse-wrapper {
-      overflow-y: auto;
+    overflow-y: auto;
   }
 }
 
@@ -29,4 +50,16 @@
 
 .mud-collapse-wrapper-inner {
   width: 100%;
+}
+
+.mud-collapse-direction-top {
+  margin-top: auto;
+}
+
+.mud-collapse-direction-left {
+  margin-left: auto;
+}
+
+.mud-collapse-direction-start {
+  margin-inline-start: auto;
 }

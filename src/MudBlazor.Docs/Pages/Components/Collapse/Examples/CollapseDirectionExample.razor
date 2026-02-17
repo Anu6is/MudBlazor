@@ -1,0 +1,30 @@
+@namespace MudBlazor.Docs.Examples
+
+<MudPaper Class="pa-4">
+    <MudStack>
+        <MudStack Row="true" AlignItems="AlignItems.Center">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => _expanded = !_expanded)">@(_expanded ? "Collapse All" : "Expand All")</MudButton>
+            <MudSelect T="Direction" Label="Direction" @bind-Value="_direction" Dense="true" Style="width: 200px;">
+                @foreach (Direction item in Enum.GetValues(typeof(Direction)))
+                {
+                    <MudSelectItem Value="@item">@item</MudSelectItem>
+                }
+            </MudSelect>
+        </MudStack>
+
+        <MudDivider />
+
+        <div class="d-flex justify-center align-center" style="height: 300px; border: 1px dashed var(--mud-palette-divider); overflow: hidden;">
+            <MudCollapse Expanded="_expanded" Direction="_direction">
+                <MudPaper Class="pa-8 mud-theme-primary">
+                    <MudText>Expanding towards @_direction</MudText>
+                </MudPaper>
+            </MudCollapse>
+        </div>
+    </MudStack>
+</MudPaper>
+
+@code {
+    bool _expanded = true;
+    Direction _direction = Direction.Bottom;
+}

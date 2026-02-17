@@ -24,13 +24,18 @@ namespace MudBlazor
             .AddClass("mud-collapse-entered", _state == CollapseState.Entered)
             .AddClass("mud-collapse-exiting", _state == CollapseState.Exiting)
             .AddClass("invisible", _state == CollapseState.Exited)
+            .AddClass("mud-collapse-horizontal", IsHorizontal)
+            .AddClass($"mud-collapse-direction-{Direction.ToStringFast(true)}")
             .AddClass(Class)
             .Build();
 
         protected string Stylename => new StyleBuilder()
             .AddStyle("max-height", MaxHeight.ToPx(), MaxHeight != null)
+            .AddStyle("max-width", MaxWidth.ToPx(), MaxWidth != null)
             .AddStyle(Style)
             .Build();
+
+        private bool IsHorizontal => Direction is Direction.Left or Direction.Right or Direction.Start or Direction.End;
 
         /// <summary>
         /// Displays content within this panel.
@@ -39,7 +44,18 @@ namespace MudBlazor
         /// Defaults to <c>false</c>.
         /// </remarks>
         [Parameter]
+        [Category(CategoryTypes.Collapse.Behavior)]
         public bool Expanded { get; set; }
+
+        /// <summary>
+        /// The direction the panel expands.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to <see cref="Direction.Bottom"/>.
+        /// </remarks>
+        [Parameter]
+        [Category(CategoryTypes.Collapse.Appearance)]
+        public Direction Direction { get; set; } = Direction.Bottom;
 
         /// <summary>
         /// The maximum allowed height of this panel, in pixels.
@@ -48,24 +64,38 @@ namespace MudBlazor
         /// Defaults to <c>null</c>.
         /// </remarks>
         [Parameter]
+        [Category(CategoryTypes.Collapse.Appearance)]
         public int? MaxHeight { get; set; }
+
+        /// <summary>
+        /// The maximum allowed width of this panel, in pixels.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to <c>null</c>.
+        /// </remarks>
+        [Parameter]
+        [Category(CategoryTypes.Collapse.Appearance)]
+        public int? MaxWidth { get; set; }
 
         /// <summary>
         /// The content within this panel.
         /// </summary>
         [Parameter]
+        [Category(CategoryTypes.Collapse.Behavior)]
         public RenderFragment? ChildContent { get; set; }
 
         /// <summary>
         /// Occurs when the collapse or expand animation has finished.
         /// </summary>
         [Parameter]
+        [Category(CategoryTypes.Collapse.Behavior)]
         public EventCallback OnAnimationEnd { get; set; }
 
         /// <summary>
         /// Occurs when the <see cref="Expanded"/> property has changed.
         /// </summary>
         [Parameter]
+        [Category(CategoryTypes.Collapse.Behavior)]
         public EventCallback<bool> ExpandedChanged { get; set; }
 
         public MudCollapse()

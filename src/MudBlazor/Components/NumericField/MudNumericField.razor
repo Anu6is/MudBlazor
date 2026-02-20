@@ -1,4 +1,5 @@
 ﻿@namespace MudBlazor
+@using System.Diagnostics.CodeAnalysis
 @typeparam T
 @inherits MudDebouncedInput<T>
 
@@ -53,7 +54,7 @@
                           max="@(_maxHasValue ? FormatParam(_max) : null)"
                           step="@(_stepHasValue ? FormatParam(_step) : "any")"
                           InputMode="@InputMode"
-                          Pattern="@(Pattern == null ? null : Pattern!.TrimEnd('*')+"*")"
+                          Pattern="@(GetEffectivePattern() is { } p ? p.TrimEnd('*') + "*" : null)"
                           OnAdornmentClick="@OnAdornmentClick"
                           OnBlur="@OnBlurredAsync"
                           OnKeyDown="@HandleKeyDownAsync"

@@ -3,8 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Numerics;
+using System.Reflection;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor.Services;
@@ -16,21 +20,17 @@ namespace MudBlazor
     /// A field for numeric values from users. 
     /// </summary>
     /// <typeparam name="T">The type of number being collected.</typeparam>
-    public partial class MudNumericField<T> : MudDebouncedInput<T>
+    public partial class MudNumericField<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicMethods)] T> : MudDebouncedInput<T>
     {
         private T? _step;
         private T? _max;
         private T? _min;
-        private T? _minDefault;
-        private T? _maxDefault;
-        private T? _stepDefault;
         private bool _maxHasValue = false;
         private bool _minHasValue = false;
         private bool _stepHasValue = false;
         private MudInput<string> _elementReference = null!;
         private readonly string _elementId = Identifier.Create("numericField");
-
-        private readonly Comparer _comparer = new(CultureInfo.InvariantCulture);
+        private readonly INumericOperations<T> _ops = NumericOperationsFactory.Get<T>();
 
         [Inject]
         private IKeyInterceptorService KeyInterceptorService { get; set; } = null!;
@@ -38,90 +38,11 @@ namespace MudBlazor
         public MudNumericField()
         {
             Validation = new Func<T, Task<bool>>(ValidateInput);
-            #region parameters default depending on T
 
-            //sbyte
-            if (typeof(T) == typeof(sbyte) || typeof(T) == typeof(sbyte?))
+            if (_ops.IsDecimal)
             {
-                _minDefault = (T)(object)sbyte.MinValue;
-                _maxDefault = (T)(object)sbyte.MaxValue;
-                _stepDefault = (T)(object)(sbyte)1;
-            }
-            // byte
-            else if (typeof(T) == typeof(byte) || typeof(T) == typeof(byte?))
-            {
-                _minDefault = (T)(object)byte.MinValue;
-                _maxDefault = (T)(object)byte.MaxValue;
-                _stepDefault = (T)(object)(byte)1;
-            }
-            // short
-            else if (typeof(T) == typeof(short) || typeof(T) == typeof(short?))
-            {
-                _minDefault = (T)(object)short.MinValue;
-                _maxDefault = (T)(object)short.MaxValue;
-                _stepDefault = (T)(object)(short)1;
-            }
-            // ushort
-            else if (typeof(T) == typeof(ushort) || typeof(T) == typeof(ushort?))
-            {
-                _minDefault = (T)(object)ushort.MinValue;
-                _maxDefault = (T)(object)ushort.MaxValue;
-                _stepDefault = (T)(object)(ushort)1;
-            }
-            // int
-            else if (typeof(T) == typeof(int) || typeof(T) == typeof(int?))
-            {
-                _minDefault = (T)(object)int.MinValue;
-                _maxDefault = (T)(object)int.MaxValue;
-                _stepDefault = (T)(object)1;
-            }
-            // uint
-            else if (typeof(T) == typeof(uint) || typeof(T) == typeof(uint?))
-            {
-                _minDefault = (T)(object)uint.MinValue;
-                _maxDefault = (T)(object)uint.MaxValue;
-                _stepDefault = (T)(object)1u;
-            }
-            // long
-            else if (typeof(T) == typeof(long) || typeof(T) == typeof(long?))
-            {
-                _minDefault = (T)(object)long.MinValue;
-                _maxDefault = (T)(object)long.MaxValue;
-                _stepDefault = (T)(object)1L;
-            }
-            // ulong
-            else if (typeof(T) == typeof(ulong) || typeof(T) == typeof(ulong?))
-            {
-                _minDefault = (T)(object)ulong.MinValue;
-                _maxDefault = (T)(object)ulong.MaxValue;
-                _stepDefault = (T)(object)1ul;
-            }
-            // float
-            else if (typeof(T) == typeof(float) || typeof(T) == typeof(float?))
-            {
-                _minDefault = (T)(object)float.MinValue;
-                _maxDefault = (T)(object)float.MaxValue;
-                _stepDefault = (T)(object)1.0f;
                 InputMode = InputMode.@decimal;
             }
-            // double
-            else if (typeof(T) == typeof(double) || typeof(T) == typeof(double?))
-            {
-                _minDefault = (T)(object)double.MinValue;
-                _maxDefault = (T)(object)double.MaxValue;
-                _stepDefault = (T)(object)1.0;
-                InputMode = InputMode.@decimal;
-            }
-            // decimal
-            else if (typeof(T) == typeof(decimal) || typeof(T) == typeof(decimal?))
-            {
-                _minDefault = (T)(object)decimal.MinValue;
-                _maxDefault = (T)(object)decimal.MaxValue;
-                _stepDefault = (T)(object)1M;
-                InputMode = InputMode.@decimal;
-            }
-
-            #endregion parameters default depending on T
         }
 
         protected string Classname =>
@@ -132,15 +53,58 @@ namespace MudBlazor
 
         private bool IsNumberMode => InputMode == InputMode.numeric || InputMode == InputMode.@decimal;
 
-        // Defensive null check with object pattern: GetCulture() is annotated as non-null, but DataGrid may return null in certain cases.
-        // In typical scenarios it is not null, as MudFormComponent sets a default culture and other components do not override it with null.
-        // The annotation could be changed in the future, but doing so would introduce unnecessary null checks in other components.
-        private bool IsFormatted =>
-            Pattern is not null ||
-            GetFormat() is not null ||
-            // Edgy way to check if the MudComponentForm.Culture is provided explicitly and is a different one than the default CurrentUICulture && InvariantCulture.
-            // If not, then we override to InvariantCulture to avoid issues with <input type="number">.
-            GetCulture() is { } culture && !culture.Equals(CultureInfo.CurrentUICulture) && !culture.Equals(CultureInfo.InvariantCulture);
+        private bool IsFormatted => HasExplicitPattern || HasExplicitFormat || HasNonDefaultCulture;
+
+        private bool HasExplicitPattern => Pattern is not null;
+
+        private bool HasExplicitFormat => GetFormat() is not null;
+
+        // <input type="number"> only handles InvariantCulture and CurrentUICulture correctly.
+        // Any other culture requires falling back to <input type="text"> with explicit formatting.
+        private bool HasNonDefaultCulture =>
+            GetCulture() is { } culture &&
+            !culture.Equals(CultureInfo.CurrentUICulture) &&
+            !culture.Equals(CultureInfo.InvariantCulture);
+
+        /// <summary>
+        /// Returns the effective pattern: the user-supplied <see cref="Pattern"/> when set,
+        /// or a type-derived character-class default when rendering as <c>input[type=text]</c>.
+        /// Returns <c>null</c> when in <c>input[type=number]</c> mode (no pattern needed).
+        /// </summary>
+        private string? GetEffectivePattern()
+        {
+            // In number mode the browser handles input natively — no pattern required.
+            if (!IsFormatted)
+            {
+                return null;
+            }
+
+            // Consumer explicitly opted in to their own pattern.
+            if (Pattern is not null)
+            {
+                return Pattern;
+            }
+
+            var numericType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
+
+            // Unsigned integers — only digits.
+            if (!_ops.IsDecimal && _ops.Compare(_ops.MinValue, default!) >= 0)
+            {
+                return "[0-9]*";
+            }
+
+            // Signed integers — digits and a leading minus.
+            if (!_ops.IsDecimal)
+            {
+                return @"[0-9\-]*";
+            }
+
+            // Floating-point — digits, minus, and the culture-specific decimal separator.
+            // Regex.Escape handles '.' → '\.' so it isn't treated as a wildcard.
+            var sep = Regex.Escape((GetCulture() ?? CultureInfo.InvariantCulture).NumberFormat.NumberDecimalSeparator);
+
+            return $@"[0-9{sep}\-]*";
+        }
 
         /// <inheritdoc />
         [ExcludeFromCodeCoverage]
@@ -216,38 +180,42 @@ namespace MudBlazor
         /// <param name="factor">Multiplication factor (1 or -1) will be applied to the step</param>
         private async Task Change(double factor = 1)
         {
+            T? nextValue;
             try
             {
-                var nextValue = GetNextValue(factor) ?? Num.To<T>(0);
-
-                // validate that the data type is a value type before we compare them
-                if (typeof(T).IsValueType && ReadValue is not null)
-                {
-                    if (factor > 0 && _comparer.Compare(nextValue, ReadValue) < 0)
-                        nextValue = Max;
-                    else if (factor < 0 && _comparer.Compare(nextValue, ReadValue) > 0)
-                        nextValue = Min;
-                }
-
-                await SetValueAndUpdateTextAsync(ConstrainBoundaries(nextValue).value);
-                await _elementReference.SetText(ReadText);
+                nextValue = GetNextValue(factor);
             }
             catch (OverflowException)
             {
                 // if next value overflows the primitive type, lets set it to Min or Max depending on if factor is positive or negative
                 await SetValueAndUpdateTextAsync(factor > 0 ? Max : Min, true);
+                return;
             }
+
+            // Detect arithmetic wraparound (e.g. int.MaxValue + 1 → int.MinValue).
+            if (ReadValue is not null && nextValue is not null)
+            {
+                if (factor > 0 && _ops.Compare(nextValue, ReadValue) < 0)
+                {
+                    nextValue = Max;
+                }
+                else if (factor < 0 && _ops.Compare(nextValue, ReadValue) > 0)
+                {
+                    nextValue = Min;
+                }
+            }
+
+            await SetValueAndUpdateTextAsync(ConstrainBoundaries(nextValue).value);
+            await _elementReference.SetText(ReadText);
         }
 
         private T? GetNextValue(double factor)
         {
-            if (typeof(T) == typeof(decimal) || typeof(T) == typeof(decimal?))
-                return (T)(object)Convert.ToDecimal(FromDecimal(ReadValue) + (FromDecimal(Step) * (decimal)factor));
-            if (typeof(T) == typeof(long) || typeof(T) == typeof(long?))
-                return (T)(object)Convert.ToInt64(FromInt64(ReadValue) + (FromInt64(Step) * factor));
-            if (typeof(T) == typeof(ulong) || typeof(T) == typeof(ulong?))
-                return (T)(object)Convert.ToUInt64(FromUInt64(ReadValue) + (FromUInt64(Step) * factor));
-            return Num.To<T>(Num.From(ReadValue) + (Num.From(Step) * factor));
+            var value = ReadValue ?? _ops.Zero;
+            var step = Step ?? _ops.One;
+            if (value is null || step is null)
+                return default;
+            return _ops.Add(value, step, factor);
         }
 
         /// <summary>
@@ -267,19 +235,19 @@ namespace MudBlazor
         /// <returns>Returns a valid value and if it has been changed.</returns>
         protected (T? value, bool changed) ConstrainBoundaries(T? value)
         {
-            if (value == null)
-                return (default(T), false);
-
-            // validate that the data type is a value type before we compare them
-            if (typeof(T).IsValueType)
+            if (value is null)
             {
-                // check if value is bigger than defined MAX, if so take the defined MAX value instead
-                if (_comparer.Compare(value, Max) > 0)
-                    return (Max, true);
+                return (default(T), false);
+            }
 
-                // check if value is lower than defined MIN, if so take the defined MIN value instead
-                if (_comparer.Compare(value, Min) < 0)
-                    return (Min, true);
+            if (Max is not null && _ops.Compare(value, Max) > 0)
+            {
+                return (Max, true);
+            }
+
+            if (Min is not null && _ops.Compare(value, Min) < 0)
+            {
+                return (Min, true);
             }
 
             return (value, false);
@@ -299,10 +267,11 @@ namespace MudBlazor
                     new("Dead", preventDown: "key+any"),
                 };
 
-                if (Pattern != null)
+                var effectivePattern = GetEffectivePattern();
+                if (effectivePattern != null)
                 {
                     //prevent inputs that do not match the pattern
-                    keyOptions.Add(new($"/^(?!{Pattern.TrimEnd('*')}).$/", preventDown: "key+none|key+shift|key+alt"));
+                    keyOptions.Add(new($"/^(?!{effectivePattern.TrimEnd('*')}).$/", preventDown: "key+none|key+shift|key+alt"));
                 }
 
                 var options = new KeyInterceptorOptions("mud-input-slot", keyOptions.ToArray());
@@ -386,10 +355,10 @@ namespace MudBlazor
         [Category(CategoryTypes.FormComponent.Validation)]
         public T? Min
         {
-            get => _minHasValue ? _min : _minDefault;
+            get => _minHasValue ? _min : _ops.MinValue;
             set
             {
-                _minHasValue = value != null;
+                _minHasValue = value is not null;
                 _min = value;
             }
         }
@@ -404,10 +373,10 @@ namespace MudBlazor
         [Category(CategoryTypes.FormComponent.Validation)]
         public T? Max
         {
-            get => _maxHasValue ? _max : _maxDefault;
+            get => _maxHasValue ? _max : _ops.MaxValue;
             set
             {
-                _maxHasValue = value != null;
+                _maxHasValue = value is not null;
                 _max = value;
             }
         }
@@ -423,10 +392,10 @@ namespace MudBlazor
         [Category(CategoryTypes.FormComponent.Behavior)]
         public T? Step
         {
-            get => _stepHasValue ? _step : _stepDefault;
+            get => _stepHasValue ? _step : _ops.One;
             set
             {
-                _stepHasValue = value != null;
+                _stepHasValue = value is not null;
                 _step = value;
             }
         }
@@ -482,12 +451,6 @@ namespace MudBlazor
             return null;
         }
 
-        private static decimal FromDecimal(T? v) => Convert.ToDecimal((decimal?)(object?)v);
-
-        private static long FromInt64(T? v) => Convert.ToInt64((long?)(object?)v);
-
-        private static ulong FromUInt64(T? v) => Convert.ToUInt64((ulong?)(object?)v);
-
         /// <inheritdoc />
         protected override async ValueTask DisposeAsyncCore()
         {
@@ -497,6 +460,136 @@ namespace MudBlazor
             {
                 await KeyInterceptorService.UnsubscribeAsync(_elementId);
             }
+        }
+    }
+
+    internal interface INumericOperations<T>
+    {
+        T Zero { get; }
+        T MinValue { get; }
+        T MaxValue { get; }
+        T One { get; }
+        bool IsDecimal { get; }
+
+        /// <summary>
+        /// Returns <c>a + (step * factor)</c>, or <c>null</c> if either operand is null.
+        /// </summary>
+        T Add(T a, T step, double factor);
+
+        /// <summary>
+        /// Compares two values. Consistent with <see cref="IComparable{T}"/>.
+        /// Returns null-is-less-than-value semantics (matching the current Comparer behaviour).
+        /// </summary>
+        int Compare(T x, T y);
+
+        double ToDouble(T value);
+    }
+
+    internal sealed class NumericOperations<TNumber> : INumericOperations<TNumber>
+        where TNumber : struct, INumber<TNumber>, IMinMaxValue<TNumber>
+    {
+        public static readonly NumericOperations<TNumber> Instance = new();
+
+        public TNumber Zero => TNumber.Zero;
+        public TNumber MinValue => TNumber.MinValue;
+        public TNumber MaxValue => TNumber.MaxValue;
+        public TNumber One => TNumber.One;
+        public bool IsDecimal => !TNumber.IsInteger(TNumber.Zero);
+
+        public TNumber Add(TNumber a, TNumber step, double factor)
+        {
+            // CreateChecked throws OverflowException on out-of-range —
+            // preserving the existing catch in Change() with no behaviour change.
+            if (factor >= 0)
+            {
+                return checked(a + step * TNumber.CreateChecked(factor));
+            }
+
+            return checked(a - step * TNumber.CreateChecked(-factor));
+        }
+
+        public int Compare(TNumber x, TNumber y)
+        {
+            return x.CompareTo(y);
+        }
+
+        public double ToDouble(TNumber value) => double.CreateSaturating(value);
+    }
+
+    internal sealed class NullableNumericOperations<TNumber> : INumericOperations<TNumber?>
+        where TNumber : struct, INumber<TNumber>, IMinMaxValue<TNumber>
+    {
+        public static readonly NullableNumericOperations<TNumber> Instance = new();
+
+        private static readonly NumericOperations<TNumber> _inner = NumericOperations<TNumber>.Instance;
+
+        public TNumber? Zero => _inner.Zero;
+        public TNumber? MinValue => _inner.MinValue;
+        public TNumber? MaxValue => _inner.MaxValue;
+        public TNumber? One => _inner.One;
+        public bool IsDecimal => _inner.IsDecimal;
+
+        public TNumber? Add(TNumber? a, TNumber? step, double factor)
+        {
+            if (a is null || step is null)
+                return null;
+            return _inner.Add(a.Value, step.Value, factor);
+        }
+
+        public int Compare(TNumber? x, TNumber? y)
+        {
+            if (x is null && y is null) return 0;
+            if (x is null) return -1;
+            if (y is null) return 1;
+            return _inner.Compare(x.Value, y.Value);
+        }
+
+        public double ToDouble(TNumber? value) => value is null ? 0.0 : _inner.ToDouble(value.Value);
+    }
+
+    internal static class NumericOperationsFactory
+    {
+        private static readonly ConcurrentDictionary<Type, object> _cache = new();
+
+        /// <summary>
+        /// Returns the <see cref="INumericOperations{T}"/> singleton for <typeparamref name="T"/>,
+        /// which may be a non-nullable numeric type (e.g. <c>int</c>) or a nullable one (e.g. <c>int?</c>).
+        /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if <typeparamref name="T"/> is not a supported numeric type.
+        /// </exception>
+        public static INumericOperations<T> Get<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicMethods)] T>()
+        {
+            return (INumericOperations<T>)_cache.GetOrAdd(typeof(T), static _ => CreateOperations<T>());
+        }
+
+        private static object CreateOperations<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicMethods)] T>()
+        {
+            var type = typeof(T);
+            var underlyingType = Nullable.GetUnderlyingType(type);
+            var isNullable = underlyingType is not null;
+            var numericType = underlyingType ?? type;
+
+            // Validate up front with a meaningful error rather than a cryptic reflection failure.
+            var isSupported = numericType.IsValueType
+                && typeof(INumber<>).MakeGenericType(numericType).IsAssignableFrom(numericType)
+                && typeof(IMinMaxValue<>).MakeGenericType(numericType).IsAssignableFrom(numericType);
+
+            if (!isSupported)
+            {
+                throw new InvalidOperationException(
+                    $"MudNumericField does not support type '{type.Name}'. " +
+                    $"T must be a numeric value type implementing INumber<T> and IMinMaxValue<T>, " +
+                    $"or the nullable equivalent.");
+            }
+
+            var operationsType = isNullable
+                ? typeof(NullableNumericOperations<>).MakeGenericType(numericType)
+                : typeof(NumericOperations<>).MakeGenericType(numericType);
+
+            // Each implementation exposes a static readonly Instance field.
+            return operationsType.GetField("Instance",
+                BindingFlags.Public | BindingFlags.Static)!.GetValue(null)!;
         }
     }
 }

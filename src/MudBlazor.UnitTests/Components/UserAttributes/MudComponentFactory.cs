@@ -67,9 +67,14 @@ namespace MudBlazor.UnitTests.UserAttributes
                 var genericArgs = componentType.GetGenericArguments();
                 var constraints = genericArgs.SelectMany(arg => arg.GetGenericParameterConstraints()).Distinct().ToArray();
                 var hasINumberConstraint = constraints.Any(constraint => constraint.GetInterfaces().Any(type => type.IsGenericType && type.GetGenericTypeDefinition() == typeof(INumberBase<>)));
+
                 if (hasINumberConstraint)
                 {
                     componentType = componentType.MakeGenericType(componentType.GetGenericArguments().Select(_ => typeof(int)).ToArray());
+                }
+                else if (componentType.GetGenericTypeDefinition() == typeof(MudNumericField<>))
+                {
+                    componentType = componentType.MakeGenericType(typeof(int));
                 }
                 else
                 {

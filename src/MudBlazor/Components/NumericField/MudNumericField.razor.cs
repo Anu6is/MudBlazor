@@ -85,10 +85,8 @@ namespace MudBlazor
                 return Pattern;
             }
 
-            var numericType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
-
             // Unsigned integers — only digits.
-            if (!_ops.IsDecimal && _ops.Compare(_ops.MinValue, default!) >= 0)
+            if (!_ops.IsDecimal && _ops.Compare(_ops.MinValue, _ops.Zero) >= 0)
             {
                 return "[0-9]*";
             }

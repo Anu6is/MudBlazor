@@ -98,7 +98,7 @@ public abstract class MudAxisChartBase<T, TOptions> : MudChartBase<T, TOptions>,
     /// <summary>
     /// The horizontal start space for the chart.
     /// </summary>
-    protected double HorizontalStartSpace => Math.Max(HorizontalStartSpaceBuffer + Math.Ceiling(_yAxisLabelSize?.Width ?? 0), 30);
+    protected double HorizontalStartSpace => Math.Max(HorizontalStartSpaceBuffer + Math.Ceiling(_yAxisLabelSize?.Width ?? 0), 30) + (ChartOptions?.YAxisTitle != null ? 20 : 0);
     /// <summary>
     /// The horizontal end space for the chart.
     /// </summary>

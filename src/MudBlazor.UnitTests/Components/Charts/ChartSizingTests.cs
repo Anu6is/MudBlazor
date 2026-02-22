@@ -85,5 +85,44 @@ namespace MudBlazor.UnitTests.Charts
                 svg.GetAttribute("viewBox").Should().Be($"0 0 {measuredWidth} {measuredHeight}");
             });
         }
+
+        [Test]
+        public void MudAxisChartBase_YAxisTitle_ShouldAllocateSpaceAndPositionCorrectly()
+        {
+            var chartSeries = new List<ChartSeries<double>>()
+            {
+                new () { Name = "Series 1", Data = new double[] { 10, 20 } },
+            };
+
+            // Render without title
+            var compWithoutTitle = Context.Render<MudChart<double>>(parameters => parameters
+                .Add(p => p.ChartType, ChartType.Bar)
+                .Add(p => p.ChartSeries, chartSeries));
+
+            var gridWithoutTitle = compWithoutTitle.Find("g.mud-charts-gridlines-yaxis path");
+            var dWithoutTitle = gridWithoutTitle.GetAttribute("d");
+            // Extract the first X coordinate from "M X Y ..."
+            var xWithoutTitle = double.Parse(dWithoutTitle.Split(' ')[1]);
+
+            // Render with title
+            var compWithTitle = Context.Render<MudChart<double>>(parameters => parameters
+                .Add(p => p.ChartType, ChartType.Bar)
+                .Add(p => p.ChartSeries, chartSeries)
+                .Add(p => p.ChartOptions, new BarChartOptions { YAxisTitle = "Title" }));
+
+            var gridWithTitle = compWithTitle.Find("g.mud-charts-gridlines-yaxis path");
+            var dWithTitle = gridWithTitle.GetAttribute("d");
+            var xWithTitle = double.Parse(dWithTitle.Split(' ')[1]);
+
+            // xWithTitle should be larger than xWithoutTitle if space was allocated
+            // Note: Since labels might be small, they both might fall into the 30px minimum.
+            // But we added 20px, so it should definitely exceed 30px if the original was 30px.
+            xWithTitle.Should().BeGreaterThan(xWithoutTitle);
+
+            // Also check that the title is at X=10
+            var titleGroup = compWithTitle.Find("g[transform^='translate(10,']");
+            titleGroup.Should().NotBeNull();
+            titleGroup.InnerHtml.Should().Contain("Title");
+        }
     }
 }

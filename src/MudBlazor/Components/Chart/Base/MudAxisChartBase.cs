@@ -81,7 +81,6 @@ public abstract class MudAxisChartBase<T, TOptions> : MudChartBase<T, TOptions>,
     /// </summary>
     protected readonly List<SvgLegend> Legends = [];
 
-    private const double WidthAdjustment = 50.0;
     protected const double Epsilon = 1e-6;
     /// <summary>
     /// The default width of the chart bounds.
@@ -355,12 +354,7 @@ public abstract class MudAxisChartBase<T, TOptions> : MudChartBase<T, TOptions>,
         if (elementSize is null || elementSize.Timestamp <= _elementSize?.Timestamp)
             return;
 
-        _elementSize = new ElementSize()
-        {
-            Height = elementSize.Height,
-            Width = Math.Max(0, elementSize.Width - WidthAdjustment),
-            Timestamp = elementSize.Timestamp
-        };
+        _elementSize = elementSize;
 
         if (!MatchBoundsToSize)
             return;

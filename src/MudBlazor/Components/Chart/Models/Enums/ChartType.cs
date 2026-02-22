@@ -49,4 +49,8 @@ public enum ChartType
     /// Data is displayed as nodes connected by edges.
     /// </summary>
     Sankey,
+    /// <summary>
+    /// Data is displayed as horizontal rectangles.
+    /// </summary>
+    HorizontalBar,
 }

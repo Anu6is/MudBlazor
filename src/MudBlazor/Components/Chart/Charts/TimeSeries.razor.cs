@@ -101,8 +101,8 @@ partial class TimeSeries<T> : MudAxisLineChartBase<T, TimeSeriesChartOptions> wh
             _timeToPixelRatio = (_boundWidth - HorizontalStartSpace - HorizontalEndSpace) / fullDateTimeDiff.TotalMilliseconds;
         }
 
-        GenerateHorizontalGridLines(numHorizontalLines, lowestHorizontalLine, gridYUnits, verticalSpace);
-        GenerateVerticalGridLines(numVerticalLines, startOffset, horizontalSpace);
+        GenerateValueAxisGridLines(numHorizontalLines, lowestHorizontalLine, gridYUnits, verticalSpace);
+        GenerateCategoryAxisGridLines(numVerticalLines, startOffset, horizontalSpace);
     }
 
     private void ComputeMinAndMaxDateTimes()

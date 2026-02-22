@@ -98,7 +98,7 @@ public abstract class MudAxisLineChartBase<T, TOptions> : MudAxisChartBase<T, TO
     /// <param name="numVerticalLines">The number of vertical lines.</param>
     /// <param name="startOffset">The starting offset.</param>
     /// <param name="horizontalSpace">The horizontal space between lines.</param>
-    protected void GenerateVerticalGridLines(int numVerticalLines, double startOffset, double horizontalSpace)
+    protected void GenerateCategoryAxisGridLines(int numVerticalLines, double startOffset, double horizontalSpace)
     {
         VerticalLines.Clear();
         VerticalValues.Clear();

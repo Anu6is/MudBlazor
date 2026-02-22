@@ -91,8 +91,8 @@ namespace MudBlazor.Charts
             // If this is an overlay chart, we do not generate the grid lines
             if (IsOverlayChart) return;
 
-            GenerateHorizontalGridLines(numHorizontalLines, lowestHorizontalLine, gridYUnits, verticalSpace);
-            GenerateVerticalGridLines(numVerticalLines, horizontalSpace);
+            GenerateValueAxisGridLines(numHorizontalLines, lowestHorizontalLine, gridYUnits, verticalSpace);
+            GenerateCategoryAxisGridLines(numVerticalLines, horizontalSpace);
         }
 
         /// <summary>
@@ -200,7 +200,7 @@ namespace MudBlazor.Charts
         /// <summary>
         /// Generates the vertical grid lines and corresponding X-axis labels.
         /// </summary>
-        private void GenerateVerticalGridLines(int numVerticalLines, double horizontalSpace)
+        private void GenerateCategoryAxisGridLines(int numVerticalLines, double horizontalSpace)
         {
             VerticalLines.Clear();
             VerticalValues.Clear();

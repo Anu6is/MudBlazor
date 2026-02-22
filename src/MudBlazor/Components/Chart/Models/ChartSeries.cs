@@ -48,6 +48,11 @@ public sealed class ChartSeries<T> : IChartSeries, IEquatable<ChartSeries<T>> wh
     public string? TooltipSubtitleFormat { get; set; }
 
     /// <summary>
+    /// Tooltip XValue format for the series. It is used to format the {{X_VALUE}} tag.
+    /// </summary>
+    public string? TooltipXValueFormat { get; set; }
+
+    /// <summary>
     /// Tooltip YValue format for the series. It is used to format the {{Y_VALUE}} tag.
     /// </summary>
     public string? TooltipYValueFormat { get; set; }

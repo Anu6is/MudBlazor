@@ -249,16 +249,16 @@ public abstract class MudAxisChartBase<T, TOptions> : MudChartBase<T, TOptions>,
     /// </summary>
     /// <param name="numHorizontalLines">The number of horizontal lines.</param>
     /// <param name="lowestHorizontalLine">The lowest horizontal line.</param>
-    /// <param name="gridYUnits">The Y-axis grid units.</param>
-    /// <param name="verticalSpace">The vertical space between lines.</param>
-    protected void GenerateHorizontalGridLines(int numHorizontalLines, int lowestHorizontalLine, T gridYUnits, double verticalSpace)
+    /// <param name="gridUnits">The Y-axis grid units.</param>
+    /// <param name="space">The vertical space between lines.</param>
+    protected virtual void GenerateValueAxisGridLines(int numHorizontalLines, int lowestHorizontalLine, T gridUnits, double space)
     {
         HorizontalLines.Clear();
         HorizontalValues.Clear();
 
         for (var i = 0; i < numHorizontalLines; i++)
         {
-            var y = VerticalStartSpace + (i * verticalSpace);
+            var y = VerticalStartSpace + (i * space);
             var line = new SvgPath()
             {
                 Index = i,
@@ -266,12 +266,12 @@ public abstract class MudAxisChartBase<T, TOptions> : MudChartBase<T, TOptions>,
             };
             HorizontalLines.Add(line);
 
-            var startGridY = T.CreateSaturating(lowestHorizontalLine + i) * gridYUnits;
+            var startGrid = T.CreateSaturating(lowestHorizontalLine + i) * gridUnits;
             var lineValue = new SvgText()
             {
                 X = HorizontalStartSpace - 10,
                 Y = _boundHeight - y + 5,
-                Value = BuildYAxisValueString(startGridY)
+                Value = BuildYAxisValueString(startGrid)
             };
             HorizontalValues.Add(lineValue);
         }

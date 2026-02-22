@@ -75,7 +75,7 @@ namespace MudBlazor.UnitTests.Charts
 
             // check the axis
             comp.Markup.Should().ContainEquivalentOf("<g class=\"mud-charts-gridlines-yaxis\"><path stroke=\"#e0e0e0\" stroke-width=\"0.3\" d=\"M 30 320 L 670 320\"></path></g></g>");
-            comp.Markup.Should().ContainEquivalentOf("<text x='20' y='325' font-size='12px' text-anchor='end' dominant-baseline='auto'>1000</text></g>");
+            comp.Markup.Should().ContainEquivalentOf("<text x='25' y='325' font-size='12px' text-anchor='end' dominant-baseline='auto'>1000</text></g>");
             comp.Markup.Should().ContainEquivalentOf("<text x='30' y='340' font-size='12px' text-anchor='middle' dominant-baseline='middle' transform='rotate(0 30 340)'>23:00</text><text x='243.3333' y='340' font-size='12px' text-anchor='middle' dominant-baseline='middle' transform='rotate(0 243.3333 340)'>00:00</text><text x='456.6667' y='340' font-size='12px' text-anchor='middle' dominant-baseline='middle' transform='rotate(0 456.6667 340)'>01:00</text><text x='670' y='340' font-size='12px' text-anchor='middle' dominant-baseline='middle' transform='rotate(0 670 340)'>02:00</text></g>");
         }
 
@@ -161,7 +161,7 @@ namespace MudBlazor.UnitTests.Charts
                 }));
 
             // check the axis
-            comp.Markup.Should().ContainEquivalentOf("<text x='20' y='325' font-size='12px' text-anchor='end' dominant-baseline='auto'>1000</text>");
+            comp.Markup.Should().ContainEquivalentOf("<text x='25' y='325' font-size='12px' text-anchor='end' dominant-baseline='auto'>1000</text>");
             comp.Markup.Should().ContainEquivalentOf("<text x='207.7778' y='340' font-size='12px' text-anchor='middle' dominant-baseline='middle' transform='rotate(0 207.7778 340)'>00:00</text><text x='421.1111' y='340' font-size='12px' text-anchor='middle' dominant-baseline='middle' transform='rotate(0 421.1111 340)'>01:00</text><text x='634.4444' y='340' font-size='12px' text-anchor='middle' dominant-baseline='middle' transform='rotate(0 634.4444 340)'>02:00</text>");
         }
 
@@ -189,7 +189,7 @@ namespace MudBlazor.UnitTests.Charts
                 }));
 
             // check the axis
-            comp.Markup.Should().ContainEquivalentOf("<text x='20' y='325' font-size='12px' text-anchor='end' dominant-baseline='auto'>1000</text>");
+            comp.Markup.Should().ContainEquivalentOf("<text x='25' y='325' font-size='12px' text-anchor='end' dominant-baseline='auto'>1000</text>");
             comp.Markup.Should().ContainEquivalentOf("<text x='30' y='340' font-size='12px' text-anchor='middle' dominant-baseline='middle' transform='rotate(0 30 340)'>23:00</text><text x='190' y='340' font-size='12px' text-anchor='middle' dominant-baseline='middle' transform='rotate(0 190 340)'>00:00</text><text x='350' y='340' font-size='12px' text-anchor='middle' dominant-baseline='middle' transform='rotate(0 350 340)'>01:00</text><text x='510' y='340' font-size='12px' text-anchor='middle' dominant-baseline='middle' transform='rotate(0 510 340)'>02:00</text><text x='670' y='340' font-size='12px' text-anchor='middle' dominant-baseline='middle' transform='rotate(0 670 340)'>03:00</text>");
 
             // check the line path

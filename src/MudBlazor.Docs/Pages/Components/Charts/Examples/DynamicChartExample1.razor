@@ -4,6 +4,7 @@
     <MudToolBar>
         <MudMenu Modal="false" Variant="Variant.Outlined" EndIcon="@_menuIcons[_chartType]" IconColor="Color.Primary" Label="Chart Type">
             <MudMenuItem Icon="@_menuIcons[ChartType.Bar]" Label="Bar" OnClick="() => _chartType = ChartType.Bar" Disabled="@(_chartType == ChartType.Bar)"/>
+            <MudMenuItem Icon="@_menuIcons[ChartType.HorizontalBar]" Label="Horizontal Bar" OnClick="() => _chartType = ChartType.HorizontalBar" Disabled="@(_chartType == ChartType.HorizontalBar)" />
             <MudMenuItem Icon="@_menuIcons[ChartType.StackedBar]" Label="Stacked Bar" OnClick="() => _chartType = ChartType.StackedBar" Disabled="@(_chartType == ChartType.StackedBar)" />
             <MudMenuItem Icon="@_menuIcons[ChartType.Line]" Label="Line" OnClick="() => _chartType = ChartType.Line" Disabled="@(_chartType == ChartType.Line)" />
             <MudMenuItem Icon="@_menuIcons[ChartType.Pie]" Label="Pie" OnClick="() => _chartType = ChartType.Pie" Disabled="@(_chartType == ChartType.Pie)" />
@@ -23,6 +24,7 @@
     private Dictionary<ChartType, string> _menuIcons = new()
     {
         { ChartType.Bar, Icons.Material.Filled.BarChart },
+        { ChartType.HorizontalBar, Icons.Material.Filled.AlignHorizontalLeft },
         { ChartType.StackedBar, Icons.Material.Filled.StackedBarChart },
         { ChartType.Line, Icons.Material.Filled.ShowChart },
         { ChartType.Pie, Icons.Material.Filled.PieChart },

@@ -12,9 +12,9 @@ internal class CenterStrategy : IBarGroupPositionStrategy
         var barWidthOffset = ctx.BarWidth / 2;
         var barGapOffset = ctx.BarGap / 2;
         var spaceBetweenGroups = Math.Max(ctx.DataSetCount == 1 ? 0 : ctx.BarGroupWidth,
-                                             ctx.CalculateSpaceWidth(ctx.HorizontalSpace, ctx.ColumnsPerDataSet));
+                                             ctx.CalculateSpaceWidth(ctx.AvailableSpace, ctx.ColumnsPerDataSet));
 
-        var start = ctx.HorizontalStartSpace + (ctx.HorizontalSpace - ctx.DataSetCount * ctx.BarGroupWidth) / 2;
+        var start = ctx.StartSpaceBuffer + (ctx.AvailableSpace - ctx.DataSetCount * ctx.BarGroupWidth) / 2;
 
         var centerOffset = ctx.DataSetCount switch
         {

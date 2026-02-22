@@ -77,8 +77,8 @@ namespace MudBlazor.Charts
             // If this is an overlay chart, we do not generate the grid lines
             if (IsOverlayChart) return;
 
-            GenerateHorizontalGridLines(numHorizontalLines, lowestHorizontalLine, gridYUnits, verticalSpace);
-            GenerateVerticalGridLines(numVerticalLines, 0, horizontalSpace);
+            GenerateValueAxisGridLines(numHorizontalLines, lowestHorizontalLine, gridYUnits, verticalSpace);
+            GenerateCategoryAxisGridLines(numVerticalLines, 0, horizontalSpace);
         }
 
         private void ComputeUnitsAndNumberOfLines(out T gridYUnits, out int numHorizontalLines, out int lowestHorizontalLine, out int numVerticalLines)

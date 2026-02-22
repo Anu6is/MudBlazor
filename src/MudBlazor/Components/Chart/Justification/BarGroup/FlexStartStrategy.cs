@@ -12,9 +12,9 @@ internal class FlexStartStrategy : IBarGroupPositionStrategy
         var barGapOffset = ctx.BarGap / 2;
         var spacingRatioOffset = ctx.SeriesSpacingRatio / 2;
         var spaceBetweenGroups = Math.Max(ctx.DataSetCount == 1 ? 0 : ctx.BarGroupWidth,
-                                          ctx.CalculateSpaceWidth(ctx.HorizontalSpace, ctx.ColumnsPerDataSet));
+                                          ctx.CalculateSpaceWidth(ctx.AvailableSpace, ctx.ColumnsPerDataSet));
 
-        var start = ctx.HorizontalStartSpace + (ctx.BarGroupWidth / 2);
+        var start = ctx.StartSpaceBuffer + (ctx.BarGroupWidth / 2);
 
         for (var i = 0; i < ctx.ColumnsPerDataSet; i++)
         {

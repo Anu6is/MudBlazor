@@ -9,7 +9,7 @@
                 <MudSelectItem Value="chartType">@chartType</MudSelectItem>
             }
         </MudSelect>
-        @if (_chartType == ChartType.Bar || _chartType == ChartType.StackedBar)
+        @if (_chartType == ChartType.Bar || _chartType == ChartType.StackedBar || _chartType == ChartType.HorizontalBar)
         {
             <MudSelect T="Justify" Label="Justify Type" @bind-Value="_selectedJustify" Dense FitContent Variant="Variant.Outlined" Margin="Margin.Dense">
                 @foreach (Justify justify in Enum.GetValues(typeof(Justify)))
@@ -61,12 +61,12 @@
     <MudText Typo="Typo.h6">Selected portion of the chart: @_index</MudText>
 </MudStack>
 <MudStack Class="my-2" Row>
-    @if (_chartType == ChartType.Bar || _chartType == ChartType.StackedBar)
+    @if (_chartType == ChartType.Bar || _chartType == ChartType.StackedBar || _chartType == ChartType.HorizontalBar)
     {
         <MudSlider @bind-Value="_spacingRatio" Min="0" Max="1" Step="0.02">Spacing: @_spacingRatio.ToString("F2")</MudSlider>
         <MudSlider @bind-Value="_barWidthRatio" Min="0" Max="1" Step="0.02">Width: @_barWidthRatio.ToString("F2")</MudSlider>
     }
-    @if (_chartType == ChartType.Bar)
+    @if (_chartType == ChartType.Bar || _chartType == ChartType.HorizontalBar)
     {
         <MudSlider @bind-Value="_innerGapRatio" Min="0" Max="1" Step="0.02">Gap: @_innerGapRatio.ToString("F2")</MudSlider>
     }
@@ -103,6 +103,13 @@
     private IChartOptions GetChartOptions() => _chartType switch
     {
         ChartType.Bar => new BarChartOptions
+        {
+            Justify = _selectedJustify,
+            SeriesSpacingRatio = _spacingRatio,
+            BarWidthRatio = _barWidthRatio,
+            BarSpacingRatio = _innerGapRatio
+        },
+        ChartType.HorizontalBar => new HorizontalBarChartOptions
         {
             Justify = _selectedJustify,
             SeriesSpacingRatio = _spacingRatio,

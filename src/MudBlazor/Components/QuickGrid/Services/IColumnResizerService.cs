@@ -1,7 +1,7 @@
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
-namespace MudBlazor.QuickGrid.Services;
+namespace MudBlazor.Components.QuickGrid;
 
 /// <summary>
 /// Handles all column resize pointer tracking, width calculation, and delta accumulation.

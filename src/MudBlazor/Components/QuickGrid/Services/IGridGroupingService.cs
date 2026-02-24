@@ -1,6 +1,6 @@
 ﻿using MudBlazor.Components.QuickGrid;
 
-namespace MudBlazor.QuickGrid.Services;
+namespace MudBlazor.Components.QuickGrid;
 
 /// <summary>
 /// Provides the two grouping operations required by the data pipeline:

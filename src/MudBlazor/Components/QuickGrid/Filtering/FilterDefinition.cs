@@ -37,17 +37,12 @@ public sealed class FilterDefinition<[DynamicallyAccessedMembers(DynamicallyAcce
 
     /// <inheritdoc/>
     /// <remarks>
-    /// Expression generation is delegated to
-    /// <c>FilterExpressionGenerator&lt;T&gt;</c> in Phase 2B.  This stub returns a
-    /// constant <see langword="true"/> predicate so that the type compiles cleanly in
-    /// Phase 1 without a dependency on the generator.
+    /// Delegates to <see cref="FilterExpressionGenerator{T}.Generate{TProp}"/>,
+    /// which builds a composable LINQ predicate expression tree for the configured
+    /// <see cref="Operator"/> and <see cref="Value"/>.
     /// </remarks>
     public Expression<Func<T, bool>> GenerateExpression(FilterOptions options)
-    {
-        // Full implementation supplied by FilterExpressionGenerator<T> in Phase 2B.
-        // Returns a constant-true predicate as a compile-time placeholder.
-        return _ => true;
-    }
+        => FilterExpressionGenerator<T>.Generate(this, options);
 
     /// <inheritdoc/>
     public SerializableFilterDefinition ToSerializable()

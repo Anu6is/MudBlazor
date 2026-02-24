@@ -1,4 +1,4 @@
-namespace MudBlazor.QuickGrid.Services;
+﻿namespace MudBlazor.Components.QuickGrid;
 
 /// <summary>
 /// Creates a deep clone of a row item so that <c>QuickGridState&lt;T&gt;</c> can store an

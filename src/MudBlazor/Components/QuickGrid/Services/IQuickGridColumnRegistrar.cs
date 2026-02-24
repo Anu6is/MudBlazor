@@ -1,4 +1,4 @@
-namespace MudBlazor.QuickGrid.Registration;
+﻿namespace MudBlazor.Components.QuickGrid;
 
 /// <summary>
 /// Cascaded from <c>MudQuickGrid&lt;T&gt;</c> to all descendant column components,

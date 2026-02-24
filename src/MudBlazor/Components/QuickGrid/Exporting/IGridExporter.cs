@@ -1,7 +1,4 @@
-﻿
-using MudBlazor.Components.QuickGrid;
-
-namespace MudBlazor.QuickGrid.Services;
+﻿namespace MudBlazor.Components.QuickGrid;
 
 /// <summary>
 /// Produces an export file in a specific format from a

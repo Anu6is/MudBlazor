@@ -194,4 +194,8 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Components\QuickGrid\Sorting\" />
+  </ItemGroup>
+
 </Project>

@@ -1,6 +1,6 @@
 ﻿using MudBlazor.Components.QuickGrid;
 
-namespace MudBlazor.QuickGrid.Services;
+namespace MudBlazor.Components.QuickGrid;
 
 /// <summary>
 /// Provides consumer-defined storage for column layout state (visibility, order, and widths),

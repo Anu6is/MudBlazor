@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace MudBlazor.QuickGrid.Services;
+namespace MudBlazor.Components.QuickGrid;
 
 /// <summary>
 /// Applies filter definitions to an <see cref="IQueryable{T}"/> data source and provides

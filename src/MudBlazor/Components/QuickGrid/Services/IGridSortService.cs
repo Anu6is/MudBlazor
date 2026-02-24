@@ -1,6 +1,6 @@
-﻿using MudBlazor.Components.QuickGrid;
+﻿using System.Diagnostics.CodeAnalysis;
 
-namespace MudBlazor.QuickGrid.Services;
+namespace MudBlazor.Components.QuickGrid;
 
 /// <summary>
 /// Applies sort instructions to an <see cref="IQueryable{T}"/> data source.
@@ -27,7 +27,6 @@ public interface IGridSortService<T>
     /// An <see cref="IOrderedQueryable{T}"/> if any sort definitions were applied;
     /// otherwise the original <paramref name="source"/> unchanged.
     /// </returns>
-    IQueryable<T> ApplySort(
-        IQueryable<T> source,
-        IReadOnlyList<SortDefinition<T>> sortDefinitions);
+    [RequiresUnreferencedCode("May use expression tree compilation for in-memory sorting.")]
+    IQueryable<T> ApplySort(IQueryable<T> source, IReadOnlyList<SortDefinition<T>> sortDefinitions);
 }

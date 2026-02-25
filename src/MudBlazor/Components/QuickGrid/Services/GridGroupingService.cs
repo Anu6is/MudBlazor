@@ -11,6 +11,7 @@ namespace MudBlazor.Components.QuickGrid;
 /// via <see cref="GridGroupBy"/> entries in <see cref="GridQuery.Groups"/>.
 /// </remarks>
 /// <typeparam name="T">The grid row type.</typeparam>
+[RequiresUnreferencedCode("")]
 public sealed class GridGroupingService<T> : IGridGroupingService<T>
 {
     /// <inheritdoc/>
@@ -40,6 +41,7 @@ public sealed class GridGroupingService<T> : IGridGroupingService<T>
 
     // ── Recursive tree builder ────────────────────────────────────────────────
 
+    [RequiresUnreferencedCode("Calls MudBlazor.Components.QuickGrid.GridGroupingService<T>.ComputeAggregates(IReadOnlyList<T>, IReadOnlyDictionary<String, AggregateDefinition<T>>)")]
     private static IReadOnlyList<GroupNode<T>> BuildLevel(
         IReadOnlyList<T> items,
         IReadOnlyList<GroupColumnDefinition<T>> groupColumns,

@@ -32,7 +32,7 @@ namespace MudBlazor.Components.QuickGrid;
 /// </para>
 /// </remarks>
 /// <typeparam name="T">The grid row / entity type.</typeparam>
-internal interface IFilterExpressionBuilder<T>
+public interface IFilterExpressionBuilder<T>
 {
     /// <summary>
     /// Builds a predicate for a single <paramref name="filter"/>.

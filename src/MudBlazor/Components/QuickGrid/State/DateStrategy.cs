@@ -28,6 +28,7 @@ internal sealed class DateStrategy : ITypeFilterStrategy
 
     // ── Expression path ───────────────────────────────────────────────────────
 
+    [RequiresUnreferencedCode("Calls MudBlazor.Components.QuickGrid.DateStrategy.ExtractDateParts(Expression, Object)")]
     public Expression? BuildExpression(
         Expression member,
         FilterOperatorDescriptor op,

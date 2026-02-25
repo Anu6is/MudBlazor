@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Linq.Expressions;
 
 namespace MudBlazor.Components.QuickGrid;
 
@@ -25,6 +26,7 @@ internal sealed class ComparableStrategy<T> : ITypeFilterStrategy
 
     // ── Expression path ───────────────────────────────────────────────────────
 
+    [RequiresUnreferencedCode("Calls MudBlazor.Components.QuickGrid.FilterExpressionHelpers.AlignTypes(Expression, Object, Type)")]
     public Expression? BuildExpression(
         Expression member,
         FilterOperatorDescriptor op,

@@ -114,8 +114,8 @@ internal static class InMemoryFilterEvaluator<T>
         {
             var cellValue = f.Selector(item);
 
-            if (f.IsNullCheck)    { if (cellValue is not null) return false; continue; }
-            if (f.IsNotNullCheck) { if (cellValue is null)     return false; continue; }
+            if (f.IsNullCheck) { if (cellValue is not null) return false; continue; }
+            if (f.IsNotNullCheck) { if (cellValue is null) return false; continue; }
 
             if (!f.Strategy!.Evaluate(cellValue, f.OpDescriptor, f.ParsedValue, f.Options))
                 return false;

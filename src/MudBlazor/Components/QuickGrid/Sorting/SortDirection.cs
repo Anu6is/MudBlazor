@@ -1,4 +1,4 @@
-namespace MudBlazor.Components.QuickGrid;
+﻿namespace MudBlazor.Components.QuickGrid;
 
 /// <summary>
 /// Specifies the direction of a column sort in a <see cref="GridSort"/>.

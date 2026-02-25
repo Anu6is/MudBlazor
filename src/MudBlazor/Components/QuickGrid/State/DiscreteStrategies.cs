@@ -26,7 +26,7 @@ internal sealed class BoolStrategy : ITypeFilterStrategy
 
         return op.EnumValue switch
         {
-            FilterOperator.BooleanTrue  => Expression.IsTrue(boolMember),
+            FilterOperator.BooleanTrue => Expression.IsTrue(boolMember),
             FilterOperator.BooleanFalse => Expression.IsFalse(boolMember),
             _ => null,
         };
@@ -39,7 +39,7 @@ internal sealed class BoolStrategy : ITypeFilterStrategy
         FilterOptions options)
         => op.EnumValue switch
         {
-            FilterOperator.BooleanTrue  => cellValue is true,
+            FilterOperator.BooleanTrue => cellValue is true,
             FilterOperator.BooleanFalse => cellValue is false,
             _ => false,
         };
@@ -72,7 +72,7 @@ internal sealed class GuidStrategy : ITypeFilterStrategy
 
         return op.EnumValue switch
         {
-            FilterOperator.GuidEqual    => Expression.Equal(alignedMember, constant),
+            FilterOperator.GuidEqual => Expression.Equal(alignedMember, constant),
             FilterOperator.GuidNotEqual => Expression.NotEqual(alignedMember, constant),
             _ => null,
         };
@@ -88,7 +88,7 @@ internal sealed class GuidStrategy : ITypeFilterStrategy
 
         return op.EnumValue switch
         {
-            FilterOperator.GuidEqual    => cell == filter,
+            FilterOperator.GuidEqual => cell == filter,
             FilterOperator.GuidNotEqual => cell != filter,
             _ => false,
         };

@@ -1,4 +1,6 @@
-﻿namespace MudBlazor.Components.QuickGrid;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace MudBlazor.Components.QuickGrid;
 
 /// <summary>
 /// Default implementation of <see cref="IGridGroupingService{T}"/>.
@@ -86,6 +88,7 @@ public sealed class GridGroupingService<T> : IGridGroupingService<T>
         return nodes;
     }
 
+    [RequiresUnreferencedCode("Calls MudBlazor.Components.QuickGrid.AggregateDefinition<T>.GetValue<TProp>(Expression<Func<T, TProp>>, IReadOnlyList<T>)")]
     private static IReadOnlyDictionary<string, object?> ComputeAggregates(
         IReadOnlyList<T> items,
         IReadOnlyDictionary<string, AggregateDefinition<T>> aggregates)

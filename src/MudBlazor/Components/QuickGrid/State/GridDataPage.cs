@@ -1,4 +1,4 @@
-namespace MudBlazor.Components.QuickGrid;
+﻿namespace MudBlazor.Components.QuickGrid;
 
 /// <summary>
 /// The result returned by <see cref="IGridDataSource{T}.QueryAsync"/> in response

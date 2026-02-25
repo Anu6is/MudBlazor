@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace MudBlazor.Components.QuickGrid;
@@ -59,6 +60,7 @@ internal static class FilterExpressionHelpers
     /// Unwraps <c>Nullable&lt;T&gt;</c> on the member side and widens the parsed filter value to
     /// match the member's underlying type (e.g. <c>int</c> member vs <c>double</c> parsed value).
     /// </summary>
+    [RequiresUnreferencedCode("Calls System.Linq.Expressions.Expression.Property(Expression, String)")]
     internal static (Expression member, Expression constant) AlignTypes(
         Expression memberAccess,
         object filterValue,

@@ -1,4 +1,4 @@
-namespace MudBlazor.Components.QuickGrid;
+﻿namespace MudBlazor.Components.QuickGrid;
 
 /// <summary>
 /// Describes a single grouping level within a <see cref="GridQuery"/>.

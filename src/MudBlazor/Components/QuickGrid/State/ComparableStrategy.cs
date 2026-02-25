@@ -79,11 +79,11 @@ internal sealed class ComparableStrategy<T> : ITypeFilterStrategy
 
         return op.EnumValue switch
         {
-            FilterOperator.NumberEqual          => cmp == 0,
-            FilterOperator.NumberNotEqual       => cmp != 0,
-            FilterOperator.NumberGreaterThan    => cmp > 0,
+            FilterOperator.NumberEqual => cmp == 0,
+            FilterOperator.NumberNotEqual => cmp != 0,
+            FilterOperator.NumberGreaterThan => cmp > 0,
             FilterOperator.NumberGreaterThanOrEqual => cmp >= 0,
-            FilterOperator.NumberLessThan       => cmp < 0,
+            FilterOperator.NumberLessThan => cmp < 0,
             FilterOperator.NumberLessThanOrEqual => cmp <= 0,
             _ => false,
         };

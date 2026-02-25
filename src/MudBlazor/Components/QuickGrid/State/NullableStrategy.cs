@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Linq.Expressions;
 
 namespace MudBlazor.Components.QuickGrid;
 
@@ -19,7 +20,7 @@ namespace MudBlazor.Components.QuickGrid;
 /// (before a strategy is resolved) as those operators are type-agnostic.
 /// </para>
 /// <para>
-/// <b>In-memory path:</b> a null <paramref name="cellValue"/> returns <see langword="false"/>
+/// <b>In-memory path:</b> a null cellValue returns <see langword="false"/>
 /// immediately; non-null delegates to the inner strategy unchanged (the boxed value is
 /// already unwrapped by the <c>ValueSelector</c> delegate).
 /// </para>
@@ -39,6 +40,7 @@ internal sealed class NullableStrategy : ITypeFilterStrategy
 
     // ── Expression path ───────────────────────────────────────────────────────
 
+    [RequiresUnreferencedCode("Calls System.Linq.Expressions.Expression.Property(Expression, String)")]
     public Expression? BuildExpression(
         Expression member,
         FilterOperatorDescriptor op,
@@ -46,7 +48,7 @@ internal sealed class NullableStrategy : ITypeFilterStrategy
         FilterOptions options)
     {
         // Unwrap Nullable<T>: guard on HasValue, then delegate with .Value accessor.
-        var hasValue   = Expression.Property(member, nameof(Nullable<int>.HasValue));
+        var hasValue = Expression.Property(member, nameof(Nullable<int>.HasValue));
         var valueAccess = Expression.Property(member, nameof(Nullable<int>.Value));
 
         var innerExpr = _inner.BuildExpression(valueAccess, op, value, options);

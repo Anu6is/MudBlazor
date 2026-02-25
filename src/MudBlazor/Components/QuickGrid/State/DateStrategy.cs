@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace MudBlazor.Components.QuickGrid;
@@ -80,12 +81,12 @@ internal sealed class DateStrategy : ITypeFilterStrategy
 
         return op.EnumValue switch
         {
-            FilterOperator.DateIs          => cmp == 0,
-            FilterOperator.DateIsNot       => cmp != 0,
-            FilterOperator.DateBefore      => cmp < 0,
-            FilterOperator.DateOnOrBefore  => cmp <= 0,
-            FilterOperator.DateAfter       => cmp > 0,
-            FilterOperator.DateOnOrAfter   => cmp >= 0,
+            FilterOperator.DateIs => cmp == 0,
+            FilterOperator.DateIsNot => cmp != 0,
+            FilterOperator.DateBefore => cmp < 0,
+            FilterOperator.DateOnOrBefore => cmp <= 0,
+            FilterOperator.DateAfter => cmp > 0,
+            FilterOperator.DateOnOrAfter => cmp >= 0,
             _ => false,
         };
     }
@@ -96,6 +97,7 @@ internal sealed class DateStrategy : ITypeFilterStrategy
     /// Produces an (accessor expression, constant expression) pair that both represent
     /// the date portion of the column member and the filter value in a comparable form.
     /// </summary>
+    [RequiresUnreferencedCode("Calls System.Linq.Expressions.Expression.Property(Expression, String)")]
     private static (Expression? dateMember, Expression dateConstant) ExtractDateParts(
         Expression member, object filterValue)
     {
@@ -135,25 +137,25 @@ internal sealed class DateStrategy : ITypeFilterStrategy
 
     private static DateTime ToDateTimeDate(object value) => value switch
     {
-        DateTime dt          => dt.Date,
-        DateTimeOffset dto   => dto.Date,
-        DateOnly d           => d.ToDateTime(TimeOnly.MinValue),
+        DateTime dt => dt.Date,
+        DateTimeOffset dto => dto.Date,
+        DateOnly d => d.ToDateTime(TimeOnly.MinValue),
         _ => default,
     };
 
     private static DateOnly ToDateOnly(object value) => value switch
     {
-        DateOnly d           => d,
-        DateTime dt          => DateOnly.FromDateTime(dt),
-        DateTimeOffset dto   => DateOnly.FromDateTime(dto.Date),
+        DateOnly d => d,
+        DateTime dt => DateOnly.FromDateTime(dt),
+        DateTimeOffset dto => DateOnly.FromDateTime(dto.Date),
         _ => default,
     };
 
     private static DateOnly? ToDatePart(object? value) => value switch
     {
-        DateOnly d           => d,
-        DateTime dt          => DateOnly.FromDateTime(dt.Date),
-        DateTimeOffset dto   => DateOnly.FromDateTime(dto.Date),
+        DateOnly d => d,
+        DateTime dt => DateOnly.FromDateTime(dt.Date),
+        DateTimeOffset dto => DateOnly.FromDateTime(dto.Date),
         _ => null,
     };
 }

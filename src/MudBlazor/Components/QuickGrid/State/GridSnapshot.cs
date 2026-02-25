@@ -1,4 +1,4 @@
-namespace MudBlazor.Components.QuickGrid;
+﻿namespace MudBlazor.Components.QuickGrid;
 
 /// <summary>
 /// A complete, serialisable snapshot of all mutable <c>MudQuickGrid&lt;T&gt;</c> state:

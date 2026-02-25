@@ -1,4 +1,4 @@
-namespace MudBlazor.Components.QuickGrid;
+﻿namespace MudBlazor.Components.QuickGrid;
 
 /// <summary>
 /// The canonical, non-generic query descriptor produced by <c>MudQuickGrid&lt;T&gt;</c>

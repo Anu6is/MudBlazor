@@ -37,24 +37,24 @@ internal static class TypeStrategyRegistry
             [typeof(string)] = StringStrategy.Instance,
 
             // ── Integer types ─────────────────────────────────────────────────
-            [typeof(byte)]   = ComparableStrategy<byte>.Instance,
-            [typeof(sbyte)]  = ComparableStrategy<sbyte>.Instance,
-            [typeof(short)]  = ComparableStrategy<short>.Instance,
+            [typeof(byte)] = ComparableStrategy<byte>.Instance,
+            [typeof(sbyte)] = ComparableStrategy<sbyte>.Instance,
+            [typeof(short)] = ComparableStrategy<short>.Instance,
             [typeof(ushort)] = ComparableStrategy<ushort>.Instance,
-            [typeof(int)]    = ComparableStrategy<int>.Instance,
-            [typeof(uint)]   = ComparableStrategy<uint>.Instance,
-            [typeof(long)]   = ComparableStrategy<long>.Instance,
-            [typeof(ulong)]  = ComparableStrategy<ulong>.Instance,
+            [typeof(int)] = ComparableStrategy<int>.Instance,
+            [typeof(uint)] = ComparableStrategy<uint>.Instance,
+            [typeof(long)] = ComparableStrategy<long>.Instance,
+            [typeof(ulong)] = ComparableStrategy<ulong>.Instance,
 
             // ── Floating-point / decimal ───────────────────────────────────────
-            [typeof(float)]   = ComparableStrategy<float>.Instance,
-            [typeof(double)]  = ComparableStrategy<double>.Instance,
+            [typeof(float)] = ComparableStrategy<float>.Instance,
+            [typeof(double)] = ComparableStrategy<double>.Instance,
             [typeof(decimal)] = ComparableStrategy<decimal>.Instance,
 
             // ── Date / time ────────────────────────────────────────────────────
-            [typeof(DateTime)]       = DateStrategy.Instance,
+            [typeof(DateTime)] = DateStrategy.Instance,
             [typeof(DateTimeOffset)] = DateStrategy.Instance,
-            [typeof(DateOnly)]       = DateStrategy.Instance,
+            [typeof(DateOnly)] = DateStrategy.Instance,
 
             // ── Other scalars ──────────────────────────────────────────────────
             [typeof(bool)] = BoolStrategy.Instance,

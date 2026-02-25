@@ -41,6 +41,7 @@ public sealed class FilterDefinition<[DynamicallyAccessedMembers(DynamicallyAcce
     /// which builds a composable LINQ predicate expression tree for the configured
     /// <see cref="Operator"/> and <see cref="Value"/>.
     /// </remarks>
+    [RequiresUnreferencedCode()]
     public Expression<Func<T, bool>> GenerateExpression(FilterOptions options)
         => FilterExpressionGenerator<T>.Generate(this, options);
 

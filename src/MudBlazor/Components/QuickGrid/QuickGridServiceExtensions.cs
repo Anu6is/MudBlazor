@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization.Metadata;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MudBlazor.Components.QuickGrid;
@@ -86,7 +87,7 @@ public static class QuickGridServiceExtensions
     /// The exporter implementation type.  Must implement <see cref="IGridExporter{T}"/>.
     /// </typeparam>
     /// <typeparam name="T">The grid row type.</typeparam>
-    public static IServiceCollection AddMudQuickGridExporter<T, TExporter>(this IServiceCollection services) where TExporter : class, IGridExporter<T>
+    public static IServiceCollection AddMudQuickGridExporter<T, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TExporter>(this IServiceCollection services) where TExporter : class, IGridExporter<T>
     {
         services.AddScoped<IGridExporter<T>, TExporter>();
         return services;

@@ -1,7 +1,7 @@
 ﻿namespace MudBlazor.Components.QuickGrid;
 
 /// <summary>
-/// A point-in-time snapshot of the grid's data and metadata used by
+/// A point-in-time snapshot of the grid's data and metadata used by <see cref="IGridExporter{T}"/> implementations.
 /// </summary>
 /// <remarks>
 /// The <see cref="Items"/> collection contains the <em>full</em> filtered dataset —
@@ -22,10 +22,10 @@ public sealed record GridExportSnapshot<T>
     public IReadOnlyList<T> Items { get; init; } = [];
 
     /// <summary>Gets or initialises the sort definitions active at export time.</summary>
-    public IReadOnlyList<SortDefinition<T>> SortDefinitions { get; init; } = [];
+    public IReadOnlyList<GridSort> Sorts { get; init; } = [];
 
     /// <summary>Gets or initialises the filter definitions active at export time.</summary>
-    public IReadOnlyList<IFilterDefinition<T>> FilterDefinitions { get; init; } = [];
+    public IReadOnlyList<GridFilter> Filters { get; init; } = [];
 
     /// <summary>Gets or initialises the UTC timestamp when this snapshot was created.</summary>
     public DateTimeOffset SnapshotTime { get; init; } = DateTimeOffset.UtcNow;

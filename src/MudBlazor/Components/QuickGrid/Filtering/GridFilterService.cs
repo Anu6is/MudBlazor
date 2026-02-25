@@ -87,15 +87,8 @@ public sealed class GridFilterService<T> : IGridFilterService<T>
         Expression<Func<T, bool>> right)
     {
         var param = left.Parameters[0];
-        var rightBody = new ParameterReplacer(right.Parameters[0], param).Visit(right.Body);
+        var rightBody = new FilterExpressionHelpers.ParameterReplacer(right.Parameters[0], param).Visit(right.Body);
         var body = Expression.AndAlso(left.Body, rightBody);
         return Expression.Lambda<Func<T, bool>>(body, param);
-    }
-
-    private sealed class ParameterReplacer(ParameterExpression oldParam, ParameterExpression newParam)
-        : ExpressionVisitor
-    {
-        protected override Expression VisitParameter(ParameterExpression node)
-            => node == oldParam ? newParam : base.VisitParameter(node);
     }
 }

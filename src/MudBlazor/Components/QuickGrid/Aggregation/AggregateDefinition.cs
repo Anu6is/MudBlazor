@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Linq.Expressions;
 
 namespace MudBlazor.Components.QuickGrid;
 
@@ -36,6 +37,8 @@ public sealed class AggregateDefinition<T>
     /// <param name="propertyExpression">Selector compiled from the column's <c>Property</c> parameter.</param>
     /// <param name="items">The current-page item collection.</param>
     /// <returns>The formatted aggregate string, or an empty string when <paramref name="items"/> is empty.</returns>
+    [RequiresUnreferencedCode("Compiling property expression for aggregate computation is not trimming-safe.")]
+    [RequiresDynamicCode("Compiling property expression for aggregate computation requires dynamic code generation.")]
     public string GetValue<TProp>(Expression<Func<T, TProp>>? propertyExpression, IReadOnlyList<T> items)
     {
         if (CustomAggregate is not null)

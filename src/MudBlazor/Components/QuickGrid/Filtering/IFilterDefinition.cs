@@ -25,10 +25,4 @@ public interface IFilterDefinition<T>
     /// </summary>
     /// <param name="options">Case-sensitivity and culture options for string comparisons.</param>
     Expression<Func<T, bool>> GenerateExpression(FilterOptions options);
-
-    /// <summary>
-    /// Returns a non-generic, JSON-serialisable representation of this filter suitable for
-    /// inclusion in a <see cref="GridSnapshot{T}"/>.
-    /// </summary>
-    SerializableFilterDefinition ToSerializable();
 }

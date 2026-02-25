@@ -1,12 +1,12 @@
 ﻿using System.Text.Json.Serialization.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using MudBlazor.Components.QuickGrid;
 
-namespace MudBlazor.Components.QuickGrid;
+namespace MudBlazor.QuickGrid.Registration;
 
 /// <summary>
-/// Extension methods for registering <c>MudQuickGrid&lt;T&gt;</c> services with
-/// the .NET dependency injection container.
+/// Extension methods for registering <c>MudQuickGrid&lt;T&gt;</c> services.
 /// </summary>
 public static class QuickGridServiceExtensions
 {
@@ -15,72 +15,80 @@ public static class QuickGridServiceExtensions
     /// </summary>
     /// <remarks>
     /// <para>
-    /// The following registrations are made:
+    /// <b>What is registered:</b>
     /// <list type="bullet">
     ///   <item>
     ///     <description>
     ///       <see cref="IColumnStatePersistenceProvider"/> →
-    ///       <see cref="NoOpColumnStatePersistenceProvider"/> (scoped, replaceable).
-    ///       Replace with a custom implementation to persist column layout across sessions.
-    ///     </description>
-    ///   </item>
-    ///   <item>
-    ///     <description>
-    ///       <see cref="IGridExporter{T}"/> →
-    ///       <see cref="GridCsvExporter{T}"/> (scoped, open-generic).
-    ///       Additional exporters (Excel, PDF) are available as separate NuGet packages.
-    ///     </description>
-    ///   </item>
-    ///   <item>
-    ///     <description>
-    ///       <see cref="IGridSortService{T}"/> →
-    ///       <see cref="GridSortService{T}"/> (scoped, open-generic).
-    ///     </description>
-    ///   </item>
-    ///   <item>
-    ///     <description>
-    ///       <see cref="IGridFilterService{T}"/> →
-    ///       <see cref="GridFilterService{T}"/> (scoped, open-generic).
+    ///       <see cref="NoOpColumnStatePersistenceProvider"/> (singleton).
+    ///       Replace to persist column visibility, order, and widths across sessions.
     ///     </description>
     ///   </item>
     ///   <item>
     ///     <description>
     ///       <see cref="IGridGroupingService{T}"/> →
     ///       <see cref="GridGroupingService{T}"/> (scoped, open-generic).
+    ///       Used for <c>BuildGroupTree</c> after page items are materialised.
     ///     </description>
     ///   </item>
     ///   <item>
     ///     <description>
-    ///       <see cref="IGridItemCloner{T}"/> →
-    ///       <see cref="DefaultGridItemCloner{T}"/> (scoped, open-generic).
-    ///       Replace with a custom implementation for types that are not JSON-serialisable.
+    ///       <see cref="IGridExporter{T}"/> →
+    ///       <see cref="GridCsvExporter{T}"/> (scoped, open-generic).
+    ///       The built-in CSV exporter.  Additional exporters may be registered
+    ///       alongside this one; all <see cref="IGridExporter{T}"/> registrations
+    ///       appear in the grid toolbar's export menu.
     ///     </description>
     ///   </item>
     /// </list>
     /// </para>
+    /// <para>
+    /// <b>What is NOT registered here:</b>
+    /// <c>IGridSortService&lt;T&gt;</c> and <c>IGridFilterService&lt;T&gt;</c> are no longer
+    /// part of the grid's DI surface.  Sorting and filtering are now entirely the
+    /// responsibility of the <c>IGridDataSource&lt;T&gt;</c> implementation.
+    /// <c>QueryableDataSource&lt;T&gt;</c> uses the internal <c>QueryableSortApplicator</c>
+    /// and <c>QueryableFilterApplicator</c> directly; <c>InMemoryDataSource&lt;T&gt;</c>
+    /// uses <c>InMemoryFilterEvaluator</c>.  Neither service is needed in DI.
+    /// </para>
+    /// <para>
+    /// All registrations use <c>TryAdd</c> semantics — consumer-provided registrations
+    /// that appear before this call are never overwritten.
+    /// </para>
     /// </remarks>
     /// <param name="services">The service collection to configure.</param>
-    /// <returns>The <paramref name="services"/> for chaining.</returns>
+    /// <returns><paramref name="services"/> for chaining.</returns>
     public static IServiceCollection AddMudQuickGrid(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        // Column layout persistence — no-op by default; replace in DI for real storage.
-        services.TryAddScoped<IColumnStatePersistenceProvider, NoOpColumnStatePersistenceProvider>();
+        // Column layout persistence — no-op by default; replace for real storage.
+        services.TryAddSingleton<IColumnStatePersistenceProvider, NoOpColumnStatePersistenceProvider>();
 
-        // Core data-pipeline services (open-generic — one instance per T per scope).
-        services.TryAdd(ServiceDescriptor.Scoped(typeof(IGridSortService<>), typeof(GridSortService<>)));
-        services.TryAdd(ServiceDescriptor.Scoped(typeof(IGridFilterService<>), typeof(GridFilterService<>)));
-        services.TryAdd(ServiceDescriptor.Scoped(typeof(IGridGroupingService<>), typeof(GridGroupingService<>)));
+        // Grouping service — BuildGroupTree is a rendering concern, not an adapter concern.
+        services.TryAdd(ServiceDescriptor.Scoped(
+            typeof(IGridGroupingService<>),
+            typeof(GridGroupingService<>)));
 
-        // Item cloner for edit-mode backup/restore.
-        services.TryAdd(ServiceDescriptor.Scoped(typeof(IGridItemCloner<>), typeof(DefaultGridItemCloner<>)));
+        // Built-in CSV exporter.
+        services.TryAdd(ServiceDescriptor.Scoped(
+            typeof(IGridExporter<>),
+            typeof(GridCsvExporter<>)));
 
-        // Built-in CSV exporter (registered as IGridExporter<T> using open-generic).
-        // Multiple exporters can coexist; the grid toolbar lists all IGridExporter<T>
-        // registrations. Additional exporters are registered via the same interface.
-        services.TryAdd(ServiceDescriptor.Scoped(typeof(IGridExporter<>), typeof(GridCsvExporter<>)));
+        return services;
+    }
 
+    /// <summary>
+    /// Adds an additional <see cref="IGridExporter{T}"/> implementation to the service
+    /// collection so that it appears alongside the built-in CSV exporter in the toolbar.
+    /// </summary>
+    /// <typeparam name="TExporter">
+    /// The exporter implementation type.  Must implement <see cref="IGridExporter{T}"/>.
+    /// </typeparam>
+    /// <typeparam name="T">The grid row type.</typeparam>
+    public static IServiceCollection AddMudQuickGridExporter<T, TExporter>(this IServiceCollection services) where TExporter : class, IGridExporter<T>
+    {
+        services.AddScoped<IGridExporter<T>, TExporter>();
         return services;
     }
 

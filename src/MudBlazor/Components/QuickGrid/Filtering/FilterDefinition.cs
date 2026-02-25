@@ -44,20 +44,6 @@ public sealed class FilterDefinition<[DynamicallyAccessedMembers(DynamicallyAcce
     public Expression<Func<T, bool>> GenerateExpression(FilterOptions options)
         => FilterExpressionGenerator<T>.Generate(this, options);
 
-    /// <inheritdoc/>
-    public SerializableFilterDefinition ToSerializable()
-    {
-        return new SerializableFilterDefinition
-        {
-            ColumnId = ColumnId,
-            Operator = Operator,
-            Value = SerializeValue(Value),
-            PropertyTypeName = typeof(TProp).FullName,
-        };
-    }
-
-    // ── Private helpers ───────────────────────────────────────────────────────
-
     private static string? SerializeValue(TProp? value)
     {
         if (value is null)

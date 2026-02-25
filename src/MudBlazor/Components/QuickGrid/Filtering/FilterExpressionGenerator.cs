@@ -2,6 +2,7 @@
 // MudBlazor licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -14,6 +15,8 @@ namespace MudBlazor.Components.QuickGrid;
 /// enabling EF Core server-side translation as well as in-memory LINQ evaluation.
 /// </summary>
 /// <typeparam name="T">The grid row type.</typeparam>
+[RequiresUnreferencedCode("FilterExpressionGenerator builds LINQ expression trees using reflection.")]
+[RequiresDynamicCode("FilterExpressionGenerator requires dynamic LINQ expression compilation.")]
 public static class FilterExpressionGenerator<T>
 {
     // ── Cached reflection members ─────────────────────────────────────────────
@@ -257,31 +260,42 @@ public static class FilterExpressionGenerator<T>
     }
 
     private static Expression BuildDateComparison<TProp>(
-        Expression memberAccess,
-        TProp filterValue,
-        ExpressionType comparison)
+        Expression memberAccess, TProp filterValue, ExpressionType comparison)
     {
         if (memberAccess.Type == typeof(DateTime) || memberAccess.Type == typeof(DateTime?))
         {
             var accessor = UnwrapNullable(memberAccess, out var nullCheck);
             var valueDate = ExtractDateOnly(filterValue);
+            var datePart = Expression.Property(accessor, typeof(DateTime).GetProperty(nameof(DateTime.Date))!);
             var valueDateExpr = Expression.Constant(valueDate, typeof(DateTime));
-            Expression cmp = Expression.MakeBinary(comparison, accessor, valueDateExpr);
+            Expression cmp = Expression.MakeBinary(comparison, datePart, valueDateExpr);
+            return nullCheck is not null ? Expression.AndAlso(nullCheck, cmp) : cmp;
+        }
+
+        if (memberAccess.Type == typeof(DateTimeOffset) || memberAccess.Type == typeof(DateTimeOffset?))
+        {
+            // Similar pattern — extract .Date.Date (the DateTime date-part)
+            var accessor = UnwrapNullable(memberAccess, out var nullCheck);
+            var dateProp = typeof(DateTime).GetProperty(nameof(DateTime.Date))!;
+            var datePart = Expression.Property(
+                Expression.Property(accessor, nameof(DateTimeOffset.Date)), dateProp);
+            var valueDate = ExtractDateOnly(filterValue);
+            var valueDateExpr = Expression.Constant(valueDate, typeof(DateTime));
+            Expression cmp = Expression.MakeBinary(comparison, datePart, valueDateExpr);
+            return nullCheck is not null ? Expression.AndAlso(nullCheck, cmp) : cmp;
+        }
+
+        if (memberAccess.Type == typeof(DateOnly) || memberAccess.Type == typeof(DateOnly?))
+        {
+            var accessor = UnwrapNullable(memberAccess, out var nullCheck);
+            var valueExpr = Expression.Constant(
+                filterValue is DateOnly d ? d : (filterValue is DateTime dt ? DateOnly.FromDateTime(dt) : default),
+                typeof(DateOnly));
+            Expression cmp = Expression.MakeBinary(comparison, accessor, valueExpr);
             return nullCheck is not null ? Expression.AndAlso(nullCheck, cmp) : cmp;
         }
 
         return BuildComparison(memberAccess, filterValue, comparison);
-    }
-
-    private static DateTime ExtractDateOnly<TProp>(TProp filterValue)
-    {
-        return filterValue switch
-        {
-            DateTime dt => dt.Date,
-            DateTimeOffset dto => dto.Date,
-            DateOnly d => d.ToDateTime(TimeOnly.MinValue),
-            _ => default
-        };
     }
 
     // ── Null predicate ────────────────────────────────────────────────────────

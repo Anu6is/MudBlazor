@@ -59,8 +59,8 @@ public sealed class AggregateDefinition<T>
         {
             AggregateType.Sum => FormatValue(ComputeSum(items, selector)),
             AggregateType.Average => FormatValue(ComputeAverage(items, selector)),
-            AggregateType.Min => FormatValue(items.Select(selector).Min()),
-            AggregateType.Max => FormatValue(items.Select(selector).Max()),
+            AggregateType.Min => FormatValue(items.Min(selector)),
+            AggregateType.Max => FormatValue(items.Max(selector)),
             _ => string.Empty
         };
     }

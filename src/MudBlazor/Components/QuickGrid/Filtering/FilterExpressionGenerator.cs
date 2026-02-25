@@ -298,6 +298,22 @@ public static class FilterExpressionGenerator<T>
         return BuildComparison(memberAccess, filterValue, comparison);
     }
 
+    private static DateTime ExtractDateOnly<TProp>(TProp value)
+    {
+        if (value is null)
+            throw new ArgumentNullException(nameof(value));
+
+        return value switch
+        {
+            DateTime dt => dt.Date,
+            DateTimeOffset dto => dto.Date.Date,
+            DateOnly d => d.ToDateTime(TimeOnly.MinValue),
+
+            _ => throw new NotSupportedException(
+                    $"Type '{typeof(TProp)}' is not supported for date extraction.")
+        };
+    }
+
     // ── Null predicate ────────────────────────────────────────────────────────
 
     private static Expression BuildIsNull(Expression memberAccess)

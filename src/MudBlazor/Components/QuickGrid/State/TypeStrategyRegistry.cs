@@ -13,6 +13,11 @@ namespace MudBlazor.Components.QuickGrid;
 /// <c>MakeGenericType</c>, no reflection-based instantiation.
 /// </para>
 /// <para>
+/// <b>Numeric types</b> use <see cref="NumericStrategy{T}"/> constrained to
+/// <c>struct, INumber&lt;T&gt;</c> — every registered numeric type satisfies this
+/// constraint, and the <c>struct</c> bound eliminates nullable-annotation ambiguity.
+/// </para>
+/// <para>
 /// <b>Nullable&lt;T&gt; promotion:</b> When <see cref="ResolveByType"/> is called with a
 /// <c>Nullable&lt;T&gt;</c> type and <c>T</c> has a registered strategy, a
 /// <see cref="NullableStrategy"/> wrapper is created on first access and cached permanently.
@@ -37,19 +42,19 @@ internal static class TypeStrategyRegistry
             [typeof(string)] = StringStrategy.Instance,
 
             // ── Integer types ─────────────────────────────────────────────────
-            [typeof(byte)] = ComparableStrategy<byte>.Instance,
-            [typeof(sbyte)] = ComparableStrategy<sbyte>.Instance,
-            [typeof(short)] = ComparableStrategy<short>.Instance,
-            [typeof(ushort)] = ComparableStrategy<ushort>.Instance,
-            [typeof(int)] = ComparableStrategy<int>.Instance,
-            [typeof(uint)] = ComparableStrategy<uint>.Instance,
-            [typeof(long)] = ComparableStrategy<long>.Instance,
-            [typeof(ulong)] = ComparableStrategy<ulong>.Instance,
+            [typeof(byte)] = NumericStrategy<byte>.Instance,
+            [typeof(sbyte)] = NumericStrategy<sbyte>.Instance,
+            [typeof(short)] = NumericStrategy<short>.Instance,
+            [typeof(ushort)] = NumericStrategy<ushort>.Instance,
+            [typeof(int)] = NumericStrategy<int>.Instance,
+            [typeof(uint)] = NumericStrategy<uint>.Instance,
+            [typeof(long)] = NumericStrategy<long>.Instance,
+            [typeof(ulong)] = NumericStrategy<ulong>.Instance,
 
             // ── Floating-point / decimal ───────────────────────────────────────
-            [typeof(float)] = ComparableStrategy<float>.Instance,
-            [typeof(double)] = ComparableStrategy<double>.Instance,
-            [typeof(decimal)] = ComparableStrategy<decimal>.Instance,
+            [typeof(float)] = NumericStrategy<float>.Instance,
+            [typeof(double)] = NumericStrategy<double>.Instance,
+            [typeof(decimal)] = NumericStrategy<decimal>.Instance,
 
             // ── Date / time ────────────────────────────────────────────────────
             [typeof(DateTime)] = DateStrategy.Instance,

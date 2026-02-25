@@ -107,11 +107,6 @@ internal sealed class GuidStrategy : ITypeFilterStrategy
 /// </summary>
 /// <remarks>
 /// <para>
-/// A single shared <see cref="Instance"/> handles all enum types at runtime —
-/// enum-type specifics are resolved by the expressions themselves (which carry
-/// the concrete type) and by <see cref="Equals(object, object)"/> in the in-memory path.
-/// </para>
-/// <para>
 /// The filter value may represent either a single enum value or a collection of values
 /// (when the UI allows selecting multiple enum members). Both cases are supported.
 /// </para>

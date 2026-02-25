@@ -2,6 +2,8 @@
 // MudBlazor licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using MudBlazor.Extensions;
+
 namespace MudBlazor.Components.QuickGrid;
 
 /// <summary>
@@ -21,7 +23,7 @@ public sealed record ColumnLayout
     /// Gets or initialises the set of column IDs that are currently hidden.
     /// Columns not present in this set are visible.
     /// </summary>
-    public IReadOnlySet<string> HiddenColumns { get; init; } = new HashSet<string>();
+    public IReadOnlyCollection<string> HiddenColumns { get; init; } = new HashSet<string>().AsReadOnlyCollection();
 
     /// <summary>
     /// Gets or initialises the map of column IDs to their widths in pixels.

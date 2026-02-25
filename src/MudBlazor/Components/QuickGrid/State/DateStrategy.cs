@@ -21,9 +21,6 @@ internal sealed class DateStrategy : ITypeFilterStrategy
     private static readonly PropertyInfo _dateTimeDateProp =
         typeof(DateTime).GetProperty(nameof(DateTime.Date))!;
 
-    private static readonly MethodInfo _dateOnlyFromDateTimeMethod =
-        typeof(DateOnly).GetMethod(nameof(DateOnly.FromDateTime), [typeof(DateTime)])!;
-
     private DateStrategy() { }
 
     // ── Expression path ───────────────────────────────────────────────────────

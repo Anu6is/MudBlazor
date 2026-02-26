@@ -25,13 +25,13 @@ namespace MudBlazor
             .AddClass(Class)
             .Build();
 
-        protected string NavigationButtonsClassName => new CssBuilder()
+        protected string NavigationButtonsClassName => new CssBuilder("mud-carousel-nav-button")
             .AddClass($"align-self-{ConvertPosition(ArrowsPosition).ToStringFast(true)}", !(NavigationButtonsClass ?? "").Contains("align-self-"))
             .AddClass("mud-carousel-elements-rtl", RightToLeft)
             .AddClass(NavigationButtonsClass)
             .Build();
 
-        protected string BulletsButtonsClassName => new CssBuilder()
+        protected string BulletsButtonsClassName => new CssBuilder("mud-carousel-bullet")
             .AddClass(BulletsClass)
             .Build();
 

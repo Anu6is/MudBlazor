@@ -41,11 +41,11 @@ public sealed class AggregateDefinition<T>
     [RequiresDynamicCode("Compiling property expression for aggregate computation requires dynamic code generation.")]
     public string GetValue<TProp>(Expression<Func<T, TProp>>? propertyExpression, IReadOnlyList<T> items)
     {
-        if (CustomAggregate is not null)
-            return CustomAggregate(items);
-
         if (items.Count == 0)
             return string.Empty;
+
+        if (CustomAggregate is not null)
+            return CustomAggregate(items);
 
         if (Type == AggregateType.Count)
             return FormatValue(items.Count);
@@ -77,11 +77,11 @@ public sealed class AggregateDefinition<T>
             : value.ToString() ?? string.Empty;
     }
 
-    private static double ComputeSum<TProp>(IReadOnlyList<T> items, Func<T, TProp> selector)
-        => items.Select(selector).Sum(x => Convert.ToDouble(x));
+    private static decimal ComputeSum<TProp>(IReadOnlyList<T> items, Func<T, TProp> selector)
+        => items.Select(selector).Sum(x => Convert.ToDecimal(x));
 
-    private static double ComputeAverage<TProp>(IReadOnlyList<T> items, Func<T, TProp> selector)
-        => items.Select(selector).Average(x => Convert.ToDouble(x));
+    private static decimal ComputeAverage<TProp>(IReadOnlyList<T> items, Func<T, TProp> selector)
+        => items.Select(selector).Average(x => Convert.ToDecimal(x));
 }
 
 /// <summary>

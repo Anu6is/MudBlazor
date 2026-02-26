@@ -66,11 +66,7 @@ public static class FilterExpressionGenerator<T>
 
     // ── Body builder dispatch ─────────────────────────────────────────────────
 
-    private static Expression? BuildBody<TProp>(
-        FilterOperator op,
-        Expression memberAccess,
-        TProp? filterValue,
-        FilterOptions options)
+    private static Expression? BuildBody<TProp>(FilterOperator op, Expression memberAccess, TProp? filterValue, FilterOptions options)
     {
         // Null-check operators do not need a value.
         if (op == FilterOperator.IsNull)
@@ -127,11 +123,7 @@ public static class FilterExpressionGenerator<T>
         FilterOperator.StringStartsWith or FilterOperator.StringEndsWith or
         FilterOperator.StringEmpty or FilterOperator.StringNotEmpty;
 
-    private static Expression? BuildStringBody(
-        FilterOperator op,
-        Expression memberAccess,
-        string? value,
-        FilterOptions options)
+    private static Expression? BuildStringBody(FilterOperator op, Expression memberAccess, string? value, FilterOptions options)
     {
         var comparison = Expression.Constant(options.StringComparison);
 
@@ -202,21 +194,26 @@ public static class FilterExpressionGenerator<T>
 
     private static Expression BuildEqual<TProp>(Expression memberAccess, TProp filterValue)
     {
-        var converted = ConvertMemberIfNeeded(memberAccess, typeof(TProp));
+        var accessor = UnwrapNullable(memberAccess, out var nullCheck);
+        var converted = accessor.Type == typeof(TProp) ? accessor : Expression.Convert(accessor, typeof(TProp));
         var valueExpr = Expression.Constant(filterValue, typeof(TProp));
-        return Expression.Equal(converted, valueExpr);
+
+        Expression eq = Expression.Equal(converted, valueExpr);
+
+        return nullCheck is not null ? Expression.AndAlso(nullCheck, eq) : eq;
     }
 
     // ── Comparison predicates (numeric / comparable) ──────────────────────────
 
-    private static Expression BuildComparison<TProp>(
-        Expression memberAccess,
-        TProp filterValue,
-        ExpressionType comparison)
+    private static Expression BuildComparison<TProp>(Expression memberAccess, TProp filterValue, ExpressionType comparison)
     {
-        var converted = ConvertMemberIfNeeded(memberAccess, typeof(TProp));
+        var accessor = UnwrapNullable(memberAccess, out var nullCheck);
+        var converted = accessor.Type == typeof(TProp) ? accessor : Expression.Convert(accessor, typeof(TProp));
         var valueExpr = Expression.Constant(filterValue, typeof(TProp));
-        return Expression.MakeBinary(comparison, converted, valueExpr);
+
+        Expression eq = Expression.MakeBinary(comparison, converted, valueExpr);
+
+        return nullCheck is not null ? Expression.AndAlso(nullCheck, eq) : eq;
     }
 
     // ── Date predicates ───────────────────────────────────────────────────────

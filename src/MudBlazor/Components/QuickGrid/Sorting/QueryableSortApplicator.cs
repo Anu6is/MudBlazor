@@ -67,13 +67,11 @@ internal static class QueryableSortApplicator<T>
     /// Converts a <see cref="LambdaExpression"/> whose return type is <c>TValue</c>
     /// into <c>Expression&lt;Func&lt;T, object&gt;&gt;</c> for use with the non-generic
     /// <c>IQueryable.OrderBy(Expression&lt;Func&lt;T, TKey&gt;&gt;)</c> overload.
-    /// Value types are boxed via <see cref="Expression.Convert"/> so EF Core can
-    /// still translate them — EF unwraps the boxing node during its visitor pass.
     /// </summary>
     private static Expression<Func<T, object>> BuildObjectLambda(LambdaExpression lambdaExpr)
     {
         var param = Expression.Parameter(typeof(T), "x");
-        var body = new ParameterReplacer(lambdaExpr.Parameters[0], param).Visit(lambdaExpr.Body);
+        var body = new FilterExpressionHelpers.ParameterReplacer(lambdaExpr.Parameters[0], param).Visit(lambdaExpr.Body);
 
         // Box value types so the lambda return type is object (required for the
         // non-generic OrderBy overload). EF Core's expression translator unwraps
@@ -83,12 +81,5 @@ internal static class QueryableSortApplicator<T>
             : body;
 
         return Expression.Lambda<Func<T, object>>(boxed, param);
-    }
-
-    private sealed class ParameterReplacer(ParameterExpression oldParam, ParameterExpression newParam)
-        : ExpressionVisitor
-    {
-        protected override Expression VisitParameter(ParameterExpression node)
-            => node == oldParam ? newParam : base.VisitParameter(node);
     }
 }

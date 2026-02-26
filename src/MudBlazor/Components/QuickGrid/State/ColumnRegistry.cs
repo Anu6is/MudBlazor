@@ -86,7 +86,7 @@ internal sealed class ColumnRegistry<T>
         // Rewrite the lambda to return object? so we get a single
         // Func<T, object?> regardless of the original TValue.
         var param = Expression.Parameter(typeof(T), "x");
-        var body = new ParameterReplacer(expression.Parameters[0], param)
+        var body = new FilterExpressionHelpers.ParameterReplacer(expression.Parameters[0], param)
             .Visit(expression.Body);
 
         var boxed = expression.ReturnType.IsValueType
@@ -94,12 +94,5 @@ internal sealed class ColumnRegistry<T>
             : body;
 
         return Expression.Lambda<Func<T, object?>>(boxed, param).Compile();
-    }
-
-    private sealed class ParameterReplacer(ParameterExpression oldParam, ParameterExpression newParam)
-        : ExpressionVisitor
-    {
-        protected override Expression VisitParameter(ParameterExpression node)
-            => node == oldParam ? newParam : base.VisitParameter(node);
     }
 }

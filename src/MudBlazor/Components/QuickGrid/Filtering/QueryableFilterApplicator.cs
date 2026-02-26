@@ -23,12 +23,11 @@ internal static class QueryableFilterApplicator<T>
     /// <see cref="ColumnDescriptor{T}.PropertyExpression"/>, or filters for which
     /// <paramref name="builder"/> returns <see langword="null"/>, are silently skipped.
     /// </summary>
-    public static IQueryable<T> Apply(
-        IQueryable<T> source,
-        IReadOnlyList<GridFilter> filters,
-        IReadOnlyDictionary<string, ColumnDescriptor<T>> descriptors,
-        FilterOptions options,
-        IFilterExpressionBuilder<T> builder)
+    public static IQueryable<T> Apply(IQueryable<T> source,
+                                      IReadOnlyList<GridFilter> filters,
+                                      IReadOnlyDictionary<string, ColumnDescriptor<T>> descriptors,
+                                      FilterOptions options,
+                                      IFilterExpressionBuilder<T> builder)
     {
         foreach (var filter in filters)
         {

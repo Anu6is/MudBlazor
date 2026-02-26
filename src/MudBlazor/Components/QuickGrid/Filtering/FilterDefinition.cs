@@ -43,19 +43,4 @@ public sealed class FilterDefinition<[DynamicallyAccessedMembers(DynamicallyAcce
     /// </remarks>
     public Expression<Func<T, bool>> GenerateExpression(FilterOptions options)
         => FilterExpressionGenerator<T>.Generate(this, options);
-
-    private static string? SerializeValue(TProp? value)
-    {
-        if (value is null)
-            return null;
-
-        return value switch
-        {
-            DateTime dt => dt.ToString("O", CultureInfo.InvariantCulture),
-            DateTimeOffset dto => dto.ToString("O", CultureInfo.InvariantCulture),
-            DateOnly d => d.ToString("O", CultureInfo.InvariantCulture),
-            IFormattable f => f.ToString(null, CultureInfo.InvariantCulture),
-            _ => value.ToString(),
-        };
-    }
 }

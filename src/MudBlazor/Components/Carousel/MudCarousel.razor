@@ -28,7 +28,7 @@
         </MudSwipeArea>
 
         @*Controls*@
-        <div class="mud-carousel-controls d-flex flex-grow-1 align-self-auto">
+        <div class="d-flex flex-grow-1 align-self-auto">
             @*Left Arrow*@
             @if (ShowArrows)
             {
@@ -45,7 +45,7 @@
             }
 
             @*Bullets*@
-            <div class="@($"mud-carousel-bullets flex-grow-1 align-self-{ConvertPosition(BulletsPosition).ToStringFast(true)}")" style="z-index:3">
+            <div class="@($"flex-grow-1 align-self-{ConvertPosition(BulletsPosition).ToStringFast(true)}")" style="z-index:3">
                 @if (ShowBullets)
                 {
                     <div class="d-flex justify-center">

@@ -95,7 +95,6 @@ public abstract class MudRadialChartBase<T, TOptions> : MudChartBase<T, TOptions
         _paths.Clear();
         _legends.Clear();
         HiddenIndices.Clear();
-        _hoveredSegment = null;
 
         if (MatchBoundsToSize && _elementSize is null) return;
 

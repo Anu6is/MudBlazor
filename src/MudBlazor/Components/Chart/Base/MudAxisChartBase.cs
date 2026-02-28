@@ -227,18 +227,32 @@ public abstract class MudAxisChartBase<T, TOptions> : MudChartBase<T, TOptions>,
 
         if (MatchBoundsToSize)
         {
+            var isWidthFixed = Width.EndsWith("px");
+            var isHeightFixed = Height.EndsWith("px");
+
             if (_elementSize is not null)
             {
-                _boundWidth = _elementSize.Width;
-                _boundHeight = _elementSize.Height;
+                // If the width/height is not fixed (e.g., percentage or auto), we use the default for the bounds
+                // if the element size is 0 or if we want to prevent expansion loops.
+                // For width, we generally trust the observed size as it rarely loops horizontally in standard layouts.
+                _boundWidth = _elementSize.Width > 0 ? _elementSize.Width : BoundWidthDefault;
+
+                // For height, if it's not fixed, we use the default height to prevent a continuous expansion loop
+                // that can occur when the chart content determines the parent's height.
+                _boundHeight = isHeightFixed ? _elementSize.Height : BoundHeightDefault;
             }
-            else if (Width.EndsWith("px")
-                && Height.EndsWith("px")
+            else if (isWidthFixed
+                && isHeightFixed
                 && double.TryParse(Width.AsSpan(0, Width.Length - 2), NumberStyles.Float, CultureInfo.InvariantCulture, out var width)
                 && double.TryParse(Height.AsSpan(0, Height.Length - 2), NumberStyles.Float, CultureInfo.InvariantCulture, out var height))
             {
                 _boundWidth = width;
                 _boundHeight = height;
+            }
+            else if (isWidthFixed
+                && double.TryParse(Width.AsSpan(0, Width.Length - 2), NumberStyles.Float, CultureInfo.InvariantCulture, out var fixedWidth))
+            {
+                _boundWidth = fixedWidth;
             }
         }
     }

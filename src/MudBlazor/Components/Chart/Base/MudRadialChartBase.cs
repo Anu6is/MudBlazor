@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Numerics;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -250,18 +251,33 @@ public abstract class MudRadialChartBase<T, TOptions> : MudChartBase<T, TOptions
 
         if (MatchBoundsToSize)
         {
+            var isWidthFixed = Width.EndsWith("px");
+            var isHeightFixed = Height.EndsWith("px");
+
             if (_elementSize is not null)
             {
-                _boundWidth = _elementSize.Width;
-                _boundHeight = _elementSize.Height;
+                var minDimension = isHeightFixed
+                    ? Math.Min(_elementSize.Width, _elementSize.Height)
+                    : Math.Min(_elementSize.Width, BoundHeightDefault);
+
+                _boundWidth = minDimension;
+                _boundHeight = minDimension;
             }
-            else if (Width.EndsWith("px")
-                && Height.EndsWith("px")
-                && double.TryParse(Width.AsSpan(0, Width.Length - 2), out var width)
-                && double.TryParse(Height.AsSpan(0, Height.Length - 2), out var height))
+            else if (isWidthFixed
+                && isHeightFixed
+                && double.TryParse(Width.AsSpan(0, Width.Length - 2), NumberStyles.Float, CultureInfo.InvariantCulture, out var width)
+                && double.TryParse(Height.AsSpan(0, Height.Length - 2), NumberStyles.Float, CultureInfo.InvariantCulture, out var height))
             {
-                _boundWidth = width;
-                _boundHeight = height;
+                var minDimension = Math.Min(width, height);
+                _boundWidth = minDimension;
+                _boundHeight = minDimension;
+            }
+            else if (isWidthFixed
+                && double.TryParse(Width.AsSpan(0, Width.Length - 2), NumberStyles.Float, CultureInfo.InvariantCulture, out var fixedWidth))
+            {
+                var minDimension = Math.Min(fixedWidth, BoundHeightDefault);
+                _boundWidth = minDimension;
+                _boundHeight = minDimension;
             }
         }
     }
@@ -371,7 +387,11 @@ public abstract class MudRadialChartBase<T, TOptions> : MudChartBase<T, TOptions
             return;
         }
 
-        var minDimension = Math.Min(_elementSize.Width, _elementSize.Height);
+        var isHeightFixed = Height.EndsWith("px");
+        var minDimension = isHeightFixed
+            ? Math.Min(_elementSize.Width, _elementSize.Height)
+            : Math.Min(_elementSize.Width, BoundHeightDefault);
+
         _boundWidth = minDimension;
         _boundHeight = minDimension;
 

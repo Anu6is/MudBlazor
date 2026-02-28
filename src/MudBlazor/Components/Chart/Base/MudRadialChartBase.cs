@@ -97,7 +97,7 @@ public abstract class MudRadialChartBase<T, TOptions> : MudChartBase<T, TOptions
         _legends.Clear();
         HiddenIndices.Clear();
 
-        if (MatchBoundsToSize && _elementSize is null)
+        if (MatchBoundsToSize && _elementSize is null && !(Width.EndsWith("px") || Height.EndsWith("px")))
         {
             return;
         }

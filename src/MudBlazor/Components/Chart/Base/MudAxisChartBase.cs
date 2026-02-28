@@ -172,7 +172,7 @@ public abstract class MudAxisChartBase<T, TOptions> : MudChartBase<T, TOptions>,
     {
         base.OnParametersSet();
 
-        if (MatchBoundsToSize && _elementSize is null) return;
+        if (MatchBoundsToSize && _elementSize is null && !(Width.EndsWith("px") || Height.EndsWith("px"))) return;
 
         RebuildChart();
     }

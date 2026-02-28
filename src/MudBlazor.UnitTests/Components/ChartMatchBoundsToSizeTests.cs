@@ -104,5 +104,55 @@ namespace MudBlazor.UnitTests.Components
             svg = comp.Find("svg");
             svg.GetAttribute("viewBox").Should().Be("0 0 800 400");
         }
+
+        [Test]
+        public void MatchBoundsToSize_WithFixedWidthAndRelativeHeight_ShouldUseFixedWidthAndDefaultHeight()
+        {
+            var series = new List<ChartSeries<double>>
+            {
+                new() { Data = new double[] { 12.2, 14.3, 11.5 } }
+            };
+            var labels = new[] { "1/1/26", "2/1/26", "3/1/26" };
+
+            // We do NOT mock the ResizeObserver here, as we are testing the fallback logic in SetBounds
+            // during the initial render before OnAfterRenderAsync (where mudObserveElementSize is called).
+            // Actually, mudObserveElementSize is called in OnAfterRenderAsync, but SetBounds is called
+            // in RebuildChart, which is called in OnParametersSet.
+
+            var comp = Context.Render<MudChart<double>>(parameters => parameters
+                .Add(p => p.ChartType, ChartType.Line)
+                .Add(p => p.ChartSeries, series)
+                .Add(p => p.ChartLabels, labels)
+                .Add(p => p.MatchBoundsToSize, true)
+                .Add(p => p.Width, "500px")
+                .Add(p => p.Height, "80%")
+            );
+
+            var svg = comp.Find("svg");
+            // width should be 500, height should be BoundHeightDefault (350)
+            svg.GetAttribute("viewBox").Should().Be("0 0 500 350");
+        }
+
+        [Test]
+        public void RadialMatchBoundsToSize_WithFixedWidthAndRelativeHeight_ShouldUseFixedWidthAndDefaultHeight()
+        {
+            var series = new List<ChartSeries<double>>
+            {
+                new() { Data = new double[] { 12.2 } }
+            };
+
+            var comp = Context.Render<MudChart<double>>(parameters => parameters
+                .Add(p => p.ChartType, ChartType.Pie)
+                .Add(p => p.ChartSeries, series)
+                .Add(p => p.MatchBoundsToSize, true)
+                .Add(p => p.Width, "200px")
+                .Add(p => p.Height, "80%")
+            );
+
+            var svg = comp.Find("svg");
+            // min dimension between 200 and 280 (default) is 200. Radius is 100.
+            // viewBox is 0 0 200 200
+            svg.GetAttribute("viewBox").Should().Be("0 0 200 200");
+        }
     }
 }

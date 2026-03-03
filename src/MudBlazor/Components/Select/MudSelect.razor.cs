@@ -477,8 +477,13 @@ namespace MudBlazor
             {
                 if (MultiSelection)
                     return false;
+
+                if (ToStringFunc is not null && !string.IsNullOrEmpty(ToStringFunc(ReadValue)))
+                    return false;
+
                 if (!_context.TryGetShadowItemByValue(ReadValue, out var item))
                     return false;
+
                 return item.ChildContent != null;
             }
         }

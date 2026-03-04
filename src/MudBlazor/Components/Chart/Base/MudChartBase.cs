@@ -2,6 +2,7 @@
 // MudBlazor licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
 using System.Numerics;
 using Microsoft.AspNetCore.Components;
 using MudBlazor.Charts;
@@ -211,5 +212,49 @@ public abstract class MudChartBase<T, TOptions> : MudComponentBase, IMudChart<T>
     internal async Task SetSelectedIndexAsync(int index)
     {
         await SelectedIndexState.SetValueAsync(index);
+    }
+
+    /// <summary>
+    /// Checks if the dimension is a fixed value (e.g. px, vh, rem, etc.).
+    /// </summary>
+    protected static bool IsFixedDimension(string dimension)
+    {
+        if (string.IsNullOrWhiteSpace(dimension))
+            return false;
+
+        // Loop-prone values are specifically percentages and content-based sizing.
+        // Units like px, vh, vw, rem, em, pt, etc., are considered "fixed" because they
+        // don't depend on the SVG's own content.
+        return dimension.EndsWith("px") ||
+               dimension.EndsWith("vh") ||
+               dimension.EndsWith("vw") ||
+               dimension.EndsWith("rem") ||
+               dimension.EndsWith("em") ||
+               dimension.EndsWith("pt") ||
+               dimension.EndsWith("pc") ||
+               dimension.EndsWith("in") ||
+               dimension.EndsWith("mm") ||
+               dimension.EndsWith("cm") ||
+               dimension.EndsWith("vmin") ||
+               dimension.EndsWith("vmax");
+    }
+
+    /// <summary>
+    /// Tries to parse the dimension value as a double, ignoring the unit.
+    /// </summary>
+    protected static bool TryParseDimension(string dimension, out double result)
+    {
+        result = 0;
+        if (string.IsNullOrWhiteSpace(dimension))
+            return false;
+
+        var span = dimension.AsSpan();
+        var i = span.Length - 1;
+        while (i >= 0 && !char.IsDigit(span[i]))
+        {
+            i--;
+        }
+
+        return double.TryParse(span[..(i + 1)], NumberStyles.Float, CultureInfo.InvariantCulture, out result);
     }
 }

@@ -172,10 +172,12 @@ public abstract class MudAxisChartBase<T, TOptions> : MudChartBase<T, TOptions>,
     {
         base.OnParametersSet();
 
-        if (MatchBoundsToSize && _elementSize is null && !(Width.EndsWith("px") || Height.EndsWith("px"))) return;
+        if (MatchBoundsToSize && _elementSize is null && !HasFixedDimension()) return;
 
         RebuildChart();
     }
+
+    private bool HasFixedDimension() => IsFixedDimension(Width) || IsFixedDimension(Height);
 
     /// <summary>
     /// Renders the overlay chart.
@@ -227,8 +229,8 @@ public abstract class MudAxisChartBase<T, TOptions> : MudChartBase<T, TOptions>,
 
         if (MatchBoundsToSize)
         {
-            var isWidthFixed = Width.EndsWith("px");
-            var isHeightFixed = Height.EndsWith("px");
+            var isWidthFixed = IsFixedDimension(Width);
+            var isHeightFixed = IsFixedDimension(Height);
 
             if (_elementSize is not null)
             {
@@ -241,21 +243,20 @@ public abstract class MudAxisChartBase<T, TOptions> : MudChartBase<T, TOptions>,
                 // that can occur when the chart content determines the parent's height.
                 _boundHeight = isHeightFixed ? _elementSize.Height : BoundHeightDefault;
             }
-            else if (isWidthFixed
-                && isHeightFixed
-                && double.TryParse(Width.AsSpan(0, Width.Length - 2), NumberStyles.Float, CultureInfo.InvariantCulture, out var width)
-                && double.TryParse(Height.AsSpan(0, Height.Length - 2), NumberStyles.Float, CultureInfo.InvariantCulture, out var height))
+            else if (isWidthFixed && isHeightFixed &&
+                     TryParseDimension(Width, out var width) &&
+                     TryParseDimension(Height, out var height))
             {
                 _boundWidth = width;
                 _boundHeight = height;
             }
-            else if (isWidthFixed
-                && double.TryParse(Width.AsSpan(0, Width.Length - 2), NumberStyles.Float, CultureInfo.InvariantCulture, out var fixedWidth))
+            else if (isWidthFixed && TryParseDimension(Width, out var fixedWidth))
             {
                 _boundWidth = fixedWidth;
             }
         }
     }
+
 
     /// <summary>
     /// Generates the horizontal grid lines for the chart.

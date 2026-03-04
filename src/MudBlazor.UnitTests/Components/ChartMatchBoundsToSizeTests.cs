@@ -154,5 +154,47 @@ namespace MudBlazor.UnitTests.Components
             // viewBox is 0 0 200 200
             svg.GetAttribute("viewBox").Should().Be("0 0 200 200");
         }
+
+        [Test]
+        public async Task MatchBoundsToSize_WithViewportHeight_ShouldUpdate()
+        {
+            var series = new List<ChartSeries<double>>
+            {
+                new() { Data = new double[] { 12.2, 14.3, 11.5 } }
+            };
+            var labels = new[] { "1/1/26", "2/1/26", "3/1/26" };
+
+            var initialSize = new ElementSize { Width = 700, Height = 350, Timestamp = 1 };
+
+            Context.JSInterop.Setup<ElementSize>("mudObserveElementSize", _ => true)
+                .SetResult(initialSize);
+
+            Context.JSInterop.Setup<ElementSize>("mudGetSvgBBox", _ => true)
+                .SetResult(new ElementSize { Width = 50, Height = 20 });
+
+            var comp = Context.Render<MudChart<double>>(parameters => parameters
+                .Add(p => p.ChartType, ChartType.Line)
+                .Add(p => p.ChartSeries, series)
+                .Add(p => p.ChartLabels, labels)
+                .Add(p => p.MatchBoundsToSize, true)
+                .Add(p => p.Width, "100%")
+                .Add(p => p.Height, "50vh")
+            );
+
+            var chartBase = comp.FindComponent<Line<double>>().Instance;
+
+            var svg = comp.Find("svg");
+            svg.GetAttribute("viewBox").Should().Be("0 0 700 350");
+
+            var largerSize = new ElementSize { Width = 700, Height = 450, Timestamp = 2 };
+
+            await comp.InvokeAsync(() => chartBase.OnElementSizeChanged(largerSize));
+
+            await Task.Delay(300);
+
+            svg = comp.Find("svg");
+            // Since vh is considered fixed (not content-dependent), it should allow the viewBox to update
+            svg.GetAttribute("viewBox").Should().Be("0 0 700 450");
+        }
     }
 }

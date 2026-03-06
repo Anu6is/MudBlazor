@@ -291,14 +291,12 @@ namespace MudBlazor
                 return;
             var text = ConvertSet(ReadValue);
             var cleanText = Mask.GetCleanText();
-            if (string.IsNullOrEmpty(cleanText) && string.IsNullOrEmpty(text))
-                return;
 
             if (cleanText != text)
             {
                 var maskText = Mask.Text;
                 Mask.SetText(text);
-                if (maskText == Mask.Text)
+                if (maskText == Mask.Text && ReadText == Mask.Text)
                     return;
             }
 

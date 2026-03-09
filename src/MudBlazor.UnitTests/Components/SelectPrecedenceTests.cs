@@ -50,7 +50,7 @@ namespace MudBlazor.UnitTests.Components
             await selectComponent.SetParametersAndRenderAsync(parameters => parameters
                 .Add(x => x.FitContent, true)
                 .Add(x => x.Label, null)
-                .Add(x => x.ToStringFunc, new Func<string, string?>(x => x == "item2" ? "VERY LONG ITEM 2" : null)));
+                .Add(x => x.ToStringFunc, new Func<string?, string?>(x => x == "item2" ? "VERY LONG ITEM 2" : null)));
 
             // item1 -> null -> "Item 1 Rendered" (15 chars)
             // item2 -> "VERY LONG ITEM 2" (16 chars)
@@ -63,7 +63,7 @@ namespace MudBlazor.UnitTests.Components
             filler.InnerHtml.Should().NotContain("custom-render");
 
             // Now make item1 longest via ToStringFunc
-            await selectComponent.SetParametersAndRenderAsync(parameters => parameters.Add(x => x.ToStringFunc, new Func<string, string?>(x => x == "item1" ? "EXTREMELY LONG ITEM 1" : "ITEM 2")));
+            await selectComponent.SetParametersAndRenderAsync(parameters => parameters.Add(x => x.ToStringFunc, new Func<string?, string?>(x => x == "item1" ? "EXTREMELY LONG ITEM 1" : "ITEM 2")));
 
             // Trigger recalculation of _longestItem by toggling FitContent
             await selectComponent.SetParametersAndRenderAsync(parameters => parameters.Add(x => x.FitContent, false));

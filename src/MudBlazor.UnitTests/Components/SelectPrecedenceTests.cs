@@ -1,10 +1,10 @@
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
 using AwesomeAssertions;
 using Bunit;
 using MudBlazor.UnitTests.TestComponents.Select;
 using NUnit.Framework;
-using System.Linq;
-using System.Threading.Tasks;
-using System;
 
 #nullable enable
 

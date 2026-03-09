@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor.Docs.Models;
 using MudBlazor.Docs.Services;
@@ -11,7 +12,7 @@ using MudBlazor.Utilities;
 namespace MudBlazor.Docs.Shared;
 
 #nullable enable
-public partial class Appbar
+public partial class Appbar : IDisposable
 {
     private bool _searchDialogOpen;
     private bool _searchDialogAutocompleteOpen;
@@ -47,6 +48,22 @@ public partial class Appbar
 
     [Parameter]
     public bool DisplaySearchBar { get; set; } = true;
+
+    protected override void OnInitialized()
+    {
+        NavigationManager.LocationChanged += OnLocationChanged;
+        base.OnInitialized();
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
 
     private async Task OnSearchResult(ApiLinkServiceEntry? entry)
     {

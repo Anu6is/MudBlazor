@@ -71,4 +71,37 @@ public class FabMenuTests : BunitTest
         await comp.FindAll(".mud-fab-menu-container")[0].MouseLeaveAsync(new MouseEventArgs());
         await comp.WaitForAssertionAsync(() => { comp.FindAll(".mud-fab-menu.mud-fab-menu-open").Count.Should().Be(0); });
     }
+
+    [Test]
+    public void DirectionClasses_ShouldBeApplied()
+    {
+        foreach (Direction direction in Enum.GetValues(typeof(Direction)))
+        {
+            var comp = Context.Render<MudFabMenu>(parameters => parameters.Add(p => p.Direction, direction));
+            comp.Find(".mud-fab-menu").ClassList.Should().Contain($"mud-fab-menu-direction-{direction.ToStringFast(true)}");
+        }
+    }
+
+    [Test]
+    public void AnchorClasses_ShouldBeApplied_WhenFixed()
+    {
+        foreach (Origin anchor in Enum.GetValues(typeof(Origin)))
+        {
+            var comp = Context.Render<MudFabMenu>(parameters => parameters
+                .Add(p => p.Fixed, true)
+                .Add(p => p.Anchor, anchor));
+            comp.Find(".mud-fab-menu-container").ClassList.Should().Contain("fixed");
+            comp.Find(".mud-fab-menu-container").ClassList.Should().Contain($"mud-fab-anchor-{anchor.ToStringFast(true)}");
+        }
+    }
+
+    [Test]
+    public void AnchorClasses_ShouldNotBeApplied_WhenNotFixed()
+    {
+        var comp = Context.Render<MudFabMenu>(parameters => parameters
+            .Add(p => p.Fixed, false)
+            .Add(p => p.Anchor, Origin.TopLeft));
+        comp.Find(".mud-fab-menu-container").ClassList.Should().NotContain("fixed");
+        comp.Find(".mud-fab-menu-container").ClassList.Should().NotContain("mud-fab-anchor-top-left");
+    }
 }

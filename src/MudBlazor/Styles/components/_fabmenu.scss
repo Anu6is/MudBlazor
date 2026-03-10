@@ -165,7 +165,11 @@
 
       .mud-fab-menu-item {
         opacity: 1;
-        transform: translate(0) !important;
+        transform: translate(0);
+
+        [dir='rtl'] & {
+          transform: translate(0);
+        }
       }
     }
 

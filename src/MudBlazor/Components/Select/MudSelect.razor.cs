@@ -24,6 +24,7 @@ namespace MudBlazor
         private bool? _selectAllChecked;
         private string? _multiSelectionText;
         private MudSelectItem<T>? _longestItem;
+        private bool _longestItemUpdateNeeded;
         private bool _needsHighlightAfterRender;
         private MudInput<string> _elementReference = null!;
         private HashSet<T?> _selectedValues = [];
@@ -65,6 +66,9 @@ namespace MudBlazor
             registerScope.RegisterParameter<bool>(nameof(FitContent))
                 .WithParameter(() => FitContent)
                 .WithChangeHandler(OnFitContentChanged);
+            registerScope.RegisterParameter<Func<T?, string?>?>(nameof(ToStringFunc))
+                .WithParameter(() => ToStringFunc)
+                .WithChangeHandler(UpdateLongestItem);
         }
 
         protected string OuterClassname =>
@@ -765,24 +769,50 @@ namespace MudBlazor
         {
             if (args.Value)
             {
-                var longestItemLength = 0;
-                foreach (var item in _context.ShadowItems)
-                {
-                    var value = item.Value;
-                    var valueToString = ConvertSet(value);
-                    var length = valueToString?.Length ?? 0;
-
-                    if (length > longestItemLength)
-                    {
-                        _longestItem = item;
-                        longestItemLength = length;
-                    }
-                }
-                StateHasChanged();
+                UpdateLongestItem();
             }
             else
             {
                 _longestItem = null;
+            }
+        }
+
+        private void UpdateLongestItem()
+        {
+            _longestItemUpdateNeeded = false;
+            if (!FitContent)
+            {
+                _longestItem = null;
+                return;
+            }
+
+            MudSelectItem<T>? newLongestItem = null;
+            var longestItemLength = -1;
+            foreach (var item in _context.ShadowItems)
+            {
+                var value = item.Value;
+                var valueToString = ConvertSet(value);
+                var length = valueToString?.Length ?? 0;
+
+                if (length >= longestItemLength)
+                {
+                    newLongestItem = item;
+                    longestItemLength = length;
+                }
+            }
+
+            if (_longestItem != newLongestItem)
+            {
+                _longestItem = newLongestItem;
+                StateHasChanged();
+            }
+        }
+
+        internal void NotifyShadowItemsChanged()
+        {
+            if (FitContent)
+            {
+                _longestItemUpdateNeeded = true;
             }
         }
 
@@ -1224,6 +1254,11 @@ namespace MudBlazor
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
+            if (_longestItemUpdateNeeded)
+            {
+                UpdateLongestItem();
+            }
+
             if (firstRender)
             {
                 var options = new KeyInterceptorOptions(
@@ -1407,6 +1442,16 @@ namespace MudBlazor
             }
 
             return base.HasValue(value);
+        }
+
+        protected override async Task OnConverterChangedAsync()
+        {
+            await base.OnConverterChangedAsync();
+            if (FitContent)
+            {
+                UpdateLongestItem();
+            }
+            await UpdateTextPropertyAsync(false);
         }
 
         /// <inheritdoc />

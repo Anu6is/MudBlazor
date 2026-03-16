@@ -105,8 +105,8 @@ namespace MudBlazor.Charts
                     ? allValues.Max()
                     : T.Max(T.CreateSaturating(ChartOptions.YAxisSuggestedMax.Value), allValues.Max());
 
-                lowestHorizontalLine = Math.Min((int)Math.Floor(double.CreateSaturating(minY / gridYUnits)), 0);
-                var highestHorizontalLine = Math.Max((int)Math.Ceiling(double.CreateSaturating(maxY / gridYUnits)), 0);
+                lowestHorizontalLine = Math.Min((int)Math.Floor(double.CreateSaturating(minY) / double.CreateSaturating(gridYUnits)), 0);
+                var highestHorizontalLine = Math.Max((int)Math.Ceiling(double.CreateSaturating(maxY) / double.CreateSaturating(gridYUnits)), 0);
                 numHorizontalLines = highestHorizontalLine - lowestHorizontalLine + 1;
 
                 // Safeguard against too many gridlines
@@ -115,8 +115,8 @@ namespace MudBlazor.Charts
                 while (numHorizontalLines > maxYTicks)
                 {
                     gridYUnits *= T.CreateSaturating(2);
-                    lowestHorizontalLine = Math.Min((int)Math.Floor(double.CreateSaturating(minY / gridYUnits)), 0);
-                    highestHorizontalLine = Math.Max((int)Math.Ceiling(double.CreateSaturating(maxY / gridYUnits)), 0);
+                    lowestHorizontalLine = Math.Min((int)Math.Floor(double.CreateSaturating(minY) / double.CreateSaturating(gridYUnits)), 0);
+                    highestHorizontalLine = Math.Max((int)Math.Ceiling(double.CreateSaturating(maxY) / double.CreateSaturating(gridYUnits)), 0);
 
                     numHorizontalLines = highestHorizontalLine - lowestHorizontalLine + 1;
                 }
@@ -177,7 +177,7 @@ namespace MudBlazor.Charts
                     var gridValueX = groupStartX + (i * (_barWidth + _barGap)) + (_barWidth / 2);
 
                     var gridValueY = _boundHeight - VerticalStartSpace + (lowestHorizontalLine * verticalSpace);
-                    var barHeight = (double.CreateSaturating(dataValue / gridYUnits) - lowestHorizontalLine) * verticalSpace;
+                    var barHeight = (double.CreateSaturating(dataValue) / double.CreateSaturating(gridYUnits) - lowestHorizontalLine) * verticalSpace;
                     var gridValue = _boundHeight - VerticalStartSpace - double.CreateSaturating(barHeight);
 
                     var bar = new SvgPath

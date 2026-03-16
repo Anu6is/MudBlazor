@@ -251,10 +251,10 @@ partial class TimeSeries<T> : MudAxisLineChartBase<T, TimeSeriesChartOptions> wh
     }
 
     private static int GetLowestLine(T minY, T unit) =>
-        (int)Math.Floor(double.CreateSaturating(minY / unit));
+        (int)Math.Floor(double.CreateSaturating(minY) / double.CreateSaturating(unit));
 
     private static int GetHighestLine(T maxY, T unit) =>
-        (int)Math.Ceiling(double.CreateSaturating(maxY / unit));
+        (int)Math.Ceiling(double.CreateSaturating(maxY) / double.CreateSaturating(unit));
 
     private void ClampHorizontalLines(ref T unit, T minY, T maxY, ref int numLines, ref int lowestLine)
     {
@@ -345,7 +345,7 @@ partial class TimeSeries<T> : MudAxisLineChartBase<T, TimeSeriesChartOptions> wh
     {
         var dataPoint = GetCachedDataPoints()[seriesIndex][dataPointIndex];
 
-        var gridValue = ((dataPoint.Value / T.CreateSaturating(gridYUnits)) - T.CreateSaturating(lowestHorizontalLine)) * T.CreateSaturating(verticalSpace);
+        var gridValue = (double.CreateSaturating(dataPoint.Value) / double.CreateSaturating(gridYUnits) - lowestHorizontalLine) * verticalSpace;
         var y = _boundHeight - VerticalStartSpace - double.CreateSaturating(gridValue);
 
         var diffFromMin = dataPoint.DateTime - _minDateTime;

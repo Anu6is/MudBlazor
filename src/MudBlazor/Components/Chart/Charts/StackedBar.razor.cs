@@ -152,8 +152,8 @@ namespace MudBlazor.Charts
 
         private static int CalculateNumHorizontalLines(T gridYUnits, T maxY, T minY, out int lowestLine)
         {
-            var highestLine = Math.Max((int)Math.Ceiling(double.CreateSaturating(maxY / gridYUnits)), 0);
-            lowestLine = Math.Min((int)Math.Floor(double.CreateSaturating(minY / gridYUnits)), 0);
+            var highestLine = Math.Max((int)Math.Ceiling(double.CreateSaturating(maxY) / double.CreateSaturating(gridYUnits)), 0);
+            lowestLine = Math.Min((int)Math.Floor(double.CreateSaturating(minY) / double.CreateSaturating(gridYUnits)), 0);
             return highestLine - lowestLine + 1;
         }
 
@@ -256,7 +256,7 @@ namespace MudBlazor.Charts
                     if (dataValue == T.Zero && !ChartOptions!.ShowZeroValues)
                         continue;
 
-                    var segmentHeight = dataValue / T.CreateSaturating(gridYUnits) * T.CreateSaturating(verticalSpace);
+                    var segmentHeight = double.CreateSaturating(dataValue) / double.CreateSaturating(gridYUnits) * verticalSpace;
                     var isNegative = dataValue < T.Zero;
 
                     var yStart = isNegative ? negativeStack : positiveStack;

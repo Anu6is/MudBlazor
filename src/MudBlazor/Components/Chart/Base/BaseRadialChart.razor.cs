@@ -161,6 +161,13 @@ public partial class BaseRadialChart<T, TChartOptions> : MudComponentBase
     [Category(CategoryTypes.Chart.Appearance)]
     public Func<SvgPath, (double X, double Y)>? TooltipPositionFunc { get; set; }
 
+    /// <summary>
+    /// Make the chart fill the parent
+    /// </summary>
+    [Parameter]
+    [Category(CategoryTypes.Chart.Appearance)]
+    public bool MatchBoundsToSize { get; set; }
+
     private string HoveredStylename =>
         new StyleBuilder()
             .AddStyle("overflow", "visible", HoveredSegment is not null)

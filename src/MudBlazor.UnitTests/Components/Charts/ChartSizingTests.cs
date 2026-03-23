@@ -183,4 +183,52 @@ public class ChartSizingTests : BunitTest
         svg = comp.Find("svg");
         svg.GetAttribute("viewBox").Should().Be("0 0 800 400");
     }
+
+    [Test]
+    public void TimeSeriesChart_LegendPushesContentOut_WhenHeightIsFixed()
+    {
+        var series = new List<ChartSeries<double>>
+        {
+            new()
+            {
+                Name = "Series 1",
+                Data = new List<TimeValue<double>> { new(DateTime.Now, 10), new(DateTime.Now.AddHours(1), 20) }
+            }
+        };
+
+        var comp = Context.Render<MudChart<double>>(parameters => parameters
+            .Add(p => p.ChartType, ChartType.Timeseries)
+            .Add(p => p.Height, "200px")
+            .Add(p => p.ChartSeries, series)
+            .Add(p => p.MatchBoundsToSize, true)
+            .Add(p => p.LegendPosition, Position.Bottom));
+
+        // The main container should have the fixed height and overflow: hidden (via mud-chart-fill-bounds)
+        var mudChart = comp.Find(".mud-chart");
+        mudChart.ClassList.Should().Contain("mud-chart-fill-bounds");
+        mudChart.ClassList.Should().Contain("mud-chart-legend-bottom");
+
+        // The SVG is currently set to height="100%"
+        var svg = comp.Find("svg");
+        svg.GetAttribute("height").Should().Be("100%");
+
+        // The legend is also present
+        var legend = comp.Find(".mud-chart-legend");
+        legend.Should().NotBeNull();
+    }
+
+    [Test]
+    public void DonutChart_HeightShouldBe100Percent_WhenMatchBoundsToSizeIsTrue()
+    {
+        var series = new double[] { 10, 20, 30 };
+
+        var comp = Context.Render<MudChart<double>>(parameters => parameters
+            .Add(p => p.ChartType, ChartType.Donut)
+            .Add(p => p.Height, "300px")
+            .Add(p => p.ChartSeries, new List<ChartSeries<double>> { new() { Data = series } })
+            .Add(p => p.MatchBoundsToSize, true));
+
+        var svg = comp.Find("svg");
+        svg.GetAttribute("height").Should().Be("100%");
+    }
 }

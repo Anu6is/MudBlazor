@@ -5,7 +5,7 @@
 @typeparam T
 @typeparam TChartOptions
 
-<svg @ref="_svgRef" @attributes="UserAttributes" class="@($"{ChartClass} mud-ltr")" width="@Width" height="@Height" viewBox="0 0 @(ToS(Radius * 2)) @(ToS(Radius * 2))" style="@HoveredStylename">
+<svg @ref="_svgRef" @attributes="UserAttributes" class="@($"{ChartClass} mud-ltr")" width="@(MatchBoundsToSize ? "100%" : Width)" height="@(MatchBoundsToSize ? "100%" : Height)" viewBox="0 0 @(ToS(Radius * 2)) @(ToS(Radius * 2))" style="@HoveredStylename">
     <Filters />
 
     <g transform="translate(@Radius.ToStr(), @Radius.ToStr())">

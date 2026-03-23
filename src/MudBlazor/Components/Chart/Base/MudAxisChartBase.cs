@@ -229,8 +229,13 @@ public abstract class MudAxisChartBase<T, TOptions> : MudChartBase<T, TOptions>,
         {
             if (_elementSize is not null)
             {
-                _boundWidth = _elementSize.Width;
-                _boundHeight = _elementSize.Height;
+                _boundWidth = _elementSize.Width > 0
+                    ? _elementSize.Width
+                    : BoundWidthDefault;
+
+                _boundHeight = _elementSize.Height > 0
+                    ? _elementSize.Height
+                    : BoundHeightDefault;
             }
             else if (Width.AsSpan().Trim().EndsWith("px", StringComparison.OrdinalIgnoreCase)
                 && Height.AsSpan().Trim().EndsWith("px", StringComparison.OrdinalIgnoreCase)
@@ -352,15 +357,18 @@ public abstract class MudAxisChartBase<T, TOptions> : MudChartBase<T, TOptions>,
     public void OnElementSizeChanged(ElementSize elementSize)
     {
         if (elementSize is null || elementSize.Timestamp <= _elementSize?.Timestamp)
+        {
             return;
+        }
+
+        if (elementSize.Width <= 0 || elementSize.Height <= 0)
+        {
+            return;
+        }
 
         _elementSize = elementSize;
 
         if (!MatchBoundsToSize)
-            return;
-
-        if (Math.Abs(_boundWidth - _elementSize.Width) < Epsilon &&
-            Math.Abs(_boundHeight - _elementSize.Height) < Epsilon)
         {
             return;
         }

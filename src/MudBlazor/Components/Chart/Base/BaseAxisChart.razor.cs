@@ -207,6 +207,13 @@ public partial class BaseAxisChart<T, TChartOptions> : MudComponentBase
     [Category(CategoryTypes.Chart.Behavior)]
     public EventCallback<ElementReference> ElementRefChanged { get; set; }
 
+    /// <summary>
+    /// Gets or sets a reference to the DOM element that contains the chart component.
+    /// </summary>
+    [Parameter]
+    [Category(CategoryTypes.Chart.Behavior)]
+    public ElementReference? ContainerRef { get; set; }
+
     private string HoveredStylename =>
         new StyleBuilder()
             .AddStyle("overflow", "visible", HoveredSegment is not null)
@@ -228,7 +235,13 @@ public partial class BaseAxisChart<T, TChartOptions> : MudComponentBase
         await base.OnAfterRenderAsync(firstRender);
 
         if (firstRender)
-            await ElementRefChanged.InvokeAsync(_svgRef);
+        {
+            var refToObserve = (MatchBoundsToSize && ContainerRef.HasValue)
+                ? ContainerRef.Value
+                : _svgRef;
+
+            await ElementRefChanged.InvokeAsync(refToObserve);
+        }
 
         var yAxisLabelSize = _yAxisGroupElementReference != null ? await JsRuntime.InvokeAsync<ElementSize>("mudGetSvgBBox", _yAxisGroupElementReference) : null;
         var xAxisLabelSize = _xAxisGroupElementReference != null ? await JsRuntime.InvokeAsync<ElementSize>("mudGetSvgBBox", _xAxisGroupElementReference) : null;

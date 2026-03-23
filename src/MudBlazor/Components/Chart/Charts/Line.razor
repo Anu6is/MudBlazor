@@ -6,10 +6,11 @@
 
 @if (!IsOverlayChart)
 {
-    <div @attributes="UserAttributes" class="@Classname">
+    <div @ref="_wrapperRef" @attributes="UserAttributes" class="@Classname" style="@(MatchBoundsToSize ? "width:100%;height:100%;" : $"width:{@Width};height:{@Height};")">
         <BaseAxisChart T="T"
                        TChartOptions="LineChartOptions"
                        AxisChanged="AxisChanged"
+                       ContainerRef="_wrapperRef"
                        ElementRefChanged="SetElementReference"
                        Width="@Width"
                        Height="@Height"
@@ -40,6 +41,8 @@
 }
 
 @code {
+    private ElementReference _wrapperRef;
+
     private const double DataPointStroke = 2d;
     
     private double LineStrokeWidth => ChartOptions?.LineStrokeWidth ?? 3;

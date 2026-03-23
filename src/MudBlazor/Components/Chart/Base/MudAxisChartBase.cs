@@ -233,17 +233,30 @@ public abstract class MudAxisChartBase<T, TOptions> : MudChartBase<T, TOptions>,
                     ? _elementSize.Width
                     : BoundWidthDefault;
 
-                _boundHeight = _elementSize.Height > 0
-                    ? _elementSize.Height
-                    : BoundHeightDefault;
+                if (Height is not null && Height.AsSpan().Trim().EndsWith("px", StringComparison.OrdinalIgnoreCase))
+                {
+                    _boundHeight = _elementSize.Height > 0
+                        ? _elementSize.Height
+                        : BoundHeightDefault;
+                }
+                else
+                {
+                    _boundHeight = BoundHeightDefault;
+                }
             }
-            else if (Width.AsSpan().Trim().EndsWith("px", StringComparison.OrdinalIgnoreCase)
-                && Height.AsSpan().Trim().EndsWith("px", StringComparison.OrdinalIgnoreCase)
-                && double.TryParse(Width.AsSpan(0, Width.Length - 2), NumberStyles.Float, CultureInfo.InvariantCulture, out var width)
-                && double.TryParse(Height.AsSpan(0, Height.Length - 2), NumberStyles.Float, CultureInfo.InvariantCulture, out var height))
+            else
             {
-                _boundWidth = width;
-                _boundHeight = height;
+                if (Width is not null && Width.AsSpan().Trim().EndsWith("px", StringComparison.OrdinalIgnoreCase)
+                    && double.TryParse(Width.AsSpan(0, Width.Length - 2), NumberStyles.Float, CultureInfo.InvariantCulture, out var width))
+                {
+                    _boundWidth = width;
+                }
+
+                if (Height is not null && Height.AsSpan().Trim().EndsWith("px", StringComparison.OrdinalIgnoreCase)
+                    && double.TryParse(Height.AsSpan(0, Height.Length - 2), NumberStyles.Float, CultureInfo.InvariantCulture, out var height))
+                {
+                    _boundHeight = height;
+                }
             }
         }
     }
@@ -369,6 +382,21 @@ public abstract class MudAxisChartBase<T, TOptions> : MudChartBase<T, TOptions>,
         _elementSize = elementSize;
 
         if (!MatchBoundsToSize)
+        {
+            return;
+        }
+
+        var oldBoundWidth = _boundWidth;
+        var oldBoundHeight = _boundHeight;
+
+        _boundWidth = _elementSize.Width;
+
+        if (Height is not null && Height.AsSpan().Trim().EndsWith("px", StringComparison.OrdinalIgnoreCase))
+        {
+            _boundHeight = _elementSize.Height;
+        }
+
+        if (oldBoundWidth == _boundWidth && oldBoundHeight == _boundHeight)
         {
             return;
         }

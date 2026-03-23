@@ -252,16 +252,31 @@ public abstract class MudRadialChartBase<T, TOptions> : MudChartBase<T, TOptions
         {
             if (_elementSize is not null)
             {
-                _boundWidth = _elementSize.Width;
-                _boundHeight = _elementSize.Height;
+                if (Height is not null && Height.AsSpan().Trim().EndsWith("px", StringComparison.OrdinalIgnoreCase))
+                {
+                    var minDimension = Math.Min(_elementSize.Width, _elementSize.Height);
+                    _boundWidth = minDimension;
+                    _boundHeight = minDimension;
+                }
+                else
+                {
+                    _boundWidth = _elementSize.Width;
+                    _boundHeight = BoundHeightDefault;
+                }
             }
-            else if (Width.EndsWith("px")
-                && Height.EndsWith("px")
-                && double.TryParse(Width.AsSpan(0, Width.Length - 2), out var width)
-                && double.TryParse(Height.AsSpan(0, Height.Length - 2), out var height))
+            else
             {
-                _boundWidth = width;
-                _boundHeight = height;
+                if (Width is not null && Width.AsSpan().Trim().EndsWith("px", StringComparison.OrdinalIgnoreCase)
+                    && double.TryParse(Width.AsSpan(0, Width.Length - 2), out var width))
+                {
+                    _boundWidth = width;
+                }
+
+                if (Height is not null && Height.AsSpan().Trim().EndsWith("px", StringComparison.OrdinalIgnoreCase)
+                    && double.TryParse(Height.AsSpan(0, Height.Length - 2), out var height))
+                {
+                    _boundHeight = height;
+                }
             }
         }
     }
@@ -371,9 +386,25 @@ public abstract class MudRadialChartBase<T, TOptions> : MudChartBase<T, TOptions
             return;
         }
 
-        var minDimension = Math.Min(_elementSize.Width, _elementSize.Height);
-        _boundWidth = minDimension;
-        _boundHeight = minDimension;
+        var oldBoundWidth = _boundWidth;
+        var oldBoundHeight = _boundHeight;
+
+        if (Height is not null && Height.AsSpan().Trim().EndsWith("px", StringComparison.OrdinalIgnoreCase))
+        {
+            var minDimension = Math.Min(_elementSize.Width, _elementSize.Height);
+            _boundWidth = minDimension;
+            _boundHeight = minDimension;
+        }
+        else
+        {
+            _boundWidth = _elementSize.Width;
+            _boundHeight = BoundHeightDefault;
+        }
+
+        if (oldBoundWidth == _boundWidth && oldBoundHeight == _boundHeight)
+        {
+            return;
+        }
 
         _debouncer.DebounceAsync(async () =>
         {

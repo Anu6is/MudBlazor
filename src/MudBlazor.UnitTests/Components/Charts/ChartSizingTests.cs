@@ -19,6 +19,7 @@ public class ChartSizingTests : BunitTest
         var comp = Context.Render<MudChart<double>>(parameters => parameters
             .Add(p => p.ChartType, ChartType.Bar)
             .Add(p => p.MatchBoundsToSize, true)
+            .Add(p => p.Height, "400px")
             .Add(p => p.ChartSeries, chartSeries));
 
         // Find the internal Bar component
@@ -46,6 +47,7 @@ public class ChartSizingTests : BunitTest
         var comp = Context.Render<MudChart<double>>(parameters => parameters
             .Add(p => p.ChartType, ChartType.Line)
             .Add(p => p.MatchBoundsToSize, true)
+            .Add(p => p.Height, "500px")
             .Add(p => p.ChartSeries, chartSeries));
 
         // Find the internal Line component
@@ -140,7 +142,8 @@ public class ChartSizingTests : BunitTest
         await Task.Delay(300);
 
         svg = comp.Find("svg");
-        svg.GetAttribute("viewBox").Should().Be("0 0 700 400");
+        // Should still be 350 because height is 80% (not px)
+        svg.GetAttribute("viewBox").Should().Be("0 0 700 350");
     }
 
     [Test]

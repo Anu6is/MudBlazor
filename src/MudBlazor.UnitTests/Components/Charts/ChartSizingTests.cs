@@ -224,4 +224,17 @@ public class ChartSizingTests : BunitTest
 
         comp.FindAll("div[style*='height:400px']").Should().BeEmpty();
     }
+
+    [Test]
+    public void MudChart_SvgWidthHeight_ShouldBe100Percent()
+    {
+        var series = new List<ChartSeries<double>> { new() { Data = new double[] { 10, 20 } } };
+        var comp = Context.Render<MudChart<double>>(parameters => parameters
+            .Add(p => p.ChartType, ChartType.Line)
+            .Add(p => p.ChartSeries, series));
+
+        var svg = comp.Find("svg");
+        svg.GetAttribute("width").Should().Be("100%");
+        svg.GetAttribute("height").Should().Be("100%");
+    }
 }

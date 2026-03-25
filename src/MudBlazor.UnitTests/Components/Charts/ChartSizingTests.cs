@@ -183,4 +183,50 @@ public class ChartSizingTests : BunitTest
         svg = comp.Find("svg");
         svg.GetAttribute("viewBox").Should().Be("0 0 800 400");
     }
+
+    [Test]
+    public async Task MudChart_MatchBoundsToSize_NoFixedParent_ShouldUseFallbackHeight()
+    {
+        var series = new List<ChartSeries<double>> { new() { Data = new double[] { 10, 20 } } };
+
+        // Mock hasDefinedParentHeight to return false
+        var jsInterop = Context.JSInterop.Setup<bool>("hasDefinedParentHeight", _ => true);
+        jsInterop.SetResult(false);
+
+        var comp = Context.Render<MudChart<double>>(parameters => parameters
+            .Add(p => p.ChartType, ChartType.Line)
+            .Add(p => p.MatchBoundsToSize, true)
+            .Add(p => p.Height, "100%")
+            .Add(p => p.ChartSeries, series));
+
+        // After first render and JS interop, it should re-render with the fallback height "400px".
+        await comp.WaitForAssertionAsync(() =>
+        {
+            var fallbackDiv = comp.Find("div[style*='height:400px']");
+            fallbackDiv.Should().NotBeNull();
+            fallbackDiv.GetAttribute("style").Should().Contain("height:400px");
+        });
+    }
+
+    [Test]
+    public async Task MudChart_MatchBoundsToSize_WithFixedParent_ShouldNotUseFallbackHeight()
+    {
+        var series = new List<ChartSeries<double>> { new() { Data = new double[] { 10, 20 } } };
+
+        // Mock hasDefinedParentHeight to return true
+        var jsInterop = Context.JSInterop.Setup<bool>("hasDefinedParentHeight", _ => true);
+        jsInterop.SetResult(true);
+
+        var comp = Context.Render<MudChart<double>>(parameters => parameters
+            .Add(p => p.ChartType, ChartType.Line)
+            .Add(p => p.MatchBoundsToSize, true)
+            .Add(p => p.Height, "100%")
+            .Add(p => p.ChartSeries, series));
+
+        // It should NOT have the fallback div.
+        // We wait a bit to make sure OnAfterRenderAsync has finished.
+        await Task.Delay(100);
+
+        comp.FindAll("div[style*='height:400px']").Should().BeEmpty();
+    }
 }

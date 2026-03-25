@@ -223,10 +223,10 @@ public class ChartSizingTests : BunitTest
             .Add(p => p.Height, "100%")
             .Add(p => p.ChartSeries, series));
 
-        // It should NOT have the fallback div.
-        // We wait a bit to make sure OnAfterRenderAsync has finished.
-        await Task.Delay(100);
+        // Wait until the JS interop call has been made.
+        await comp.WaitForAssertionAsync(() => Context.JSInterop.Invocations["hasDefinedParentHeight"].Should().HaveCount(1));
 
+        // It should NOT have the fallback div.
         comp.FindAll("div[style*='height:400px']").Should().BeEmpty();
     }
 }

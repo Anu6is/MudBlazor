@@ -44,8 +44,6 @@ public partial class Radar<T> : MudRadialChartBase<T, RadarChartOptions> where T
         var (seriesData, labelData) = GroupDataSet(ChartLabels ?? [], ChartSeries, ChartOptions!.AggregationOption == AggregationOption.GroupByDataSet);
         var numAxes = labelData.Length;
 
-        BuildLegends([.. seriesData.Select(x => x.Name)]);
-
         var angleStep = 2 * Math.PI / numAxes;
         var currentAngle = (-Math.PI / 2) + (ChartOptions.AngleOffset * (Math.PI / 180)); // Convert offset to radians
         var radius = CalculateRadius();
@@ -66,6 +64,8 @@ public partial class Radar<T> : MudRadialChartBase<T, RadarChartOptions> where T
 
         GenerateAxisLines(numAxes, angleStep, currentAngle, radius, labelData);
         GenerateSvgPaths(seriesData, normalizedData, numAxes, angleStep, currentAngle, radius, axisMaxValue);
+
+        BuildLegends([.. seriesData.Select(x => x.Name)]);
     }
 
     private bool HasValidData() =>

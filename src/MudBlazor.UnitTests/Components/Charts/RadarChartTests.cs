@@ -26,6 +26,53 @@ public class RadarChartTests : BunitTest
     }
 
     [Test]
+    public async Task RadarChart_CanHideSeries_GroupByLabel()
+    {
+        var chartSeries = new List<ChartSeries<double>>()
+        {
+            new () { Name = "Series 1", Data = new double[] { 90, 79, 72, 69 } },
+            new () { Name = "Series 2", Data = new double[] { 10, 41, 35, 51 } }
+        };
+        string[] xAxisLabels = { "Cat A", "Cat B", "Cat C", "Cat D" };
+
+        var comp = Context.Render<MudChart<double>>(parameters => parameters
+            .Add(p => p.ChartType, ChartType.Radar)
+            .Add(p => p.Height, "400px")
+            .Add(p => p.Width, "400px")
+            .Add(p => p.ChartSeries, chartSeries)
+            .Add(p => p.ChartLabels, xAxisLabels)
+            .Add(p => p.CanHideSeries, true)
+            .Add(p => p.ChartOptions, new RadarChartOptions { AggregationOption = AggregationOption.GroupByLabel })
+        );
+
+        // In GroupByLabel mode, legends should be "Cat A", "Cat B", "Cat C", "Cat D" (seriesData from GroupDataSet)
+        var seriesCheckboxes = comp.FindAll(".mud-checkbox-input");
+        seriesCheckboxes.Count.Should().Be(xAxisLabels.Length, "Number of checkboxes should match number of labels");
+
+        seriesCheckboxes[0].IsChecked().Should().BeTrue("Cat A should be initially visible");
+        seriesCheckboxes[1].IsChecked().Should().BeTrue("Cat B should be initially visible");
+
+        // Initial paths check
+        // In GroupByLabel mode, the "seriesData" contains one series per LABEL.
+        // So for 4 labels, there should be 4 paths.
+        // BUT wait, each "web" is actually composed of points from these grouped series?
+        // Let's re-read GenerateSvgPaths.
+        // It iterates over seriesData (which has 4 items if we have 4 labels).
+        // Each path is a polygon.
+
+        var seriesPaths = comp.FindAll("path.mud-chart-serie");
+        seriesPaths.Count.Should().Be(4, "Should have 4 paths (one per label) initially");
+
+        // Hide Cat A (the first checkbox)
+        await seriesCheckboxes[0].ChangeAsync(false);
+
+        // When Cat A is hidden, we expect its path to be removed.
+        // In GroupByLabel mode, there are 4 paths, one for each label.
+        // Clicking the first checkbox (Cat A) should hide the first path.
+        comp.FindAll("path.mud-chart-serie").Count.Should().Be(3, "One path should be hidden after unchecking Cat A");
+    }
+
+    [Test]
     public async Task RadarChart_Should_UpdateSelectedPointIndex_OnDataMarkerClick()
     {
         var seriesData = new double[] { 10, 20, 30 };

@@ -10,7 +10,8 @@
     var series = _series.Where(x => x.Visible).ToList();
 }
 
-<svg @ref="_elementReference" @attributes="UserAttributes" class="mud-chart-heat mud-ltr" 
+<div @ref="_elementReference" @attributes="UserAttributes" class="@Classname">
+<svg class="mud-chart-heat mud-ltr"
      width="100%" height="100%" viewBox="0 0 @_boundWidth.ToStr() @_boundHeight.ToStr()"
      style="@HoveredStylename">
     @if (_options is { EnableSmoothGradient: true })
@@ -386,7 +387,5 @@
     }
 </svg>
 
-@if (CanHideSeries)
-{
-    <Legend T="T" Data="@_toggleLegend"></Legend>
-}
+<Legend T="T" Data="@_toggleLegend" ShowLegend="@CanHideSeries"></Legend>
+</div>

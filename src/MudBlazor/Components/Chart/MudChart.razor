@@ -9,19 +9,13 @@
 @attribute [CascadingTypeParameter(nameof(T))]
 
 <CascadingValue Value="@this" IsFixed="true">
-    @if (_hasFixedParent is null)
-    {
-        <div style="height: @(HasPercentageHeight() ? FallbackHeight : Height); width: @(MatchBoundsToSize ? "100%" : Width); visibility: hidden;" data-measuring>
-            @ChartContainer
-        </div>
-    }
-    else if (_hasFixedParent.Value)
+    @if (_hasFixedParent is true)
     {
         @ChartContainer
     }
     else
     {
-        <div style="height: @(HasPercentageHeight() ? FallbackHeight : Height); width: @(MatchBoundsToSize ? "100%" : Width);" data-fallback="@(HasPercentageHeight() ? "true" : "false")">
+        <div style="@GetWrapperStyle()" @attributes="@GetWrapperAttributes()">
             @ChartContainer
         </div>
     }
@@ -38,7 +32,7 @@
     private RenderFragment ChartContainer => @<div @ref="_containerRef"
                                                    @attributes="UserAttributes"
                                                    class="@Classname"
-                                                   style="@($"{Style}; width: {(MatchBoundsToSize ? "100%" : @Width)}; height: {@Height};")"
+                                                   style="@($"{Style}; width: {(MatchBoundsToSize ? "100%" : @Width)}; height: {@Height}; {(MatchBoundsToSize && _hasFixedParent is null ? "visibility: hidden;" : "")}")"
                                                    dir="ltr">
         @ChartContent
     </div>;

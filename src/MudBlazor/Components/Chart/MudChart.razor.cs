@@ -1,4 +1,4 @@
-﻿// Copyright (c) MudBlazor 2021
+// Copyright (c) MudBlazor 2021
 // MudBlazor licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -45,11 +45,16 @@ public partial class MudChart<T> where T : struct, INumber<T>, IMinMaxValue<T>, 
             ChartOptions options => GetChartTypeOptions(options),
             _ => ChartOptions
         };
+
+        if (_hasFixedParent is null && (!MatchBoundsToSize || !HasPercentageHeight()))
+        {
+            _hasFixedParent = true;
+        }
     }
 
     protected override void OnAfterRender(bool firstRender)
     {
-        if (firstRender && ChartReference is not null && _hasFixedParent is not null)
+        if (firstRender && ChartReference is not null)
         {
             StateHasChanged();
         }
@@ -61,12 +66,12 @@ public partial class MudChart<T> where T : struct, INumber<T>, IMinMaxValue<T>, 
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (_hasFixedParent is not null)
+        if (_hasFixedParent is not null || !firstRender)
         {
             return;
         }
 
-        if (MatchBoundsToSize && firstRender && HasPercentageHeight())
+        if (MatchBoundsToSize && HasPercentageHeight())
         {
             _hasFixedParent = await JsRuntime.InvokeAsync<bool>("hasDefinedParentHeight", _containerRef);
             StateHasChanged();
@@ -74,8 +79,7 @@ public partial class MudChart<T> where T : struct, INumber<T>, IMinMaxValue<T>, 
         else
         {
             _hasFixedParent = true;
-            // No need to call StateHasChanged if we are already showing it in the correct size (fixed pixels)
-            // or if we're not matching bounds to size.
+            StateHasChanged();
         }
     }
 
@@ -112,4 +116,29 @@ public partial class MudChart<T> where T : struct, INumber<T>, IMinMaxValue<T>, 
     };
 
     public override void RebuildChart() => ChartReference?.RebuildChart();
+
+    private string GetWrapperStyle()
+    {
+        if (_hasFixedParent is true)
+        {
+            return string.Empty;
+        }
+
+        var height = HasPercentageHeight() ? FallbackHeight : Height;
+        var width = MatchBoundsToSize ? "100%" : Width;
+
+        return $"height: {height}; width: {width};";
+    }
+
+    private IEnumerable<KeyValuePair<string, object>> GetWrapperAttributes()
+    {
+        if (_hasFixedParent is null)
+        {
+            yield return new KeyValuePair<string, object>("data-measuring", "");
+        }
+        else if (_hasFixedParent is false)
+        {
+            yield return new KeyValuePair<string, object>("data-fallback", HasPercentageHeight() ? "true" : "false");
+        }
+    }
 }

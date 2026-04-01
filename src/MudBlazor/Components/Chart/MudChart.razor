@@ -1,4 +1,4 @@
-﻿@using MudBlazor.Charts
+@using MudBlazor.Charts
 @using System.Numerics
 
 @namespace MudBlazor
@@ -9,13 +9,19 @@
 @attribute [CascadingTypeParameter(nameof(T))]
 
 <CascadingValue Value="@this" IsFixed="true">
-    @if (_hasFixedParent)
+    @if (_hasFixedParent is null)
+    {
+        <div style="height: @(HasPercentageHeight() ? FallbackHeight : Height); width: @(MatchBoundsToSize ? "100%" : Width); visibility: hidden;" data-measuring>
+            @ChartContainer
+        </div>
+    }
+    else if (_hasFixedParent.Value)
     {
         @ChartContainer
     }
     else
     {
-        <div style="height:@(HasPercentageHeight() ? FallbackHeight : Height); width: @(MatchBoundsToSize ? "100%" : Width);">
+        <div style="height: @(HasPercentageHeight() ? FallbackHeight : Height); width: @(MatchBoundsToSize ? "100%" : Width);" data-fallback="@(HasPercentageHeight() ? "true" : "false")">
             @ChartContainer
         </div>
     }

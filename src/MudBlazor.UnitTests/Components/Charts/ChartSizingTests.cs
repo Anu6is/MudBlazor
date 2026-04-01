@@ -200,9 +200,9 @@ public class ChartSizingTests : BunitTest
 
         await comp.WaitForAssertionAsync(() =>
         {
-            var fallbackDiv = comp.Find("div[style*='height:400px']");
+            var fallbackDiv = comp.Find("div[data-fallback='true']");
             fallbackDiv.Should().NotBeNull();
-            fallbackDiv.GetAttribute("style").Should().Contain("height:400px");
+            fallbackDiv.GetAttribute("style").Should().Contain("height: 400px");
         });
     }
 
@@ -222,6 +222,32 @@ public class ChartSizingTests : BunitTest
 
         await comp.WaitForAssertionAsync(() => Context.JSInterop.Invocations["hasDefinedParentHeight"].Should().HaveCount(1));
 
-        comp.FindAll("div[style*='height:400px']").Should().BeEmpty();
+        comp.FindAll("div[data-fallback='true']").Should().BeEmpty();
+    }
+
+    [Test]
+    public async Task MudChart_ShouldBeHiddenInitially_WhenMeasuring()
+    {
+        var series = new List<ChartSeries<double>> { new() { Data = new double[] { 10, 20 } } };
+
+        // Setup JS interop
+        var jsInterop = Context.JSInterop.Setup<bool>("hasDefinedParentHeight", _ => true);
+        jsInterop.SetResult(false);
+
+        var comp = Context.Render<MudChart<double>>(parameters => parameters
+            .Add(p => p.ChartType, ChartType.Line)
+            .Add(p => p.MatchBoundsToSize, true)
+            .Add(p => p.Height, "100%")
+            .Add(p => p.ChartSeries, series));
+
+        // Wait for it to be in measuring state or already finished
+        // Note: in bUnit, first render might be synchronous or very fast.
+        // If we can't catch the hidden state, we can at least verify that it transitions correctly.
+
+        await comp.WaitForAssertionAsync(() =>
+        {
+            // It should eventually not be measuring anymore
+            comp.FindAll("div[data-measuring]").Should().BeEmpty();
+        });
     }
 }

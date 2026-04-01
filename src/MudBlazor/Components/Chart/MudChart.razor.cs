@@ -17,7 +17,7 @@ public partial class MudChart<T> where T : struct, INumber<T>, IMinMaxValue<T>, 
     [Inject]
     private IJSRuntime JsRuntime { get; set; } = null!;
 
-    private bool _hasFixedParent = true;
+    private bool? _hasFixedParent;
 
     private ChartType? _chartType;
     private IChartOptions? _chartOptions;
@@ -49,7 +49,7 @@ public partial class MudChart<T> where T : struct, INumber<T>, IMinMaxValue<T>, 
 
     protected override void OnAfterRender(bool firstRender)
     {
-        if (firstRender && ChartReference is not null)
+        if (firstRender && ChartReference is not null && _hasFixedParent is not null)
         {
             StateHasChanged();
         }
@@ -61,19 +61,21 @@ public partial class MudChart<T> where T : struct, INumber<T>, IMinMaxValue<T>, 
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (!MatchBoundsToSize)
+        if (_hasFixedParent is not null)
         {
             return;
         }
 
-        if (firstRender && HasPercentageHeight())
+        if (MatchBoundsToSize && firstRender && HasPercentageHeight())
         {
             _hasFixedParent = await JsRuntime.InvokeAsync<bool>("hasDefinedParentHeight", _containerRef);
-
-            if (!_hasFixedParent)
-            {
-                StateHasChanged();
-            }
+            StateHasChanged();
+        }
+        else
+        {
+            _hasFixedParent = true;
+            // No need to call StateHasChanged if we are already showing it in the correct size (fixed pixels)
+            // or if we're not matching bounds to size.
         }
     }
 

@@ -219,6 +219,13 @@ public partial class BaseAxisChart<T, TChartOptions> : MudComponentBase
             .Build();
 
     /// <summary>
+    /// Converts a double value to its string representation.
+    /// </summary>
+    /// <param name="value">The double value to convert.</param>
+    /// <returns>The string representation of the double value.</returns>
+    protected string ToS(double value) => value.ToStr();
+
+    /// <summary>
     /// Called after the component has been rendered.
     /// </summary>
     /// <param name="firstRender">True if this is the first time the component is rendering; otherwise, false.</param>

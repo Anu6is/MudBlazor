@@ -108,22 +108,35 @@ partial class ScatterPlot<T> : MudAxisLineChartBase<T, ScatterPlotChartOptions> 
             ? T.CreateSaturating(ChartOptions.XAxisTicks)
             : T.CreateSaturating(20);
 
-        var xValues = Series
+        var points = Series
             .Where(s => s.Visible)
             .SelectMany(s => s.Data.Points)
-            .Select(p => p.X)
-            .OfType<T>()
             .ToArray();
 
-        if (xValues.Length == 0)
+        if (points.Length == 0)
         {
             lowestVerticalLine = 0;
             numVerticalLines = 1;
             return;
         }
 
-        var minX = xValues.Min();
-        var maxX = xValues.Max();
+        var xValues = points
+            .Select(p => p.X)
+            .OfType<T>()
+            .ToArray();
+
+        T minX, maxX;
+        if (xValues.Length < points.Length)
+        {
+            // If any points have non-numeric X, use indices for all points to ensure a consistent scale
+            minX = T.Zero;
+            maxX = T.CreateSaturating(Series.Max(s => s.Data.Points.Count) - 1);
+        }
+        else
+        {
+            minX = xValues.Min();
+            maxX = xValues.Max();
+        }
 
         lowestVerticalLine = (int)Math.Floor(double.CreateSaturating(minX) / double.CreateSaturating(gridXUnits));
         var highestVerticalLine = (int)Math.Ceiling(double.CreateSaturating(maxX) / double.CreateSaturating(gridXUnits));
@@ -152,6 +165,13 @@ partial class ScatterPlot<T> : MudAxisLineChartBase<T, ScatterPlotChartOptions> 
         return (TReturn)Convert.ChangeType(Series[seriesIndex].Data.Points[dataPointIndex].Y, typeof(TReturn));
     }
 
+    protected override SeriesDisplayOverride? GetSeriesDisplayOverride(ChartSeries<T> series)
+    {
+        return ChartOptions?.SeriesDisplayOverrides?.TryGetValue(series, out var overrideData) is true
+            ? overrideData
+            : null;
+    }
+
     protected override string GetLabelXValue(int seriesIndex, int dataPointIndex)
     {
         var x = Series[seriesIndex].Data.Points[dataPointIndex].X;
@@ -162,7 +182,7 @@ partial class ScatterPlot<T> : MudAxisLineChartBase<T, ScatterPlotChartOptions> 
                 : xVal.ToString(null, null);
         }
 
-        return x?.ToString() ?? string.Empty;
+        return dataPointIndex.ToString();
     }
 
     protected override (double x, double y) GetXYForDataPoint(int seriesIndex, int dataPointIndex, int lowestHorizontalLine, T gridYUnits, double horizontalSpace, double verticalSpace)
@@ -182,11 +202,64 @@ partial class ScatterPlot<T> : MudAxisLineChartBase<T, ScatterPlotChartOptions> 
         }
         else
         {
-            // Fallback: evenly distribute by index
-            screenX = HorizontalStartSpace + (dataPointIndex * horizontalSpace);
+            // Fallback: use index mapped through the X-axis scale
+            var gridValueX = ((double.CreateSaturating(dataPointIndex) / double.CreateSaturating(_gridXUnits)) - _lowestVerticalLine) * _horizontalSpacePerXUnit;
+            screenX = HorizontalStartSpace + gridValueX;
         }
 
         return (screenX, screenY);
+    }
+
+    protected override (double firstX, double firstY, double lastX) GenerateStraightLines(int seriesIndex,
+        System.Text.StringBuilder chartLine,
+        List<SvgCircle> chartDataCircles,
+        int lowestHorizontalLine,
+        T gridYUnits,
+        double horizontalSpace,
+        double verticalSpace)
+    {
+        double firstPointX = 0, firstPointY = 0, lastPointX = 0;
+
+        var series = Series[seriesIndex];
+        var dataLength = series.Data.Points.Count;
+
+        for (var j = 0; j < dataLength; j++)
+        {
+            var (x, y) = GetXYForDataPoint(seriesIndex, j, lowestHorizontalLine, gridYUnits, horizontalSpace, verticalSpace);
+
+            if (j == 0)
+            {
+                chartLine.Append("M ");
+                firstPointX = x;
+                firstPointY = y;
+            }
+            else
+            {
+                chartLine.Append(" L ");
+            }
+
+            if (j == dataLength - 1)
+            {
+                lastPointX = x;
+            }
+
+            chartLine.Append(Utilities.StringHelpers.ToS(x));
+            chartLine.Append(' ');
+            chartLine.Append(Utilities.StringHelpers.ToS(y));
+
+            chartDataCircles.Add(new SvgCircle
+            {
+                Index = seriesIndex,
+                CX = x,
+                CY = y,
+                LabelX = x,
+                LabelXValue = GetLabelXValue(seriesIndex, j),
+                LabelY = y,
+                LabelYValue = GetDataValueAsString(seriesIndex, j)
+            });
+        }
+
+        return (firstPointX, firstPointY, lastPointX);
     }
 
     internal override ILineInterpolator CreateInterpolator(int seriesIndex, int lowestHorizontalLine, T gridYUnits, double horizontalSpace, double verticalSpace)

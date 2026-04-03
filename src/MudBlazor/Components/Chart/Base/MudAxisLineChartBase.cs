@@ -203,13 +203,13 @@ public abstract class MudAxisLineChartBase<T, TOptions> : MudAxisChartBase<T, TO
     /// <param name="horizontalSpace">The horizontal space between points.</param>
     /// <param name="verticalSpace">The vertical space between points.</param>
     /// <returns>A tuple containing the first X, first Y, and last X coordinates.</returns>
-    protected (double firstX, double firstY, double lastX) GenerateStraightLines(int seriesIndex,
-                                                                                 StringBuilder chartLine,
-                                                                                 List<SvgCircle> chartDataCircles,
-                                                                                 int lowestHorizontalLine,
-                                                                                 T gridYUnits,
-                                                                                 double horizontalSpace,
-                                                                                 double verticalSpace)
+    protected virtual (double firstX, double firstY, double lastX) GenerateStraightLines(int seriesIndex,
+                                                                                         StringBuilder chartLine,
+                                                                                         List<SvgCircle> chartDataCircles,
+                                                                                         int lowestHorizontalLine,
+                                                                                         T gridYUnits,
+                                                                                         double horizontalSpace,
+                                                                                         double verticalSpace)
     {
         double firstPointX = 0, firstPointY = 0, lastPointX = 0;
 
@@ -439,7 +439,7 @@ public abstract class MudAxisLineChartBase<T, TOptions> : MudAxisChartBase<T, TO
     /// </summary>
     /// <param name="series">The chart series.</param>
     /// <returns>The series display override, or null if not found.</returns>
-    protected SeriesDisplayOverride? GetSeriesDisplayOverride(ChartSeries<T> series)
+    protected virtual SeriesDisplayOverride? GetSeriesDisplayOverride(ChartSeries<T> series)
     {
         return ChartOptions?.SeriesDisplayOverrides?.TryGetValue(series, out var overrideData) is true
             ? overrideData

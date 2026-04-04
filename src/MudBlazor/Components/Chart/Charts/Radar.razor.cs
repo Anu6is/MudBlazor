@@ -168,7 +168,7 @@ public partial class Radar<T> : MudRadialChartBase<T, RadarChartOptions> where T
         }
 
         var gridLevels = T.CreateSaturating(gridLevelsOption);
-        var stepValue = T.Max(T.CreateSaturating(1), axisMaxValue / gridLevels);
+        var stepValue = axisMaxValue / gridLevels;
 
         for (var i = T.One; i <= gridLevels; i++)
         {
@@ -181,9 +181,18 @@ public partial class Radar<T> : MudRadialChartBase<T, RadarChartOptions> where T
             {
                 LabelX = x + 5,
                 LabelY = y - 1,
-                LabelYValue = value.ToString(null, CultureInfo.InvariantCulture),
+                LabelYValue = BuildAxisValueString(value),
             });
         }
+    }
+
+    private string BuildAxisValueString(T value)
+    {
+        var doubleValue = double.CreateSaturating(value);
+
+        return ChartOptions?.YAxisToStringFunc is null
+            ? doubleValue.ToString(ChartOptions?.YAxisFormat, CultureInfo.InvariantCulture)
+            : ChartOptions.YAxisToStringFunc(doubleValue);
     }
 
     private void GenerateAxisLines(int numAxes, double angleStep, double currentAngle, double radius, string[] labelData)
@@ -231,16 +240,56 @@ public partial class Radar<T> : MudRadialChartBase<T, RadarChartOptions> where T
     private T CalculateAxisMaxValue(T actualMaxValue)
     {
         Debug.Assert(ChartOptions is not null);
+
+        var maxValue = ChartOptions.YAxisSuggestedMax is null
+            ? actualMaxValue
+            : T.Max(T.CreateSaturating(ChartOptions.YAxisSuggestedMax.Value), actualMaxValue);
+
+        if (maxValue == T.Zero)
+        {
+            return T.Zero;
+        }
+
         var gridLevels = ChartOptions.GridLevels;
-        var minStep = actualMaxValue / T.CreateSaturating(gridLevels);
+        var minStep = double.CreateSaturating(maxValue) / gridLevels;
         var step = FindNextNiceStep(minStep);
 
         return T.CreateSaturating(step * gridLevels);
     }
 
-    private static double FindNextNiceStep(T minStep)
+    private static double FindNextNiceStep(double minStep)
     {
-        return Math.Ceiling(double.CreateSaturating(minStep) / 5) * 5;
+        if (minStep == 0)
+        {
+            return 0;
+        }
+
+        var exponent = Math.Floor(Math.Log10(minStep));
+        var fraction = minStep / Math.Pow(10, exponent);
+        double niceFraction;
+
+        if (fraction <= 1)
+        {
+            niceFraction = 1;
+        }
+        else if (fraction <= 2)
+        {
+            niceFraction = 2;
+        }
+        else if (fraction <= 2.5)
+        {
+            niceFraction = 2.5;
+        }
+        else if (fraction <= 5)
+        {
+            niceFraction = 5;
+        }
+        else
+        {
+            niceFraction = 10;
+        }
+
+        return niceFraction * Math.Pow(10, exponent);
     }
 
     private static (List<ChartSeries<T>> Series, string[] Labels) GroupDataSet(string[] labels, List<ChartSeries<T>> dataSet, bool groupByDataSet = false)

@@ -90,6 +90,23 @@ public class RadarChartOptions : DefaultRadialChartOptions, IRadialChartOptions,
     /// </summary>
     public double DataPointRadius { get; set; } = 3.0;
 
+    /// <summary>
+    /// The suggested maximum value for the Y-axis.
+    /// </summary>
+    public double? YAxisSuggestedMax { get; set; }
+
+    /// <summary>
+    /// The format applied to numbers on the vertical axis.
+    /// </summary>
+    public string? YAxisFormat { get; set; }
+
+    /// <summary>
+    /// Custom formatting function for vertical axis values.
+    /// If set, this function will be used to convert Y-axis values to strings for display purposes.
+    /// If not provided, <see cref="YAxisFormat"/> will be used instead.
+    /// </summary>
+    public Func<double, string>? YAxisToStringFunc { get; set; }
+
     /// <inheritdoc/>
     public override AggregationOption AggregationOption { get; set; } = AggregationOption.GroupByDataSet;
 

@@ -31,7 +31,9 @@ namespace MudBlazor.Charts
 
             var chartData = AggregateSeriesData(ChartOptions!.AggregationOption);
             var normalizedData = GetNormalizedData();
-            var cumulativeRadians = -Math.PI / 2;
+            var startAngle = ChartOptions?.StartAngle ?? 270.0;
+            var sweepAngle = ChartOptions?.SweepAngle ?? 360.0;
+            var cumulativeRadians = startAngle * Math.PI / 180.0;
             var chartLabels = GetChartLabels();
 
             for (var i = 0; i < normalizedData.Length; i++)
@@ -41,7 +43,7 @@ namespace MudBlazor.Charts
 
                 var data = normalizedData[i];
                 var value = T.Max(T.Zero, chartData[i]);
-                var radians = 2 * Math.PI * data;
+                var radians = (sweepAngle * Math.PI / 180.0) * data;
                 var half = radians / 2;
 
                 var coords = GetSegmentCoordinates(cumulativeRadians, half, radians);
@@ -49,7 +51,7 @@ namespace MudBlazor.Charts
 
                 var pathData = BuildSvgPath(coords, Radius, data);
 
-                var midAngle = cumulativeRadians - (Math.PI * data);
+                var midAngle = cumulativeRadians - half;
                 var (x, y) = GetLabelPosition(midAngle, Radius, data);
 
                 _paths.Add(new SvgPetal
@@ -58,7 +60,7 @@ namespace MudBlazor.Charts
                     Data = pathData,
                     LabelX = x,
                     LabelY = y,
-                    LabelXValue = ChartOptions.ShowAsPercentage
+                    LabelXValue = ChartOptions!.ShowAsPercentage
                         ? $"{Math.Round(data * 100, 1).ToInvariantString()}%"
                         : value.ToString(null, CultureInfo.InvariantCulture),
                     LabelYValue = chartLabels.Length > i ? chartLabels[i] : string.Empty,
@@ -90,9 +92,17 @@ namespace MudBlazor.Charts
             var sb = new StringBuilder();
 
             sb.Append($"M {ToS(c.StartX * radius)} {ToS(c.StartY * radius)} ");
+
             if (data >= 1.0)
+            {
                 sb.Append($"A {ToS(radius)} {ToS(radius)} 0 {c.LargeArcFlag} 1 {ToS(c.MidX * radius)} {ToS(c.MidY * radius)} ");
-            sb.Append($"A {ToS(radius)} {ToS(radius)} 0 {c.LargeArcFlag} 1 {ToS(c.EndX * radius)} {ToS(c.EndY * radius)} ");
+                sb.Append($"A {ToS(radius)} {ToS(radius)} 0 {c.LargeArcFlag} 1 {ToS(c.EndX * radius)} {ToS(c.EndY * radius)} ");
+            }
+            else
+            {
+                sb.Append($"A {ToS(radius)} {ToS(radius)} 0 {c.LargeArcFlag} 1 {ToS(c.EndX * radius)} {ToS(c.EndY * radius)} ");
+            }
+
             sb.Append("L 0 0 Z");
 
             return sb.ToString();

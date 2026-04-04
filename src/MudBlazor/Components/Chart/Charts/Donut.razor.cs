@@ -32,8 +32,10 @@ namespace MudBlazor.Charts
 
             var chartData = AggregateSeriesData(ChartOptions!.AggregationOption);
             var normalizedData = GetNormalizedData();
-            var cumulativeRadians = -Math.PI / 2;
-            var donutRatio = ChartOptions.DonutRingRatio.EnsureRange(0.1, 1);
+            var startAngle = ChartOptions?.StartAngle ?? 270.0;
+            var sweepAngle = ChartOptions?.SweepAngle ?? 360.0;
+            var cumulativeRadians = startAngle * Math.PI / 180.0;
+            var donutRatio = ChartOptions!.DonutRingRatio.EnsureRange(0.1, 1);
             var chartLabels = GetChartLabels();
 
             for (var i = 0; i < normalizedData.Length; i++)
@@ -42,11 +44,11 @@ namespace MudBlazor.Charts
 
                 var data = normalizedData[i];
                 var actualValue = T.Max(T.Zero, chartData[i]);
-                var radians = 2 * Math.PI * data;
+                var radians = (sweepAngle * Math.PI / 180.0) * data;
                 var coords = GetSegmentCoordinates(cumulativeRadians, radians);
                 cumulativeRadians += radians;
 
-                var geometry = new PathGeometry { Coords = coords, OuterRadius = Radius, InnerRadius = Radius * (1 - donutRatio), Data = data };
+                var geometry = new PathGeometry { Coords = coords, OuterRadius = Radius, InnerRadius = Radius * (1 - donutRatio), Data = data, SegmentRadians = radians };
 
                 var pathData = BuildSvgPath(geometry);
                 var midAngle = cumulativeRadians - (radians / 2);
@@ -58,7 +60,7 @@ namespace MudBlazor.Charts
                     Data = pathData,
                     LabelX = x,
                     LabelY = y,
-                    LabelXValue = ChartOptions.ShowAsPercentage
+                    LabelXValue = ChartOptions!.ShowAsPercentage
                         ? $"{Math.Round(data * 100, 1).ToInvariantString()}%"
                         : actualValue.ToString(null, CultureInfo.InvariantCulture),
                     LabelYValue = chartLabels.Length > i ? chartLabels[i] : string.Empty
@@ -85,22 +87,35 @@ namespace MudBlazor.Charts
         private static string BuildSvgPath(PathGeometry g)
         {
             var sb = new StringBuilder();
-            var arcFlag = g.Data > 0.5 ? 1 : 0;
+            var arcFlag = g.SegmentRadians > Math.PI ? 1 : 0;
 
             static double ToR(double value, double radius) => value * radius;
 
             sb.Append($"M {ToS(ToR(g.Coords.StartX, g.OuterRadius))} {ToS(ToR(g.Coords.StartY, g.OuterRadius))} ");
 
             if (g.Data >= 1.0)
+            {
                 sb.Append($"A {ToS(g.OuterRadius)} {ToS(g.OuterRadius)} 0 {arcFlag} 1 {ToS(ToR(g.Coords.MidX, g.OuterRadius))} {ToS(ToR(g.Coords.MidY, g.OuterRadius))} ");
+                sb.Append($"A {ToS(g.OuterRadius)} {ToS(g.OuterRadius)} 0 {arcFlag} 1 {ToS(ToR(g.Coords.EndX, g.OuterRadius))} {ToS(ToR(g.Coords.EndY, g.OuterRadius))} ");
+            }
+            else
+            {
+                sb.Append($"A {ToS(g.OuterRadius)} {ToS(g.OuterRadius)} 0 {arcFlag} 1 {ToS(ToR(g.Coords.EndX, g.OuterRadius))} {ToS(ToR(g.Coords.EndY, g.OuterRadius))} ");
+            }
 
-            sb.Append($"A {ToS(g.OuterRadius)} {ToS(g.OuterRadius)} 0 {arcFlag} 1 {ToS(ToR(g.Coords.EndX, g.OuterRadius))} {ToS(ToR(g.Coords.EndY, g.OuterRadius))} ");
             sb.Append($"L {ToS(ToR(g.Coords.EndX, g.InnerRadius))} {ToS(ToR(g.Coords.EndY, g.InnerRadius))} ");
 
             if (g.Data >= 1.0)
+            {
                 sb.Append($"A {ToS(g.InnerRadius)} {ToS(g.InnerRadius)} 0 {arcFlag} 0 {ToS(ToR(g.Coords.MidX, g.InnerRadius))} {ToS(ToR(g.Coords.MidY, g.InnerRadius))} ");
+                sb.Append($"A {ToS(g.InnerRadius)} {ToS(g.InnerRadius)} 0 {arcFlag} 0 {ToS(ToR(g.Coords.StartX, g.InnerRadius))} {ToS(ToR(g.Coords.StartY, g.InnerRadius))} ");
+            }
+            else
+            {
+                sb.Append($"A {ToS(g.InnerRadius)} {ToS(g.InnerRadius)} 0 {arcFlag} 0 {ToS(ToR(g.Coords.StartX, g.InnerRadius))} {ToS(ToR(g.Coords.StartY, g.InnerRadius))} ");
+            }
 
-            sb.Append($"A {ToS(g.InnerRadius)} {ToS(g.InnerRadius)} 0 {arcFlag} 0 {ToS(ToR(g.Coords.StartX, g.InnerRadius))} {ToS(ToR(g.Coords.StartY, g.InnerRadius))} Z");
+            sb.Append("Z");
 
             return sb.ToString();
         }
@@ -120,6 +135,7 @@ namespace MudBlazor.Charts
             public double OuterRadius { get; init; }
             public double InnerRadius { get; init; }
             public double Data { get; init; }
+            public double SegmentRadians { get; init; }
         }
     }
 }

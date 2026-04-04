@@ -98,13 +98,13 @@ namespace MudBlazor.UnitTests.Charts
             if (data.Length == 4 && data.Contains(50))
             {
                 comp.Markup.Should()
-                    .ContainEquivalentOf("fill=\"#2979FF\" d=\"M 0 -140 A 140 140 0 0 1 0 140 L 0 105 A 105 105 0 0 0 0 -105 Z\"");
+                    .ContainEquivalentOf("fill=\"#2979FF\" d=\"M 0 -100 A 100 100 0 0 1 0 100 L 0 75 A 75 75 0 0 0 0 -75 Z\"");
             }
 
             if (data.Length == 4 && data.Contains(5))
             {
                 comp.Markup.Should()
-                    .ContainEquivalentOf("fill=\"#FF9100\" d=\"M -43.2624 -133.1479 A 140 140 0 0 1 -0 -140 L -0 -105 A 105 105 0 0 0 -32.4468 -99.8609 Z\"");
+                    .ContainEquivalentOf("fill=\"#FF9100\" d=\"M -30.9017 -95.1057 A 100 100 0 0 1 0 -100 L 0 -75 A 75 75 0 0 0 -23.1763 -71.3292 Z\"");
             }
 
             await comp.SetParametersAndRenderAsync(parameters => parameters
@@ -192,7 +192,7 @@ namespace MudBlazor.UnitTests.Charts
                 .Add(p => p.ChartType, ChartType.Donut)
                 .Add(p => p.ChartSeries, [data]));
 
-            comp.Markup.Should().Contain("d=\"M 0 -140 A 140 140 0 1 1 0 140 A 140 140 0 1 1 -0 -140 L -0 -105 A 105 105 0 1 0 0 105 A 105 105 0 1 0 0 -105 Z\"");
+            comp.Markup.Should().Contain("d=\"M 0 -100 A 100 100 0 1 1 0 100 A 100 100 0 1 1 0 -100 L 0 -75 A 75 75 0 1 0 0 75 A 75 75 0 1 0 0 -75 Z\"");
         }
 
         [Test]

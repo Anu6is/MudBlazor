@@ -5,10 +5,10 @@
 @typeparam T
 @typeparam TChartOptions
 
-<svg @ref="_svgRef" @attributes="UserAttributes" class="@($"{ChartClass} mud-ltr")" width="@Width" height="@Height" viewBox="0 0 @(ToS(Radius * 2)) @(ToS(Radius * 2))" style="@HoveredStylename">
+<svg @ref="_svgRef" @attributes="UserAttributes" class="@($"{ChartClass} mud-ltr")" width="@Width" height="@Height" viewBox="@ViewBox" style="@HoveredStylename">
     <Filters />
 
-    <g transform="translate(@Radius.ToStr(), @Radius.ToStr())">
+    <g>
         <defs>
             <filter id="text-shadow" x="-50%" y="-50%" width="200%" height="200%">
                 <feDropShadow dx="0" dy="0" stdDeviation="1.0" flood-color="black" flood-opacity="1" />
@@ -58,7 +58,7 @@
 
         var (tooltipX, tooltipY) = TooltipPositionFunc?.Invoke(HoveredSegment) is { } pos
                 ? (pos.X, pos.Y)
-                : (HoveredSegment.LabelX + Radius, HoveredSegment.LabelY + Radius);
+                : (HoveredSegment.LabelX, HoveredSegment.LabelY);
 
         if (TooltipTemplate is not null)
         {

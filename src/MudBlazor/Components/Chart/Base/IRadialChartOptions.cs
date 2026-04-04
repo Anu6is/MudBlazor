@@ -21,6 +21,16 @@ public interface IRadialChartOptions : IChartOptions
     /// The opacity of the fill color.
     /// </summary>
     public double FillOpacity { get; set; }
+
+    /// <summary>
+    /// The starting angle of the chart in degrees.
+    /// </summary>
+    public double StartAngle { get; set; }
+
+    /// <summary>
+    /// The total angle of the chart arc in degrees.
+    /// </summary>
+    public double SweepAngle { get; set; }
 }
 
 /// <summary>

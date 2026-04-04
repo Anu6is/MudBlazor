@@ -1,0 +1,27 @@
+@using MudBlazor.Charts
+
+<MudPaper Class="pa-4">
+    <MudChart ChartType="ChartType.Donut" Width="300px" Height="300px" ChartSeries="@_series" ChartOptions="@_options" />
+</MudPaper>
+
+<MudPaper Class="pa-4 mt-2 d-flex justify-center">
+    <MudStack Style="width: 300px">
+        <MudSlider @bind-Value="_options.StartAngle" Min="0" Max="360" Step="1" Color="Color.Primary">Start Angle: @_options.StartAngle</MudSlider>
+        <MudSlider @bind-Value="_options.SweepAngle" Min="0" Max="360" Step="1" Color="Color.Secondary">Sweep Angle: @_options.SweepAngle</MudSlider>
+    </MudStack>
+</MudPaper>
+
+@code {
+    private DonutChartOptions _options = new()
+    {
+        StartAngle = 180,
+        SweepAngle = 180,
+        DonutRingRatio = 0.5
+    };
+
+    private List<ChartSeries<double>> _series = new()
+    {
+        new ChartSeries<double> { Name = "Completed", Data = new double[] { 75 } },
+        new ChartSeries<double> { Name = "Remaining", Data = new double[] { 25 } },
+    };
+}

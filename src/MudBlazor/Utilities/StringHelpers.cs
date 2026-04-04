@@ -12,9 +12,15 @@ internal static partial class StringHelpers
     /// <returns>The string representation of the double value.</returns>
     public static string ToS(double value, string? format = null)
     {
+        value = Math.Round(value, 4);
+        if (value == 0)
+        {
+            value = 0;
+        }
+
         return string.IsNullOrEmpty(format)
-            ? Math.Round(value, 4).ToString(CultureInfo.InvariantCulture)
-            : Math.Round(value, 4).ToString(format);
+            ? value.ToString(CultureInfo.InvariantCulture)
+            : value.ToString(format);
     }
 
     /// <summary>

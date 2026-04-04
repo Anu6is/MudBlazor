@@ -81,13 +81,13 @@ namespace MudBlazor.UnitTests.Charts
             if (data.Length == 4 && data.Contains(77))
             {
                 comp.Markup.Should()
-                    .Contain("d=\"M 0 -140 A 140 140 0 1 1 -86.7071 109.9176 L 0 0 Z\"");
+                    .Contain("d=\"M 0 -100 A 100 100 0 1 1 -61.9337 78.5125 L 0 0 Z\"");
             }
 
             if (data.Length == 4 && data.Contains(5))
             {
                 comp.Markup.Should()
-                    .Contain("d=\"M -34.2796 -135.7384 A 140 140 0 0 1 -0 -140 L 0 0 Z\"");
+                    .Contain("d=\"M -24.4854 -96.956 A 100 100 0 0 1 0 -100 L 0 0 Z\"");
             }
 
             await comp.SetParametersAndRenderAsync(parameters => parameters
@@ -142,7 +142,7 @@ namespace MudBlazor.UnitTests.Charts
                 .Add(p => p.ChartType, ChartType.Pie)
                 .Add(p => p.ChartSeries, [data]));
 
-            comp.Markup.Should().Contain("d=\"M 0 -140 A 140 140 0 1 1 0 140 A 140 140 0 1 1 -0 -140 L 0 0 Z\"");
+            comp.Markup.Should().Contain("d=\"M 0 -100 A 100 100 0 1 1 0 100 A 100 100 0 1 1 0 -100 L 0 0 Z\"");
         }
 
         [Test]

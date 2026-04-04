@@ -19,6 +19,7 @@ public class PieChartOptions : DefaultRadialChartOptions, IHasValueLabelOptions
     /// </remarks>
     public bool ShowValues { get; set; } = false;
 
+
     public static implicit operator PieChartOptions(ChartOptions options) => new()
     {
         ShowLegend = options.ShowLegend,

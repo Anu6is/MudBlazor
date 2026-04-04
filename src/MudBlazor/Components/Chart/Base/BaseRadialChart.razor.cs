@@ -46,6 +46,13 @@ public partial class BaseRadialChart<T, TChartOptions> : MudComponentBase
     public double Radius { get; set; }
 
     /// <summary>
+    /// The SVG viewBox.
+    /// </summary>
+    [Parameter]
+    [Category(CategoryTypes.Chart.Appearance)]
+    public string ViewBox { get; set; } = "0 0 200 200";
+
+    /// <summary>
     /// The SVG paths for the chart segments.
     /// </summary>
     [Parameter]

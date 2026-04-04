@@ -29,4 +29,20 @@ public abstract class DefaultRadialChartOptions : DefaultChartOptions, IRadialCh
     /// Show the series value as a percentage of the total.
     /// </summary>
     public bool ShowAsPercentage { get; set; }
+
+    /// <summary>
+    /// The starting angle of the chart in degrees.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to <c>270.0</c> (top).
+    /// </remarks>
+    public virtual double StartAngle { get; set; } = 270.0;
+
+    /// <summary>
+    /// The total angle of the chart arc in degrees.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to <c>360.0</c> (full circle).
+    /// </remarks>
+    public virtual double SweepAngle { get; set; } = 360.0;
 }

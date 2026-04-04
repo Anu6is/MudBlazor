@@ -98,7 +98,7 @@ public abstract class MudAxisChartBase<T, TOptions> : MudChartBase<T, TOptions>,
     /// <summary>
     /// The horizontal start space for the chart.
     /// </summary>
-    protected double HorizontalStartSpace => Math.Max(HorizontalStartSpaceBuffer + Math.Ceiling(_yAxisLabelSize?.Width ?? 0), 30) + (ChartOptions?.YAxisTitle != null ? 20 : 0);
+    protected double HorizontalStartSpace => Math.Max(HorizontalStartSpaceBuffer + Math.Ceiling(YAxisLabelSize?.Width ?? 0), 30) + (ChartOptions?.YAxisTitle != null ? 20 : 0);
     /// <summary>
     /// The horizontal end space for the chart.
     /// </summary>
@@ -111,7 +111,21 @@ public abstract class MudAxisChartBase<T, TOptions> : MudChartBase<T, TOptions>,
     /// <summary>
     /// The vertical start space for the chart.
     /// </summary>
-    protected double VerticalStartSpace => Math.Max(VerticalStartSpaceBuffer + (_xAxisLabelSize?.Height ?? 0), 30);
+    protected double VerticalStartSpace
+    {
+        get
+        {
+            var rotation = ChartOptions?.XAxisLabelRotation ?? 0;
+            var height = XAxisLabelSize?.Height ?? 0;
+            if (rotation == 0)
+            {
+                return Math.Max(VerticalStartSpaceBuffer + height, 30);
+            }
+
+            return Math.Max(VerticalStartSpaceBuffer + height + 10, 30);
+        }
+    }
+
     /// <summary>
     /// The vertical end space for the chart.
     /// </summary>
@@ -120,7 +134,19 @@ public abstract class MudAxisChartBase<T, TOptions> : MudChartBase<T, TOptions>,
     /// <summary>
     /// Gets the offset for the X-axis labels.
     /// </summary>
-    protected double XAxisLabelOffset => Math.Ceiling(_xAxisLabelSize?.Height ?? 20) / 2;
+    protected double XAxisLabelOffset
+    {
+        get
+        {
+            var rotation = ChartOptions?.XAxisLabelRotation ?? 0;
+            if (rotation == 0)
+            {
+                return Math.Ceiling(XAxisLabelSize?.Height ?? 20) / 2;
+            }
+
+            return Math.Ceiling(XAxisLabelSize?.Height ?? 20) + 10;
+        }
+    }
 
     /// <summary>
     /// The palette used for the legends.
@@ -135,8 +161,18 @@ public abstract class MudAxisChartBase<T, TOptions> : MudChartBase<T, TOptions>,
     protected double _boundWidth = BoundWidthDefault;
     protected double _boundHeight = BoundHeightDefault;
     private ElementSize? _elementSize;
-    protected ElementSize? _yAxisLabelSize;
-    protected ElementSize? _xAxisLabelSize;
+
+    /// <summary>
+    /// The size of the Y-axis labels.
+    /// </summary>
+    [Parameter]
+    public ElementSize? YAxisLabelSize { get; set; }
+
+    /// <summary>
+    /// The size of the X-axis labels.
+    /// </summary>
+    [Parameter]
+    public ElementSize? XAxisLabelSize { get; set; }
 
     private readonly DotNetObjectReference<MudAxisChartBase<T, TOptions>> _dotNetObjectReference;
 

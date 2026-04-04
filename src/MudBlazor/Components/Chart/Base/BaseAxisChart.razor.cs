@@ -31,12 +31,28 @@ public partial class BaseAxisChart<T, TChartOptions> : MudComponentBase
     /// <summary>
     /// The size of the Y-axis labels.
     /// </summary>
-    protected ElementSize? _yAxisLabelSize;
+    [Parameter]
+    [Category(CategoryTypes.Chart.Appearance)]
+    public ElementSize? YAxisLabelSize { get; set; }
+
+    /// <summary>
+    /// The event callback for when the Y-axis label size changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<ElementSize?> YAxisLabelSizeChanged { get; set; }
 
     /// <summary>
     /// The size of the X-axis labels.
     /// </summary>
-    protected ElementSize? _xAxisLabelSize;
+    [Parameter]
+    [Category(CategoryTypes.Chart.Appearance)]
+    public ElementSize? XAxisLabelSize { get; set; }
+
+    /// <summary>
+    /// The event callback for when the X-axis label size changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<ElementSize?> XAxisLabelSizeChanged { get; set; }
 
     /// <summary>
     /// The width of the chart.
@@ -236,15 +252,23 @@ public partial class BaseAxisChart<T, TChartOptions> : MudComponentBase
         var axisChanged = false;
         var comparer = new DoubleEpsilonEqualityComparer(0.01);
 
-        if (yAxisLabelSize != null && (_yAxisLabelSize == null || !comparer.Equals(yAxisLabelSize.Width, _yAxisLabelSize.Width)))
+        if (yAxisLabelSize != null && (YAxisLabelSize == null || !comparer.Equals(yAxisLabelSize.Width, YAxisLabelSize.Width)))
         {
-            _yAxisLabelSize = yAxisLabelSize;
+            YAxisLabelSize = yAxisLabelSize;
+            if (YAxisLabelSizeChanged.HasDelegate)
+            {
+                await YAxisLabelSizeChanged.InvokeAsync(YAxisLabelSize);
+            }
             axisChanged = true;
         }
 
-        if (xAxisLabelSize != null && (_xAxisLabelSize == null || !comparer.Equals(xAxisLabelSize.Height, _xAxisLabelSize.Height)))
+        if (xAxisLabelSize != null && (XAxisLabelSize == null || !comparer.Equals(xAxisLabelSize.Height, XAxisLabelSize.Height)))
         {
-            _xAxisLabelSize = xAxisLabelSize;
+            XAxisLabelSize = xAxisLabelSize;
+            if (XAxisLabelSizeChanged.HasDelegate)
+            {
+                await XAxisLabelSizeChanged.InvokeAsync(XAxisLabelSize);
+            }
             axisChanged = true;
         }
 

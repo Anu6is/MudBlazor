@@ -156,7 +156,7 @@ namespace MudBlazor.Charts
                 VerticalLines.Add(line);
 
                 var xLabels = i < ChartLabels.Length ? ChartLabels[i] : "";
-                var lineValue = new SvgText { X = x + (_barGroupWidth / 2) - (_barGap * spaces / 2) - leftShift, Y = _boundHeight - 10, Value = xLabels };
+                var lineValue = new SvgText { X = x + (_barGroupWidth / 2) - (_barGap * spaces / 2) - leftShift, Y = _boundHeight - XAxisLabelOffset, Value = xLabels };
                 VerticalValues.Add(lineValue);
             }
         }

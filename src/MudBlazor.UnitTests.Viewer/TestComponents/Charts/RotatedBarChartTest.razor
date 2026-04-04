@@ -1,0 +1,45 @@
+@using MudBlazor
+@using MudBlazor.Charts
+
+<MudChart T="double"
+          ChartType="ChartType.Bar"
+          ChartSeries="_series"
+          ChartLabels="_xAxisLabels"
+          ChartOptions="_axisChartOptions"
+          Height="400px"
+          Width="600px"
+          MatchBoundsToSize="false" />
+
+@code {
+    private BarChartOptions _axisChartOptions = new()
+    {
+        YAxisTitle = "Sales",
+        FixedBarWidth = 14,
+        XAxisLabelRotation = 90
+    };
+
+    private List<ChartSeries<double>> _series = new()
+    {
+        new()
+        {
+            Name = "Lead Source",
+            Data = new double[] { 1, 1, 2, 2, 3, 3, 4, 5, 5, 6, 6, 23 }
+        },
+    };
+
+    private string[] _xAxisLabels =
+    {
+        "Group Website Quote",
+        "The Big Bank Long Name",
+        "Online Quote",
+        "Returning Customer",
+        "Funky Conveyancing",
+        "Funky Surveying",
+        "Recommendation",
+        "Funky Financial Services",
+        "Santander",
+        "Short Bank",
+        "Not Part Of Funky Group",
+        "Funky Estate Agent"
+    };
+}

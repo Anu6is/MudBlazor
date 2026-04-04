@@ -1,5 +1,6 @@
 ﻿using AwesomeAssertions;
 using Bunit;
+using Microsoft.AspNetCore.Components.Web;
 using NUnit.Framework;
 
 namespace MudBlazor.UnitTests.Components;
@@ -30,5 +31,44 @@ public class InputTests : BunitTest
             .Add(p => p.Sizing, sizing));
 
         comp.Find("div.mud-input").ClassList.Should().Contain(expectedClass);
+    }
+
+    [Test]
+    public async Task Input_HandleMouseWheelAsync_ShouldBlurWhenDisabledAndNumberType()
+    {
+        var comp = Context.Render<MudInput<int>>(p => p
+            .Add(x => x.InputType, InputType.Number)
+            .Add(x => x.DisableMouseWheel, true));
+
+        await comp.Find("input").WheelAsync(new WheelEventArgs());
+
+        // Verify that blur was called on the element.
+        // Since bUnit doesn't directly track JS interop calls unless we set up the mock,
+        // we can check if the JS interop was invoked.
+        Context.JSInterop.Invocations.Should().Contain(x => x.Identifier == "mudElementRef.blur");
+    }
+
+    [Test]
+    public async Task Input_HandleMouseWheelAsync_ShouldNotBlurWhenNotDisabled()
+    {
+        var comp = Context.Render<MudInput<int>>(p => p
+            .Add(x => x.InputType, InputType.Number)
+            .Add(x => x.DisableMouseWheel, false));
+
+        await comp.Find("input").WheelAsync(new WheelEventArgs());
+
+        Context.JSInterop.Invocations.Should().NotContain(x => x.Identifier == "mudElementRef.blur");
+    }
+
+    [Test]
+    public async Task Input_HandleMouseWheelAsync_ShouldNotBlurWhenNotNumberType()
+    {
+        var comp = Context.Render<MudInput<string>>(p => p
+            .Add(x => x.InputType, InputType.Text)
+            .Add(x => x.DisableMouseWheel, true));
+
+        await comp.Find("input").WheelAsync(new WheelEventArgs());
+
+        Context.JSInterop.Invocations.Should().NotContain(x => x.Identifier == "mudElementRef.blur");
     }
 }

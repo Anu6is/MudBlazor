@@ -1318,6 +1318,26 @@ namespace MudBlazor.UnitTests.Components
 #nullable disable
 
         /// <summary>
+        /// When DisableMouseWheel is true, MouseWheel actions should not change the value
+        /// </summary>
+        [Test]
+        public async Task NumericField_DisableMouseWheel()
+        {
+            var comp = Context.Render<MudNumericField<double>>(parameters => parameters
+                .Add(x => x.Value, 1234.56)
+                .Add(x => x.DisableMouseWheel, true));
+            var numericField = comp.Instance;
+
+            //MouseWheel up
+            await comp.Find("input").WheelAsync(new WheelEventArgs() { DeltaY = -1, ShiftKey = true });
+            numericField.ReadValue.Should().Be(1234.56);
+
+            //MouseWheel down
+            await comp.Find("input").WheelAsync(new WheelEventArgs() { DeltaY = 1, ShiftKey = true });
+            numericField.ReadValue.Should().Be(1234.56);
+        }
+
+        /// <summary>
         /// Test that reset method clears conversion errors.
         /// </summary>
         [Test]

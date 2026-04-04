@@ -354,6 +354,11 @@ namespace MudBlazor
             return _elementReference.FocusAsync();
         }
 
+        public override ValueTask BlurAsync()
+        {
+            return _elementReference.MudBlurAsync();
+        }
+
         /// <summary>
         /// Selects the text in this input.
         /// </summary>
@@ -505,6 +510,17 @@ namespace MudBlazor
             }
 
             await JsApiService.CopyToClipboardAsync(text ?? string.Empty);
+        }
+
+        protected virtual async Task HandleMouseWheelAsync(WheelEventArgs args)
+        {
+            if (DisableMouseWheel && InputType == InputType.Number)
+            {
+                await FocusAsync(); // MudMask FocusAsync calls _elementReference.FocusAsync()
+                await BlurAsync();
+            }
+
+            // MudMask doesn't currently have an OnMouseWheel parameter, but we follow the MudInput pattern
         }
 
         [GeneratedRegex(@"^.$")]

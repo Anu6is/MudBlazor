@@ -203,6 +203,16 @@ namespace MudBlazor
             return Task.CompletedTask;
         }
 
+        protected virtual async Task HandleMouseWheelAsync(WheelEventArgs args)
+        {
+            if (DisableMouseWheel && InputType == InputType.Number)
+            {
+                await BlurAsync();
+            }
+
+            await OnMouseWheel.InvokeAsync(args);
+        }
+
         /// <inheritdoc />
         public override async ValueTask FocusAsync()
         {

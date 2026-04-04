@@ -390,6 +390,16 @@ namespace MudBlazor
         public bool KeyUpPreventDefault { get; set; }
 
         /// <summary>
+        /// Prevents the mouse wheel from changing the value of the input field.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to <c>false</c>.  When <c>true</c>, the mouse wheel will not change the value of the input field.
+        /// </remarks>
+        [Parameter]
+        [Category(CategoryTypes.FormComponent.Behavior)]
+        public bool DisableMouseWheel { get; set; }
+
+        /// <summary>
         /// Occurs when the <see cref="Value"/> property has changed.
         /// </summary>
         [Parameter]

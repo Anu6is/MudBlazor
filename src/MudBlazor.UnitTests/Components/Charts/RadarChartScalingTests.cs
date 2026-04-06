@@ -95,8 +95,9 @@ public class RadarChartScalingTests : BunitTest
             .Add(p => p.ChartOptions, options)
         );
 
+        var expectedLabel = seriesData[0].ToString(options.YAxisFormat, CultureInfo.CurrentCulture);
         var axisValues = comp.FindAll("text.mud-chart-axis-value");
-        axisValues[0].TextContent.Should().Be("5.00");
+        axisValues[0].TextContent.Should().Be(expectedLabel);
     }
 
     [Test]
@@ -193,5 +194,24 @@ public class RadarChartScalingTests : BunitTest
         {
             label.TextContent.Should().Be("0");
         }
+    }
+
+    [Test]
+    public void RadarChart_Scaling_IntegerData()
+    {
+        var seriesData = new long[] { 5, 5, 5 };
+        var options = new RadarChartOptions { GridLevels = 2, ShowAxisValues = true };
+
+        var comp = Context.Render<Radar<long>>(parameters => parameters
+            .Add(p => p.ChartSeries, new List<ChartSeries<long>> { new() { Name = "Series", Data = seriesData } })
+            .Add(p => p.ChartOptions, options)
+        );
+
+        var axisValues = comp.FindAll("text.mud-chart-axis-value");
+        axisValues.Count.Should().Be(2);
+        // max 5. 5/2 = 2.5. If it used integer division, it would be 5/2 = 2, step = 2.
+        // With double division, step is 2.5.
+        axisValues[0].TextContent.Should().Be("2.5");
+        axisValues[1].TextContent.Should().Be("5");
     }
 }

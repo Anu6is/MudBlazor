@@ -93,7 +93,7 @@ public partial class Radar<T> : MudRadialChartBase<T, RadarChartOptions> where T
     }
 
     private void GenerateSvgPaths(List<ChartSeries<T>> seriesData, double[] normalizedData, int numAxes,
-                                  double angleStep, double currentAngle, double radius, T axisMaxValue)
+                                  double angleStep, double currentAngle, double radius, double axisMaxValue)
     {
         Debug.Assert(ChartOptions is not null);
         for (var seriesIndex = 0; seriesIndex < seriesData.Count; seriesIndex++)
@@ -123,7 +123,7 @@ public partial class Radar<T> : MudRadialChartBase<T, RadarChartOptions> where T
     }
 
     private static (string Path, List<SvgPathPoint> Points) GeneratePolygonPath(ChartSeries<T> series, int seriesIndex, int numAxes,
-                                              double angleStep, double currentAngle, double radius, T axisMaxValue)
+                                              double angleStep, double currentAngle, double radius, double axisMaxValue)
     {
         var path = new StringBuilder("M ");
         var points = new List<SvgPathPoint>();
@@ -131,7 +131,7 @@ public partial class Radar<T> : MudRadialChartBase<T, RadarChartOptions> where T
         for (var i = 0; i < Math.Min(series.Data.Values.Count, numAxes); i++)
         {
             var value = series.Data[i].Y;
-            var scale = radius * (axisMaxValue == T.Zero ? 0 : double.CreateSaturating(value / axisMaxValue));
+            var scale = radius * (axisMaxValue == 0 ? 0 : double.CreateSaturating(value) / axisMaxValue);
             scale = Math.Max(0, scale);
 
             var angle = currentAngle + (i * angleStep);
@@ -156,7 +156,7 @@ public partial class Radar<T> : MudRadialChartBase<T, RadarChartOptions> where T
         return (path.ToString(), points);
     }
 
-    private void GenerateAxisValues(double currentAngle, T axisMaxValue, double radius)
+    private void GenerateAxisValues(double currentAngle, double axisMaxValue, double radius)
     {
         Debug.Assert(ChartOptions is not null);
         var axisAngle = currentAngle;
@@ -167,13 +167,13 @@ public partial class Radar<T> : MudRadialChartBase<T, RadarChartOptions> where T
             return;
         }
 
-        var gridLevels = T.CreateSaturating(gridLevelsOption);
+        var gridLevels = (double)gridLevelsOption;
         var stepValue = axisMaxValue / gridLevels;
 
-        for (var i = T.One; i <= gridLevels; i++)
+        for (var i = 1; i <= gridLevelsOption; i++)
         {
             var value = i * stepValue;
-            var valueRadius = radius * double.CreateSaturating(i / gridLevels);
+            var valueRadius = radius * (i / gridLevels);
             var x = Math.Cos(axisAngle) * valueRadius;
             var y = Math.Sin(axisAngle) * valueRadius;
 
@@ -186,13 +186,11 @@ public partial class Radar<T> : MudRadialChartBase<T, RadarChartOptions> where T
         }
     }
 
-    private string BuildAxisValueString(T value)
+    private string BuildAxisValueString(double value)
     {
-        var doubleValue = double.CreateSaturating(value);
-
         return ChartOptions?.YAxisToStringFunc is null
-            ? ToS(doubleValue, ChartOptions?.YAxisFormat)
-            : ChartOptions.YAxisToStringFunc(doubleValue);
+            ? ToS(value, ChartOptions?.YAxisFormat)
+            : ChartOptions.YAxisToStringFunc(value);
     }
 
     private void GenerateAxisLines(int numAxes, double angleStep, double currentAngle, double radius, string[] labelData)
@@ -237,24 +235,24 @@ public partial class Radar<T> : MudRadialChartBase<T, RadarChartOptions> where T
         }
     }
 
-    private T CalculateAxisMaxValue(T actualMaxValue)
+    private double CalculateAxisMaxValue(T actualMaxValue)
     {
         Debug.Assert(ChartOptions is not null);
 
         var maxValue = ChartOptions.YAxisSuggestedMax is null
-            ? actualMaxValue
-            : T.Max(T.CreateSaturating(ChartOptions.YAxisSuggestedMax.Value), actualMaxValue);
+            ? double.CreateSaturating(actualMaxValue)
+            : Math.Max(ChartOptions.YAxisSuggestedMax.Value, double.CreateSaturating(actualMaxValue));
 
-        if (maxValue <= T.Zero)
+        if (maxValue <= 0)
         {
-            return T.Zero;
+            return 0;
         }
 
         var gridLevels = Math.Max(1, ChartOptions.GridLevels);
-        var minStep = double.CreateSaturating(maxValue) / gridLevels;
+        var minStep = maxValue / gridLevels;
         var step = FindNextNiceStep(minStep);
 
-        return T.CreateSaturating(step * gridLevels);
+        return step * gridLevels;
     }
 
     private static double FindNextNiceStep(double minStep)

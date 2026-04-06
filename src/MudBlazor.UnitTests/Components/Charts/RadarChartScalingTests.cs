@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using AwesomeAssertions;
 using Bunit;
@@ -116,5 +117,81 @@ public class RadarChartScalingTests : BunitTest
 
         var axisValues = comp.FindAll("text.mud-chart-axis-value");
         axisValues[0].TextContent.Should().Be("Value: 5");
+    }
+
+    [Test]
+    public void RadarChart_Scaling_GridLevelsZero()
+    {
+        var seriesData = new double[] { 5, 5, 5 };
+        var options = new RadarChartOptions { GridLevels = 0, ShowAxisValues = true };
+
+        var comp = Context.Render<Radar<double>>(parameters => parameters
+            .Add(p => p.ChartSeries, new List<ChartSeries<double>> { new() { Name = "Series", Data = seriesData } })
+            .Add(p => p.ChartOptions, options)
+        );
+
+        // When GridLevels is 0, GenerateAxisValues returns early.
+        var axisValues = comp.FindAll("text.mud-chart-axis-value");
+        axisValues.Count.Should().Be(0);
+    }
+
+    [Test]
+    public void RadarChart_Scaling_AllZeroValues()
+    {
+        var seriesData = new double[] { 0, 0, 0 };
+        var options = new RadarChartOptions { GridLevels = 5, ShowAxisValues = true };
+
+        var comp = Context.Render<Radar<double>>(parameters => parameters
+            .Add(p => p.ChartSeries, new List<ChartSeries<double>> { new() { Name = "Series", Data = seriesData } })
+            .Add(p => p.ChartOptions, options)
+        );
+
+        var axisValues = comp.FindAll("text.mud-chart-axis-value");
+        // CalculateAxisMaxValue returns T.Zero for all zeros.
+        // GenerateAxisValues then uses stepValue = 0.
+        // All labels should be "0".
+        foreach (var label in axisValues)
+        {
+            label.TextContent.Should().Be("0");
+        }
+    }
+
+    [Test]
+    public void RadarChart_Scaling_VeryLargeValues()
+    {
+        var seriesData = new double[] { 1e15, 1e15, 1e15 };
+        var options = new RadarChartOptions { GridLevels = 2, ShowAxisValues = true };
+
+        var comp = Context.Render<Radar<double>>(parameters => parameters
+            .Add(p => p.ChartSeries, new List<ChartSeries<double>> { new() { Name = "Series", Data = seriesData } })
+            .Add(p => p.ChartOptions, options)
+        );
+
+        var axisValues = comp.FindAll("text.mud-chart-axis-value");
+        axisValues.Count.Should().Be(2);
+        // 1e15 / 2 = 0.5e15 -> 5e14. FindNextNiceStep(5e14) -> 5e14.
+        // 5e14 * 2 = 1e15.
+        axisValues[0].TextContent.Should().Be((5e14).ToString(CultureInfo.InvariantCulture));
+        axisValues[1].TextContent.Should().Be((1e15).ToString(CultureInfo.InvariantCulture));
+    }
+
+    [Test]
+    public void RadarChart_Scaling_NegativeValues()
+    {
+        var seriesData = new double[] { -5, -10, -5 };
+        var options = new RadarChartOptions { GridLevels = 2, ShowAxisValues = true };
+
+        var comp = Context.Render<Radar<double>>(parameters => parameters
+            .Add(p => p.ChartSeries, new List<ChartSeries<double>> { new() { Name = "Series", Data = seriesData } })
+            .Add(p => p.ChartOptions, options)
+        );
+
+        // Max of (-5, -10, -5) is -5.
+        // CalculateAxisMaxValue treats <= 0 as T.Zero.
+        var axisValues = comp.FindAll("text.mud-chart-axis-value");
+        foreach (var label in axisValues)
+        {
+            label.TextContent.Should().Be("0");
+        }
     }
 }

@@ -191,7 +191,7 @@ public partial class Radar<T> : MudRadialChartBase<T, RadarChartOptions> where T
         var doubleValue = double.CreateSaturating(value);
 
         return ChartOptions?.YAxisToStringFunc is null
-            ? doubleValue.ToString(ChartOptions?.YAxisFormat, CultureInfo.InvariantCulture)
+            ? ToS(doubleValue, ChartOptions?.YAxisFormat)
             : ChartOptions.YAxisToStringFunc(doubleValue);
     }
 
@@ -245,12 +245,12 @@ public partial class Radar<T> : MudRadialChartBase<T, RadarChartOptions> where T
             ? actualMaxValue
             : T.Max(T.CreateSaturating(ChartOptions.YAxisSuggestedMax.Value), actualMaxValue);
 
-        if (maxValue == T.Zero)
+        if (maxValue <= T.Zero)
         {
             return T.Zero;
         }
 
-        var gridLevels = ChartOptions.GridLevels;
+        var gridLevels = Math.Max(1, ChartOptions.GridLevels);
         var minStep = double.CreateSaturating(maxValue) / gridLevels;
         var step = FindNextNiceStep(minStep);
 
@@ -259,35 +259,21 @@ public partial class Radar<T> : MudRadialChartBase<T, RadarChartOptions> where T
 
     private static double FindNextNiceStep(double minStep)
     {
-        if (minStep == 0)
+        if (minStep <= 0 || !double.IsFinite(minStep))
         {
             return 0;
         }
 
         var exponent = Math.Floor(Math.Log10(minStep));
         var fraction = minStep / Math.Pow(10, exponent);
-        double niceFraction;
-
-        if (fraction <= 1)
+        var niceFraction = fraction switch
         {
-            niceFraction = 1;
-        }
-        else if (fraction <= 2)
-        {
-            niceFraction = 2;
-        }
-        else if (fraction <= 2.5)
-        {
-            niceFraction = 2.5;
-        }
-        else if (fraction <= 5)
-        {
-            niceFraction = 5;
-        }
-        else
-        {
-            niceFraction = 10;
-        }
+            <= 1.0 => 1.0,
+            <= 2.0 => 2.0,
+            <= 2.5 => 2.5,
+            <= 5.0 => 5.0,
+            _ => 10.0
+        };
 
         return niceFraction * Math.Pow(10, exponent);
     }

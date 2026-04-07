@@ -188,9 +188,9 @@ public partial class Radar<T> : MudRadialChartBase<T, RadarChartOptions> where T
 
     private string BuildAxisValueString(double value)
     {
-        return ChartOptions?.YAxisToStringFunc is null
-            ? ToS(value, ChartOptions?.YAxisFormat)
-            : ChartOptions.YAxisToStringFunc(value);
+        return ChartOptions?.AxisToStringFunc is null
+            ? ToS(value, ChartOptions?.AxisFormat)
+            : ChartOptions.AxisToStringFunc(value);
     }
 
     private void GenerateAxisLines(int numAxes, double angleStep, double currentAngle, double radius, string[] labelData)
@@ -239,9 +239,9 @@ public partial class Radar<T> : MudRadialChartBase<T, RadarChartOptions> where T
     {
         Debug.Assert(ChartOptions is not null);
 
-        var maxValue = ChartOptions.YAxisSuggestedMax is null
+        var maxValue = ChartOptions.AxisSuggestedMax is null
             ? double.CreateSaturating(actualMaxValue)
-            : Math.Max(ChartOptions.YAxisSuggestedMax.Value, double.CreateSaturating(actualMaxValue));
+            : Math.Max(ChartOptions.AxisSuggestedMax.Value, double.CreateSaturating(actualMaxValue));
 
         if (maxValue <= 0)
         {

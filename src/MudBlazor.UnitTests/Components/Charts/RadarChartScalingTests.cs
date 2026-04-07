@@ -73,7 +73,7 @@ public class RadarChartScalingTests : BunitTest
     public void RadarChart_Option_YAxisSuggestedMax()
     {
         var seriesData = new double[] { 5, 5, 5 };
-        var options = new RadarChartOptions { GridLevels = 1, ShowAxisValues = true, YAxisSuggestedMax = 10 };
+        var options = new RadarChartOptions { GridLevels = 1, ShowAxisValues = true, AxisSuggestedMax = 10 };
 
         var comp = Context.Render<Radar<double>>(parameters => parameters
             .Add(p => p.ChartSeries, new List<ChartSeries<double>> { new() { Name = "Series", Data = seriesData } })
@@ -88,14 +88,14 @@ public class RadarChartScalingTests : BunitTest
     public void RadarChart_Option_YAxisFormat()
     {
         var seriesData = new double[] { 5, 5, 5 };
-        var options = new RadarChartOptions { GridLevels = 1, ShowAxisValues = true, YAxisFormat = "N2" };
+        var options = new RadarChartOptions { GridLevels = 1, ShowAxisValues = true, AxisFormat = "N2" };
 
         var comp = Context.Render<Radar<double>>(parameters => parameters
             .Add(p => p.ChartSeries, new List<ChartSeries<double>> { new() { Name = "Series", Data = seriesData } })
             .Add(p => p.ChartOptions, options)
         );
 
-        var expectedLabel = seriesData[0].ToString(options.YAxisFormat, CultureInfo.CurrentCulture);
+        var expectedLabel = seriesData[0].ToString(options.AxisFormat, CultureInfo.CurrentCulture);
         var axisValues = comp.FindAll("text.mud-chart-axis-value");
         axisValues[0].TextContent.Should().Be(expectedLabel);
     }
@@ -108,7 +108,7 @@ public class RadarChartScalingTests : BunitTest
         {
             GridLevels = 1,
             ShowAxisValues = true,
-            YAxisToStringFunc = (val) => $"Value: {val}"
+            AxisToStringFunc = (val) => $"Value: {val}"
         };
 
         var comp = Context.Render<Radar<double>>(parameters => parameters

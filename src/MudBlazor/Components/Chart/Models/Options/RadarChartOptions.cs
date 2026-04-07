@@ -91,21 +91,21 @@ public class RadarChartOptions : DefaultRadialChartOptions, IRadialChartOptions,
     public double DataPointRadius { get; set; } = 3.0;
 
     /// <summary>
-    /// The suggested maximum value for the Y-axis.
+    /// The suggested maximum value for the axis.
     /// </summary>
-    public double? YAxisSuggestedMax { get; set; }
+    public double? AxisSuggestedMax { get; set; }
 
     /// <summary>
-    /// The format applied to numbers on the vertical axis.
+    /// The format applied to numbers on the axis.
     /// </summary>
-    public string? YAxisFormat { get; set; }
+    public string? AxisFormat { get; set; }
 
     /// <summary>
     /// Custom formatting function for vertical axis values.
     /// If set, this function will be used to convert Y-axis values to strings for display purposes.
-    /// If not provided, <see cref="YAxisFormat"/> will be used instead.
+    /// If not provided, <see cref="AxisFormat"/> will be used instead.
     /// </summary>
-    public Func<double, string>? YAxisToStringFunc { get; set; }
+    public Func<double, string>? AxisToStringFunc { get; set; }
 
     /// <inheritdoc/>
     public override AggregationOption AggregationOption { get; set; } = AggregationOption.GroupByDataSet;

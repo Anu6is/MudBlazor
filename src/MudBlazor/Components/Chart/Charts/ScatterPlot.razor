@@ -4,36 +4,40 @@
 
 @typeparam T
 
-<div @attributes="UserAttributes" class="@Classname">
-    <BaseAxisChart T="T"
-                   TChartOptions="ScatterPlotChartOptions"
-                   AxisChanged="AxisChanged"
-                   ElementRefChanged="SetElementReference"
-                   Width="@Width"
-                   Height="@Height"
-                   ViewBoxWidth="_boundWidth"
-                   ViewBoxHeight="_boundHeight"
-                   MatchBoundsToSize="@MatchBoundsToSize"
-                   ChartClass="mud-chart-scatter"
-                   ChartSeries="@ChartSeries"
-                   ChartLabels="@ChartLabels"
-                   ChartOptions="@ChartOptions"
-                   XAxisTitle="@ChartOptions?.XAxisTitle"
-                   YAxisTitle="@ChartOptions?.YAxisTitle"
-                   ChartType="@ChartType"
-                   SeriesContent="@RenderScatterPoints()"
-                   TooltipContent="@RenderTooltip()"
-                   CustomGraphics="@CustomGraphics"
-                   HoveredSegment="@HoveredDataPointPath"
-                   HorizontalLines="@HorizontalLines"
-                   VerticalLines="@VerticalLines"
-                   HorizontalValues="@HorizontalValues"
-                   VerticalValues="@VerticalValues"
-                   UserAttributes="@UserAttributes" />
+@if (!IsOverlayChart)
+{
+    <div @attributes="UserAttributes" class="@Classname">
+        <BaseAxisChart T="T"
+                       TChartOptions="ScatterPlotChartOptions"
+                       AxisChanged="AxisChanged"
+                       ElementRefChanged="SetElementReference"
+                       Width="@Width"
+                       Height="@Height"
+                       ViewBoxWidth="_boundWidth"
+                       ViewBoxHeight="_boundHeight"
+                       MatchBoundsToSize="@MatchBoundsToSize"
+                       ChartClass="mud-chart-scatter"
+                       ChartSeries="@ChartSeries"
+                       ChartLabels="@ChartLabels"
+                       ChartOptions="@ChartOptions"
+                       XAxisTitle="@ChartOptions?.XAxisTitle"
+                       YAxisTitle="@ChartOptions?.YAxisTitle"
+                       ChartType="@ChartType"
+                       SeriesContent="@RenderScatterPoints()"
+                       TooltipContent="@RenderTooltip()"
+                       ChildContent="@OverlayContent"
+                       CustomGraphics="@CustomGraphics"
+                       HoveredSegment="@HoveredDataPointPath"
+                       HorizontalLines="@HorizontalLines"
+                       VerticalLines="@VerticalLines"
+                       HorizontalValues="@HorizontalValues"
+                       VerticalValues="@VerticalValues"
+                       UserAttributes="@UserAttributes" />
 
-    <Legend T="T" Data="@Legends" ShowLegend="@ChartOptions?.ShowLegend" CanHideSeries="@CanHideSeries"
-            ChartPalette="@LegendPalette" OnLegendSelected="async (i) => await SetSelectedIndexAsync(i)" />
-</div>
+        <Legend T="T" Data="@Legends" ShowLegend="@ChartOptions?.ShowLegend" CanHideSeries="@CanHideSeries"
+                ChartPalette="@LegendPalette" OnLegendSelected="async (i) => await SetSelectedIndexAsync(i)" />
+    </div>
+}
 
 @code {
   private const double DataPointStroke = 1.5d;
@@ -202,4 +206,9 @@
             }
         }
     };
+
+    private RenderFragment Chart => @<g class="mud-charts-scatter-series">
+        @RenderScatterPoints()
+        @RenderTooltip()
+    </g>;
 }

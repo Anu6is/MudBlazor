@@ -1,7 +1,7 @@
 ﻿@using MudBlazor.Charts
 
 <MudChart T="double" ChartType="ChartType.StackedBar" ChartSeries="@StackedDataSet" ChartOptions="@_barChartOptions" MatchBoundsToSize="true" Width="100%" Height="500px">
-    <Line ChartSeries="@LineDataSet" ChartOptions="@_lineChartOptions" />
+    <ScatterPlot ChartSeries="@LineDataSet" ChartOptions="@_scatterChartOptions" />
 </MudChart>
 
 @code {
@@ -26,10 +26,9 @@
         new() { Name = "Overall Change", Data = new([650, 550, 450, 380, 300, 320, 350, 400, 380, 420, 350, 650, 880, -300, 400, 250, 300, 320, 280, 350, 300, 400, 380, 420, 750, 600, 200, 300, 400, 380, 350, 400, 200]) }
     ];
 
-    private LineChartOptions _lineChartOptions = new LineChartOptions()
+    private ScatterPlotChartOptions _scatterChartOptions = new ScatterPlotChartOptions()
     {
         ChartPalette = ["#000000"],
-        ShowDataMarkers = true,
         LineStrokeWidth = 1.8,
     };
 }

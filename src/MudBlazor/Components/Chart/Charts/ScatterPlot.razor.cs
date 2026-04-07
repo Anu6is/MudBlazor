@@ -36,26 +36,71 @@ partial class ScatterPlot<T> : MudAxisLineChartBase<T, ScatterPlotChartOptions> 
         ChartType = ChartType.ScatterPlot;
         ChartOptions ??= new ScatterPlotChartOptions();
 
+        if (ChartReference is IMudAxisChart<T> axisChart)
+        {
+            axisChart.OverlayChart = this;
+            axisChart.OverlayContent = this.Chart;
+        }
+
         base.OnInitialized();
     }
 
     public override void RebuildChart()
     {
-        Series = (ChartContainer != null && ChartReference is MudChart<T>)
+        if (IsOverlayChart && SharedData is null)
+        {
+            return;
+        }
+
+        Series = (ChartContainer != null && ChartReference is MudChart<T> && !IsOverlayChart)
             ? ChartContainer.ChartSeries
             : ChartSeries;
 
-        SetBounds();
-        ComputeXAxisScale(out _gridXUnits, out _lowestVerticalLine, out var numVerticalLines);
-        ComputeYAxisScale(out var gridYUnits, out var lowestHorizontalLine, out var numHorizontalLines);
+        T gridYUnits;
+        int lowestHorizontalLine;
+        int numHorizontalLines;
+        double horizontalSpace;
+        double verticalSpace;
+        int numVerticalLines;
 
-        var verticalSpace = (_boundHeight - VerticalStartSpace - VerticalEndSpace) / Math.Max(1, numHorizontalLines - 1);
-        _horizontalSpacePerXUnit = (_boundWidth - HorizontalStartSpace - HorizontalEndSpace) / Math.Max(1, numVerticalLines - 1);
+        if (!IsOverlayChart)
+        {
+            SetBounds();
+            ComputeXAxisScale(out _gridXUnits, out _lowestVerticalLine, out numVerticalLines);
+            ComputeYAxisScale(out gridYUnits, out lowestHorizontalLine, out numHorizontalLines);
 
-        GenerateHorizontalGridLines(numHorizontalLines, lowestHorizontalLine, gridYUnits, verticalSpace);
-        GenerateVerticalGridLines(numVerticalLines, 0, _horizontalSpacePerXUnit);
-        GenerateChartLines(lowestHorizontalLine, gridYUnits, _horizontalSpacePerXUnit, verticalSpace);
+            verticalSpace = (_boundHeight - VerticalStartSpace - VerticalEndSpace) / Math.Max(1, numHorizontalLines - 1);
+            horizontalSpace = _horizontalSpacePerXUnit = (_boundWidth - HorizontalStartSpace - HorizontalEndSpace) / Math.Max(1, numVerticalLines - 1);
+
+            GenerateHorizontalGridLines(numHorizontalLines, lowestHorizontalLine, gridYUnits, verticalSpace);
+            GenerateVerticalGridLines(numVerticalLines, 0, _horizontalSpacePerXUnit);
+
+            // If this is not an overlay chart, we generate the shared plot points if an overlay exists
+            SharedData = OverlayChart is IMudAxisChart<T> ? new AxisGridData<T>(lowestHorizontalLine, numHorizontalLines, gridYUnits, _boundWidth, _boundHeight) : null;
+        }
+        else
+        {
+            // If this is an overlay chart, we use the shared plot points from the main chart
+            var area = SharedData!.Value;
+
+            lowestHorizontalLine = area.LowestHorizontalLine;
+            gridYUnits = area.YAxisTicks;
+            numHorizontalLines = area.HorizontalLineCount;
+
+            _boundWidth = area.BoundWidth;
+            _boundHeight = area.BoundHeight;
+
+            verticalSpace = (_boundHeight - VerticalStartSpace - VerticalEndSpace) / Math.Max(1, numHorizontalLines - 1);
+
+            // For overlays on categorical charts (Bar, StackedBar, etc.), we align X with the categories/indices.
+            // We assume the horizontal space is divided by the number of categories.
+            numVerticalLines = Series.Any() ? Series.Max(s => s.Data.Count) : 1;
+            horizontalSpace = _horizontalSpacePerXUnit = (_boundWidth - HorizontalStartSpace - HorizontalEndSpace) / Math.Max(1, numVerticalLines - 1);
+        }
+
+        GenerateChartLines(lowestHorizontalLine, gridYUnits, horizontalSpace, verticalSpace);
         GenerateLegends();
+        RenderOverlay();
     }
 
     private void ComputeYAxisScale(out T gridYUnits, out int lowestHorizontalLine, out int numHorizontalLines)
@@ -151,12 +196,12 @@ partial class ScatterPlot<T> : MudAxisLineChartBase<T, ScatterPlotChartOptions> 
 
     protected override TReturn GetDataValue<TReturn>(int seriesIndex, int dataPointIndex)
     {
-        return (TReturn)Convert.ChangeType(Series[seriesIndex].Data.Points[dataPointIndex].Y, typeof(TReturn));
+        return (TReturn)Convert.ChangeType(Series[seriesIndex].Data[dataPointIndex].Y, typeof(TReturn));
     }
 
     protected override string GetLabelXValue(int seriesIndex, int dataPointIndex)
     {
-        var x = Series[seriesIndex].Data.Points[dataPointIndex].X;
+        var x = Series[seriesIndex].Data[dataPointIndex].X;
         if (x is T xVal)
         {
             return ChartOptions?.XAxisFormat is { } fmt
@@ -169,7 +214,7 @@ partial class ScatterPlot<T> : MudAxisLineChartBase<T, ScatterPlotChartOptions> 
 
     protected override (double x, double y) GetXYForDataPoint(int seriesIndex, int dataPointIndex, int lowestHorizontalLine, T gridYUnits, double horizontalSpace, double verticalSpace)
     {
-        var point = Series[seriesIndex].Data.Points[dataPointIndex];
+        var point = Series[seriesIndex].Data[dataPointIndex];
 
         // Map Y to screen coordinate
         var gridValueY = ((double.CreateSaturating(point.Y) / double.CreateSaturating(gridYUnits)) - lowestHorizontalLine) * verticalSpace;
@@ -181,6 +226,11 @@ partial class ScatterPlot<T> : MudAxisLineChartBase<T, ScatterPlotChartOptions> 
         {
             var gridValueX = ((double.CreateSaturating(xVal) / double.CreateSaturating(_gridXUnits)) - _lowestVerticalLine) * _horizontalSpacePerXUnit;
             screenX = HorizontalStartSpace + gridValueX;
+        }
+        else if (IsOverlayChart || point.X is null)
+        {
+            // Fallback to index-based X for overlays or if X is missing
+            screenX = HorizontalStartSpace + (dataPointIndex * horizontalSpace);
         }
         else
         {

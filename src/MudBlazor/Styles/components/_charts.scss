@@ -190,3 +190,10 @@
   letter-spacing: var(--mud-typography-caption-letterspacing);
   text-transform: var(--mud-typography-caption-text-transform);
 }
+
+.mud-chart-crosshair {
+  stroke: var(--mud-palette-divider);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+  pointer-events: none;
+}

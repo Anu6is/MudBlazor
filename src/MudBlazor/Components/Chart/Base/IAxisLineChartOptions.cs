@@ -55,6 +55,26 @@ public interface IAxisLineChartOptions : IAxisChartOptions
     /// Optional per-series display overrides.
     /// </summary>
     public IDictionary<IChartSeries, SeriesDisplayOverride> SeriesDisplayOverrides { get; set; }
+
+    /// <summary>
+    /// If true, the crosshair will be displayed.
+    /// </summary>
+    public bool ShowCrosshair { get; set; }
+
+    /// <summary>
+    /// Specifies the visibility of crosshair lines.
+    /// </summary>
+    public CrosshairMode CrosshairMode { get; set; }
+
+    /// <summary>
+    /// Specifies how tooltips are displayed.
+    /// </summary>
+    public TooltipMode TooltipMode { get; set; }
+
+    /// <summary>
+    /// Specifies how the crosshair snaps to data points.
+    /// </summary>
+    public CrosshairSnap CrosshairSnap { get; set; }
 }
 
 /// <summary>

@@ -134,7 +134,7 @@ public abstract class MudAxisChartBase<T, TOptions> : MudChartBase<T, TOptions>,
 
     protected double _boundWidth = BoundWidthDefault;
     protected double _boundHeight = BoundHeightDefault;
-    private ElementSize? _elementSize;
+    protected ElementSize? _elementSize;
     protected ElementSize? _yAxisLabelSize;
     protected ElementSize? _xAxisLabelSize;
 

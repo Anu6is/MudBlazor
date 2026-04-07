@@ -52,6 +52,26 @@ public abstract class DefaultAxisLineChartOptions : DefaultAxisChartOptions, IAx
     public InterpolationOption InterpolationOption { get; set; } = InterpolationOption.Straight;
 
     /// <summary>
+    /// If true, the crosshair will be displayed.
+    /// </summary>
+    public bool ShowCrosshair { get; set; }
+
+    /// <summary>
+    /// Specifies the visibility of crosshair lines.
+    /// </summary>
+    public CrosshairMode CrosshairMode { get; set; } = CrosshairMode.Vertical;
+
+    /// <summary>
+    /// Specifies how tooltips are displayed.
+    /// </summary>
+    public TooltipMode TooltipMode { get; set; } = TooltipMode.Single;
+
+    /// <summary>
+    /// Specifies how the crosshair snaps to data points.
+    /// </summary>
+    public CrosshairSnap CrosshairSnap { get; set; } = CrosshairSnap.Index;
+
+    /// <summary>
     /// Optional per-series display overrides.
     /// </summary>
     public IDictionary<IChartSeries, SeriesDisplayOverride> SeriesDisplayOverrides

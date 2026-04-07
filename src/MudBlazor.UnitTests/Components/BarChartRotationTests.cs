@@ -6,6 +6,8 @@ using Bunit;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using MudBlazor.Charts;
+using MudBlazor.Interop;
+using System.Globalization;
 using MudBlazor.UnitTests.TestComponents;
 using NUnit.Framework;
 
@@ -15,8 +17,9 @@ namespace MudBlazor.UnitTests.Components
     public class BarChartRotationTests : BunitTest
     {
         [Test]
-        public void BarChart_RotatedLabels_ShouldHaveCorrectOffset()
+        public async Task BarChart_RotatedLabels_ShouldHaveCorrectOffset()
         {
+            Context.JSInterop.Setup<ElementSize>("mudGetSvgBBox", _ => true).SetResult(new ElementSize { Width = 50, Height = 20 });
             var series = new List<ChartSeries<double>>()
             {
                 new() { Name = "Series 1", Data = new double[] { 1, 2, 3 } },
@@ -36,29 +39,28 @@ namespace MudBlazor.UnitTests.Components
                 .Add(p => p.Width, "600px")
             );
 
-            // Initially _xAxisLabelSize is null, so it uses default 20.
-            // XAxisLabelOffset = 20 (since rotation != 0)
-            // VerticalStartSpace = Max(10 + 0, 30) = 30.
-            // Height = "400px" -> _boundHeight = 350. (Default since Width/Height are "80%" by default in MudChartBase, but we passed "400px")
-            // Wait, MudChart height is "80%" by default. In MudChart.razor.cs it doesn't seem to set _boundHeight from Height parameter unless MatchBoundsToSize is true.
-            // MudAxisChartBase.SetBounds:
-            // if (MatchBoundsToSize) { ... } else { _boundWidth = 700; _boundHeight = 350; }
-            // So _boundHeight = 350.
-            // Y = 350 - (20 + 10) = 320.
+            // XAxisLabelOffset = Height (20) + 10 = 30
+            // _boundHeight = 350.
+            // Y = 350 - 30 = 320.
 
-            var texts = comp.FindAll("g.mud-charts-xaxis text");
-            foreach (var text in texts)
+            await comp.WaitForAssertionAsync(() =>
             {
-                var y = double.Parse(text.GetAttribute("y"));
-                var textAnchor = text.GetAttribute("text-anchor");
-                y.Should().Be(320);
-                textAnchor.Should().Be("end");
-            }
+                var texts = comp.FindAll("g.mud-charts-xaxis text");
+                texts.Should().NotBeEmpty();
+                foreach (var text in texts)
+                {
+                    var y = double.Parse(text.GetAttribute("y"), CultureInfo.InvariantCulture);
+                    var textAnchor = text.GetAttribute("text-anchor");
+                    y.Should().Be(320);
+                    textAnchor.Should().Be("end");
+                }
+            });
         }
 
         [Test]
-        public void BarChart_NoRotationLabels_ShouldHaveCorrectOffset()
+        public async Task BarChart_NoRotationLabels_ShouldHaveCorrectOffset()
         {
+            Context.JSInterop.Setup<ElementSize>("mudGetSvgBBox", _ => true).SetResult(new ElementSize { Width = 50, Height = 20 });
             var series = new List<ChartSeries<double>>()
             {
                 new() { Name = "Series 1", Data = new double[] { 1, 2, 3 } },
@@ -78,20 +80,22 @@ namespace MudBlazor.UnitTests.Components
                 .Add(p => p.Width, "600px")
             );
 
-            // Initially _xAxisLabelSize is null, so it uses default 20.
-            // XAxisLabelOffset = 20 / 2 = 10 (since rotation == 0)
-            // VerticalStartSpace = Max(10 + 0, 30) = 30.
+            // XAxisLabelOffset = Height (20) / 2 = 10
             // _boundHeight = 350.
             // Y = 350 - 10 = 340.
 
-            var texts = comp.FindAll("g.mud-charts-xaxis text");
-            foreach (var text in texts)
+            await comp.WaitForAssertionAsync(() =>
             {
-                var y = double.Parse(text.GetAttribute("y"));
-                var textAnchor = text.GetAttribute("text-anchor");
-                y.Should().Be(340);
-                textAnchor.Should().Be("middle");
-            }
+                var texts = comp.FindAll("g.mud-charts-xaxis text");
+                texts.Should().NotBeEmpty();
+                foreach (var text in texts)
+                {
+                    var y = double.Parse(text.GetAttribute("y"), CultureInfo.InvariantCulture);
+                    var textAnchor = text.GetAttribute("text-anchor");
+                    y.Should().Be(340);
+                    textAnchor.Should().Be("middle");
+                }
+            });
         }
     }
 }

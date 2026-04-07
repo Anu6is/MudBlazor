@@ -21,6 +21,8 @@ public partial class BaseAxisChart<T, TChartOptions> : MudComponentBase
 {
     private const int AxisTitleOffset = 0;
 
+    private static readonly DoubleEpsilonEqualityComparer EpsilonComparer = new(0.01);
+
     [Inject]
     private IJSRuntime JsRuntime { get; set; } = null!;
 
@@ -250,9 +252,8 @@ public partial class BaseAxisChart<T, TChartOptions> : MudComponentBase
         var xAxisLabelSize = _xAxisGroupElementReference != null ? await JsRuntime.InvokeAsync<ElementSize>("mudGetSvgBBox", _xAxisGroupElementReference) : null;
 
         var axisChanged = false;
-        var comparer = new DoubleEpsilonEqualityComparer(0.01);
 
-        if (yAxisLabelSize != null && (YAxisLabelSize == null || !comparer.Equals(yAxisLabelSize.Width, YAxisLabelSize.Width)))
+        if (yAxisLabelSize != null && (YAxisLabelSize == null || !EpsilonComparer.Equals(yAxisLabelSize.Width, YAxisLabelSize.Width)))
         {
             YAxisLabelSize = yAxisLabelSize;
             if (YAxisLabelSizeChanged.HasDelegate)
@@ -262,7 +263,7 @@ public partial class BaseAxisChart<T, TChartOptions> : MudComponentBase
             axisChanged = true;
         }
 
-        if (xAxisLabelSize != null && (XAxisLabelSize == null || !comparer.Equals(xAxisLabelSize.Height, XAxisLabelSize.Height)))
+        if (xAxisLabelSize != null && (XAxisLabelSize == null || !EpsilonComparer.Equals(xAxisLabelSize.Height, XAxisLabelSize.Height)))
         {
             XAxisLabelSize = xAxisLabelSize;
             if (XAxisLabelSizeChanged.HasDelegate)

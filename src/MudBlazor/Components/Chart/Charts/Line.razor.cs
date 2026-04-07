@@ -167,12 +167,6 @@ namespace MudBlazor.Charts
             return (x, y);
         }
 
-        protected override string GetDataValueAsString(int seriesIndex, int dataPointIndex)
-        {
-            var value = GetDataValue<double>(seriesIndex, dataPointIndex);
-            return value.ToString(Series[seriesIndex].TooltipYValueFormat);
-        }
-
         internal override ILineInterpolator CreateInterpolator(int seriesIndex, int lowestHorizontalLine, T gridYUnits, double horizontalSpace, double verticalSpace)
         {
             var series = Series[seriesIndex];

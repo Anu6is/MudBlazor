@@ -165,14 +165,12 @@ public abstract class MudAxisChartBase<T, TOptions> : MudChartBase<T, TOptions>,
     /// <summary>
     /// The size of the Y-axis labels.
     /// </summary>
-    [Parameter]
-    public ElementSize? YAxisLabelSize { get; set; }
+    protected ElementSize? YAxisLabelSize { get; set; }
 
     /// <summary>
     /// The size of the X-axis labels.
     /// </summary>
-    [Parameter]
-    public ElementSize? XAxisLabelSize { get; set; }
+    protected ElementSize? XAxisLabelSize { get; set; }
 
     private readonly DotNetObjectReference<MudAxisChartBase<T, TOptions>> _dotNetObjectReference;
 

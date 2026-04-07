@@ -219,7 +219,13 @@ namespace MudBlazor
                 if (DataGrid == null)
                     return false;
 
-                return DataGrid.FilterDefinitions.Any(x => x.Column?.PropertyName == Column?.PropertyName && x.Operator != null);
+                return DataGrid.FilterDefinitions.Any(x =>
+                    x.Column?.PropertyName == Column?.PropertyName &&
+                    ((x is FilterDefinition<T> filterDefinition && filterDefinition.FilterFunction is not null) ||
+                     x.Value is not null ||
+                     x.Operator is FilterOperator.String.Empty or FilterOperator.String.NotEmpty or
+                         FilterOperator.Number.Empty or FilterOperator.Number.NotEmpty or
+                         FilterOperator.DateTime.Empty or FilterOperator.DateTime.NotEmpty));
             }
         }
 
@@ -490,13 +496,17 @@ namespace MudBlazor
                 return;
             }
 
+            var initialSortDirection = Column?.InitialSortDirection ?? SortDirection.Ascending;
+
             SortDirection = SortDirection switch
             {
                 SortDirection.Ascending => SortDirection.Descending,
                 SortDirection.Descending => DataGrid.AllowUnsorted
                     ? SortDirection.None
                     : SortDirection.Ascending,
-                _ => SortDirection.Ascending
+                _ => initialSortDirection == SortDirection.None
+                    ? SortDirection.Ascending
+                    : initialSortDirection
             };
 
             if (SortDirection == SortDirection.None)
@@ -657,6 +667,20 @@ namespace MudBlazor
             }
             _filtersMenuVisible = false;
             DataGrid.DropContainerHasChanged();
+        }
+
+        /// <summary>
+        /// Closes the filter UI owned by this header cell.
+        /// </summary>
+        /// <remarks>
+        /// This method closes the column filter popover used by <see cref="DataGridFilterMode.ColumnFilterMenu"/>.
+        /// </remarks>
+        internal Task CloseFilterAsync()
+        {
+            _filtersMenuVisible = false;
+            StateHasChanged();
+            DataGrid.DropContainerHasChanged();
+            return Task.CompletedTask;
         }
 
         private async Task CheckedChangedAsync(bool value)

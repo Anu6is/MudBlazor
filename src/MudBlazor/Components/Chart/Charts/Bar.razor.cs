@@ -27,6 +27,7 @@ namespace MudBlazor.Charts
         private double _barGap;
 
         private const double MinBarWidth = 6;
+        private const double BarWidthFactor = 0.25;
 
         protected override void OnInitialized()
         {
@@ -249,7 +250,7 @@ namespace MudBlazor.Charts
             if (fixedWidth.HasValue)
             {
                 _barWidth = fixedWidth.Value;
-                _barGap = _barWidth * 0.25;
+                _barGap = _barWidth * BarWidthFactor;
                 _barGroupWidth = (seriesCount * _barWidth) + ((seriesCount - 1) * _barGap);
                 return;
             }

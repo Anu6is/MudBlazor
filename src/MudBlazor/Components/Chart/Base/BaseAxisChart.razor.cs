@@ -255,20 +255,18 @@ public partial class BaseAxisChart<T, TChartOptions> : MudComponentBase
 
         if (yAxisLabelSize != null && (YAxisLabelSize == null || !EpsilonComparer.Equals(yAxisLabelSize.Width, YAxisLabelSize.Width)))
         {
-            YAxisLabelSize = yAxisLabelSize;
             if (YAxisLabelSizeChanged.HasDelegate)
             {
-                await YAxisLabelSizeChanged.InvokeAsync(YAxisLabelSize);
+                await YAxisLabelSizeChanged.InvokeAsync(yAxisLabelSize);
             }
             axisChanged = true;
         }
 
         if (xAxisLabelSize != null && (XAxisLabelSize == null || !EpsilonComparer.Equals(xAxisLabelSize.Height, XAxisLabelSize.Height)))
         {
-            XAxisLabelSize = xAxisLabelSize;
             if (XAxisLabelSizeChanged.HasDelegate)
             {
-                await XAxisLabelSizeChanged.InvokeAsync(XAxisLabelSize);
+                await XAxisLabelSizeChanged.InvokeAsync(xAxisLabelSize);
             }
             axisChanged = true;
         }

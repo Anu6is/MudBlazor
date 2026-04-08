@@ -95,10 +95,19 @@ public abstract class MudAxisChartBase<T, TOptions> : MudChartBase<T, TOptions>,
     /// </summary>
     protected const double HorizontalStartSpaceBuffer = 10.0;
 
+    protected const double MinHorizontalStartSpace = 30.0;
+    protected const double YAxisTitleSpace = 20.0;
+    protected const double MinVerticalStartSpace = 30.0;
+    protected const double DefaultXAxisLabelHeight = 20.0;
+    protected const double DefaultYAxisLabelWidth = 0.0;
+    protected const double RotatedXAxisLabelBuffer = 10.0;
+    protected const double YAxisLabelXOffset = 10.0;
+    protected const double YAxisLabelYOffset = 5.0;
+
     /// <summary>
     /// The horizontal start space for the chart.
     /// </summary>
-    protected double HorizontalStartSpace => Math.Max(HorizontalStartSpaceBuffer + Math.Ceiling(YAxisLabelSize?.Width ?? 0), 30) + (ChartOptions?.YAxisTitle != null ? 20 : 0);
+    protected double HorizontalStartSpace => Math.Max(HorizontalStartSpaceBuffer + Math.Ceiling(YAxisLabelSize?.Width ?? DefaultYAxisLabelWidth), MinHorizontalStartSpace) + (ChartOptions?.YAxisTitle != null ? YAxisTitleSpace : 0);
     /// <summary>
     /// The horizontal end space for the chart.
     /// </summary>
@@ -116,13 +125,13 @@ public abstract class MudAxisChartBase<T, TOptions> : MudChartBase<T, TOptions>,
         get
         {
             var rotation = ChartOptions?.XAxisLabelRotation ?? 0;
-            var height = XAxisLabelSize?.Height ?? 0;
+            var height = XAxisLabelSize?.Height ?? DefaultXAxisLabelHeight;
             if (rotation == 0)
             {
-                return Math.Max(VerticalStartSpaceBuffer + height, 30);
+                return Math.Max(VerticalStartSpaceBuffer + height, MinVerticalStartSpace);
             }
 
-            return Math.Max(VerticalStartSpaceBuffer + height + 10, 30);
+            return Math.Max(VerticalStartSpaceBuffer + height + RotatedXAxisLabelBuffer, MinVerticalStartSpace);
         }
     }
 
@@ -139,12 +148,13 @@ public abstract class MudAxisChartBase<T, TOptions> : MudChartBase<T, TOptions>,
         get
         {
             var rotation = ChartOptions?.XAxisLabelRotation ?? 0;
+            var height = Math.Ceiling(XAxisLabelSize?.Height ?? DefaultXAxisLabelHeight);
             if (rotation == 0)
             {
-                return Math.Ceiling(XAxisLabelSize?.Height ?? 20) / 2;
+                return height / 2;
             }
 
-            return Math.Ceiling(XAxisLabelSize?.Height ?? 20) + 10;
+            return height + RotatedXAxisLabelBuffer;
         }
     }
 
@@ -310,8 +320,8 @@ public abstract class MudAxisChartBase<T, TOptions> : MudChartBase<T, TOptions>,
             var startGridY = T.CreateSaturating(lowestHorizontalLine + i) * gridYUnits;
             var lineValue = new SvgText()
             {
-                X = HorizontalStartSpace - 10,
-                Y = _boundHeight - y + 5,
+                X = HorizontalStartSpace - YAxisLabelXOffset,
+                Y = _boundHeight - y + YAxisLabelYOffset,
                 Value = BuildYAxisValueString(startGridY)
             };
             HorizontalValues.Add(lineValue);

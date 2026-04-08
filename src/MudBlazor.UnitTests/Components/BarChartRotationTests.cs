@@ -1,13 +1,13 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Bunit;
 using AwesomeAssertions;
+using Bunit;
 using Microsoft.Extensions.DependencyInjection;
 using MudBlazor.Charts;
 using MudBlazor.Interop;
-using System.Globalization;
 using MudBlazor.UnitTests.TestComponents;
 using NUnit.Framework;
 

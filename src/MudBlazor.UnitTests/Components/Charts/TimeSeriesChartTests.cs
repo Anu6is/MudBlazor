@@ -401,5 +401,78 @@ namespace MudBlazor.UnitTests.Charts
             chartSeries[2].Visible.Should().BeTrue("Pressure Visible property should be true after showing");
             comp.FindAll($"path.mud-chart-line{series3}").Count.Should().Be(1, "Pressure series path should be visible");
         }
+
+        [Test]
+        public void TimeSeriesChart_RotatedLabels()
+        {
+            var mockYAxisLabelSize = new ElementSize
+            {
+                Width = 27.5,
+                Height = 14.8,
+            };
+            var mockXAxisLabelSize = new ElementSize
+            {
+                Width = 50.5,
+                Height = 14.8,
+            };
+
+            var counter = 1;
+
+            Context.JSInterop.Setup<ElementSize>("mudGetSvgBBox", args =>
+            {
+                if (counter % 2 == 0)
+                {
+                    counter++;
+                    return true;
+                }
+
+                return false;
+            }).SetResult(mockXAxisLabelSize);
+
+            Context.JSInterop.Setup<ElementSize>("mudGetSvgBBox", args =>
+            {
+                if (counter % 2 == 1)
+                {
+                    counter++;
+                    return true;
+                }
+
+                return false;
+            }).SetResult(mockYAxisLabelSize);
+
+            var time = new DateTime(2000, 1, 1);
+            var rotation = 45;
+
+            var comp = Context.Render<MudChart<double>>(parameters => parameters
+                .Add(p => p.ChartType, ChartType.Timeseries)
+                .Add(p => p.ChartSeries, [
+                    new ()
+                    {
+                        Name = "Series 1",
+                        Data = new[] {0, 1}.Select(x => new TimeValue<double>(time.AddHours(x), 1000)).ToList(),
+                        Visible = true,
+                    }
+                ])
+                .Add(p => p.ChartOptions, new TimeSeriesChartOptions()
+                {
+                    TimeLabelSpacing = TimeSpan.FromHours(1),
+                    XAxisLabelRotation = rotation
+                }));
+
+            var xAxisTexts = comp.FindAll(".mud-charts-xaxis text");
+            xAxisTexts.Should().NotBeEmpty();
+
+            foreach (var text in xAxisTexts)
+            {
+                var transform = text.GetAttribute("transform");
+                transform.Should().Contain($"rotate(-{rotation}");
+
+                var textAnchor = text.GetAttribute("text-anchor");
+                textAnchor.Should().Be("end");
+
+                var dominantBaseline = text.GetAttribute("dominant-baseline");
+                dominantBaseline.Should().Be("middle");
+            }
+        }
     }
 }

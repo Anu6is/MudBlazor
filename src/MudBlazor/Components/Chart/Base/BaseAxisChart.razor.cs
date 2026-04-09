@@ -261,7 +261,7 @@ public partial class BaseAxisChart<T, TChartOptions> : MudComponentBase
         if (yAxisLabelSize != null)
         {
             var baseline = YAxisLabelSize ?? _lastYAxisLabelSize;
-            if (baseline == null || !_epsilonComparer.Equals(yAxisLabelSize.Width, baseline.Width))
+            if (baseline == null || !_epsilonComparer.Equals(yAxisLabelSize.Width, baseline.Width) || !_epsilonComparer.Equals(yAxisLabelSize.Height, baseline.Height))
             {
                 _lastYAxisLabelSize = yAxisLabelSize;
                 if (YAxisLabelSizeChanged.HasDelegate)
@@ -276,7 +276,7 @@ public partial class BaseAxisChart<T, TChartOptions> : MudComponentBase
         if (xAxisLabelSize != null)
         {
             var baseline = XAxisLabelSize ?? _lastXAxisLabelSize;
-            if (baseline == null || !_epsilonComparer.Equals(xAxisLabelSize.Height, baseline.Height))
+            if (baseline == null || !_epsilonComparer.Equals(xAxisLabelSize.Width, baseline.Width) || !_epsilonComparer.Equals(xAxisLabelSize.Height, baseline.Height))
             {
                 _lastXAxisLabelSize = xAxisLabelSize;
                 if (XAxisLabelSizeChanged.HasDelegate)

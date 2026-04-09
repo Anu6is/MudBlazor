@@ -29,6 +29,8 @@ public partial class BaseAxisChart<T, TChartOptions> : MudComponentBase
     private ElementReference _svgRef;
     private ElementReference? _xAxisGroupElementReference;
     private ElementReference? _yAxisGroupElementReference;
+    private ElementSize? _lastMeasuredXAxisLabelSize;
+    private ElementSize? _lastMeasuredYAxisLabelSize;
 
     /// <summary>
     /// The size of the Y-axis labels.
@@ -253,8 +255,9 @@ public partial class BaseAxisChart<T, TChartOptions> : MudComponentBase
 
         var axisChanged = false;
 
-        if (yAxisLabelSize != null && (YAxisLabelSize == null || !EpsilonComparer.Equals(yAxisLabelSize.Width, YAxisLabelSize.Width)))
+        if (yAxisLabelSize != null && (_lastMeasuredYAxisLabelSize == null || !EpsilonComparer.Equals(yAxisLabelSize.Width, _lastMeasuredYAxisLabelSize.Width)))
         {
+            _lastMeasuredYAxisLabelSize = yAxisLabelSize;
             if (YAxisLabelSizeChanged.HasDelegate)
             {
                 await YAxisLabelSizeChanged.InvokeAsync(yAxisLabelSize);
@@ -262,8 +265,9 @@ public partial class BaseAxisChart<T, TChartOptions> : MudComponentBase
             axisChanged = true;
         }
 
-        if (xAxisLabelSize != null && (XAxisLabelSize == null || !EpsilonComparer.Equals(xAxisLabelSize.Height, XAxisLabelSize.Height)))
+        if (xAxisLabelSize != null && (_lastMeasuredXAxisLabelSize == null || !EpsilonComparer.Equals(xAxisLabelSize.Height, _lastMeasuredXAxisLabelSize.Height)))
         {
+            _lastMeasuredXAxisLabelSize = xAxisLabelSize;
             if (XAxisLabelSizeChanged.HasDelegate)
             {
                 await XAxisLabelSizeChanged.InvokeAsync(xAxisLabelSize);

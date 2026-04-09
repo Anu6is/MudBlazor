@@ -5,6 +5,7 @@
 using System.Numerics;
 using Microsoft.AspNetCore.Components;
 using MudBlazor.Charts;
+using MudBlazor.Extensions;
 using MudBlazor.State;
 using MudBlazor.Utilities;
 
@@ -136,6 +137,26 @@ public abstract class MudChartBase<T, TOptions> : MudComponentBase, IMudChart<T>
     public Position LegendPosition { get; set; } = Position.Bottom;
 
     /// <summary>
+    /// The fixed height of the legend when positioned at the Top or Bottom.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to 48.
+    /// </remarks>
+    [Parameter]
+    [Category(CategoryTypes.Chart.Appearance)]
+    public double LegendHeight { get; set; } = 48;
+
+    /// <summary>
+    /// The fixed width of the legend when positioned at the Start, End, Left, or Right.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to 120.
+    /// </remarks>
+    [Parameter]
+    [Category(CategoryTypes.Chart.Appearance)]
+    public double LegendWidth { get; set; } = 120;
+
+    /// <summary>
     /// The currently selected data point.
     /// </summary>
     /// <remarks>
@@ -197,12 +218,59 @@ public abstract class MudChartBase<T, TOptions> : MudComponentBase, IMudChart<T>
     /// </summary>
     public abstract void RebuildChart();
 
-    private Position ConvertLegendPosition(Position position) => position switch
+    protected string GetChartWidth()
     {
-        Position.Start => RightToLeft ? Position.Right : Position.Left,
-        Position.End => RightToLeft ? Position.Left : Position.Right,
-        _ => position
-    };
+        var width = MatchBoundsToSize ? "100%" : Width;
+        if (ChartOptions is { ShowLegend: false })
+        {
+            return width;
+        }
+
+        var position = GetEffectiveLegendPosition();
+        if (position is Position.Left or Position.Right)
+        {
+            return $"calc({EnsureUnit(width)} - {LegendWidth.ToInvariantString()}px)";
+        }
+
+        return width;
+    }
+
+    protected string GetChartHeight()
+    {
+        var height = MatchBoundsToSize ? "100%" : Height;
+        if (ChartOptions is { ShowLegend: false })
+        {
+            return height;
+        }
+
+        var position = GetEffectiveLegendPosition();
+        if (position is Position.Top or Position.Bottom)
+        {
+            return $"calc({EnsureUnit(height)} - {LegendHeight.ToInvariantString()}px)";
+        }
+
+        return height;
+    }
+
+    private string EnsureUnit(string value)
+    {
+        if (string.IsNullOrEmpty(value)) return "0px";
+        if (char.IsDigit(value[^1])) return value + "px";
+        return value;
+    }
+
+    protected Position GetEffectiveLegendPosition()
+    {
+        var position = LegendPosition;
+        return position switch
+        {
+            Position.Start => RightToLeft ? Position.Right : Position.Left,
+            Position.End => RightToLeft ? Position.Left : Position.Right,
+            _ => position
+        };
+    }
+
+    private Position ConvertLegendPosition(Position position) => GetEffectiveLegendPosition();
 
     /// <summary>
     /// Sets the selected index.

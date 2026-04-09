@@ -6,7 +6,7 @@
 
 @if (ShowLegend is not false)
 {
-    <div @attributes="UserAttributes" class="mud-chart-legend">
+    <div @attributes="UserAttributes" class="mud-chart-legend" style="@StyleName">
         @foreach (var item in Data)        
         {
             <div class="@($"mud-chart-legend-item {(CanHideSeries ? "" : "pa-1")}")"

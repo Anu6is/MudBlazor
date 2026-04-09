@@ -11,8 +11,8 @@
                        TChartOptions="StackedBarChartOptions"
                        AxisChanged="AxisChanged"
                        ElementRefChanged="SetElementReference"
-                       Width="@Width"
-                       Height="@Height"
+                       Width="@GetChartWidth()"
+                       Height="@GetChartHeight()"
                        ViewBoxWidth="_boundWidth"
                        ViewBoxHeight="_boundHeight"
                        MatchBoundsToSize="@MatchBoundsToSize"
@@ -36,6 +36,7 @@
         </BaseAxisChart>
 
         <Legend T="T" Data="@Legends" ShowLegend="@ChartOptions?.ShowLegend" CanHideSeries="@CanHideSeries"
+                LegendPosition="@LegendPosition" LegendHeight="@LegendHeight" LegendWidth="@LegendWidth"
                 ChartPalette="@LegendPalette" OnLegendSelected="async (i) => await SetSelectedIndexAsync(i)" />
     </div>
 }

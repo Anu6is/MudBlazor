@@ -1,5 +1,7 @@
 ﻿using System.Numerics;
 using Microsoft.AspNetCore.Components;
+using MudBlazor.Extensions;
+using MudBlazor.Utilities;
 
 namespace MudBlazor.Charts
 {
@@ -33,12 +35,18 @@ namespace MudBlazor.Charts
         [Parameter]
         public string[]? ChartPalette { get; set; }
 
+
         /// <summary>
         /// Raised when a legend item is clicked.
         /// </summary>
         [Parameter]
         [Category(CategoryTypes.Chart.Behavior)]
         public EventCallback<int> OnLegendSelected { get; set; }
+
+        private string StyleName => new StyleBuilder()
+            .AddStyle("height", $"{LegendHeight.ToInvariantString()}px", LegendPosition is Position.Top or Position.Bottom)
+            .AddStyle("width", $"{LegendWidth.ToInvariantString()}px", LegendPosition is Position.Left or Position.Right or Position.Start or Position.End)
+            .Build();
 
         protected override void OnParametersSet()
         {

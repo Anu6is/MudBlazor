@@ -919,7 +919,7 @@ namespace MudBlazor.UnitTests.Components
         }
 
         [Test]
-        public async Task Chart_ShouldShrink_WhenShrinkChartByLegendSizeIsEnabled()
+        public void Chart_ShouldShrink_WhenShrinkChartByLegendSizeIsEnabled()
         {
             var comp = Context.Render<ChartShrinkTest>();
 

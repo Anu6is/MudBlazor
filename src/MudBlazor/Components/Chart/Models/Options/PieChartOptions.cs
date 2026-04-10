@@ -26,5 +26,6 @@ public class PieChartOptions : DefaultRadialChartOptions, IHasValueLabelOptions
         TooltipTitleFormat = options.TooltipTitleFormat,
         TooltipSubtitleFormat = options.TooltipSubtitleFormat,
         ChartPalette = options.ChartPalette,
+        ShrinkChartByLegendSize = options.ShrinkChartByLegendSize,
     };
 }

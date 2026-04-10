@@ -20,5 +20,6 @@ public class LineChartOptions : DefaultAxisLineChartOptions, IAxisLineChartOptio
         TooltipTitleFormat = options.TooltipTitleFormat,
         TooltipSubtitleFormat = options.TooltipSubtitleFormat,
         ChartPalette = options.ChartPalette,
+        ShrinkChartByLegendSize = options.ShrinkChartByLegendSize,
     };
 }

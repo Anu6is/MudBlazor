@@ -97,6 +97,43 @@
   min-width: unset;
 }
 
+.mud-chart-shrink {
+  // Allow the container to be the size requested by the user
+  // and have its children (chart and legend) fit within it.
+
+  &.mud-chart-legend-bottom, &.mud-chart-legend-top {
+    flex-direction: column;
+    overflow: hidden;
+
+    .mud-chart-legend {
+      flex: 0 0 auto;
+    }
+
+    svg, .mud-chart-sankey, .mud-chart-heatmap {
+      flex: 1 1 auto;
+      min-height: 0; // Allow shrinking
+      height: 100%;
+      width: 100%;
+    }
+  }
+
+  &.mud-chart-legend-right, &.mud-chart-legend-left {
+    flex-direction: row;
+    overflow: hidden;
+
+    .mud-chart-legend {
+      flex: 0 0 auto;
+    }
+
+    svg, .mud-chart-sankey, .mud-chart-heatmap {
+      flex: 1 1 auto;
+      min-width: 0; // Allow shrinking
+      height: 100%;
+      width: 100%;
+    }
+  }
+}
+
 .mud-charts-yaxis {
   fill: var(--mud-palette-text-primary);
 }

@@ -9,7 +9,7 @@
 }
 
 <div @ref="_elementReference" class="mud-chart-sankey" style="width:@Width; height:@Height">
-    <svg @attributes="UserAttributes" class="mud-chart-sankey mud-ltr" width="@Width" height="@Height" viewBox="0 0 @_boundWidth.ToStr() @_boundHeight.ToStr()">
+    <svg @attributes="UserAttributes" class="mud-chart-sankey mud-ltr" width="@(MatchBoundsToSize || ChartOptions?.ShrinkChartByLegendSize == true ? "100%" : Width)" height="@Height" viewBox="0 0 @_boundWidth.ToStr() @_boundHeight.ToStr()">
         <defs>
             @foreach (var edge in EdgePaths)
             {

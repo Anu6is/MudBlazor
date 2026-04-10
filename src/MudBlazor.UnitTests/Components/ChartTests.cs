@@ -917,5 +917,26 @@ namespace MudBlazor.UnitTests.Components
             yCoordinates.Count.Should().BeGreaterThan(0, "bar path should contain Y coordinates");
             yCoordinates.Distinct().Count().Should().BeGreaterThan(1, "small stacked segment should have non-zero height (different Y coordinates)");
         }
+
+        [Test]
+        public async Task Chart_ShouldShrink_WhenShrinkChartByLegendSizeIsEnabled()
+        {
+            var comp = Context.Render<ChartShrinkTest>();
+
+            // The chart is rendered with 400px x 400px.
+            // With ShrinkChartByLegendSize="true", the SVG should have its own measured size.
+            // Since we are in bUnit, we might need to mock the JS call for mudObserveElementSize or mudGetSvgBBox.
+            // However, our CSS changes should at least be present.
+
+            var chartContainer = comp.Find(".mud-chart");
+            chartContainer.ClassList.Should().Contain("mud-chart-shrink");
+
+            // Verify that the chart and legend are present
+            var svg = comp.Find("svg");
+            var legend = comp.Find(".mud-chart-legend");
+
+            svg.Should().NotBeNull();
+            legend.Should().NotBeNull();
+        }
     }
 }

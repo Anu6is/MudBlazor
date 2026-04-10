@@ -39,6 +39,14 @@ public abstract class DefaultChartOptions : IChartOptions
     public virtual string? TooltipSubtitleFormat { get; set; }
 
     /// <summary>
+    /// If true, the chart will shrink to accommodate the legend within the defined width and height.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to <c>false</c>.
+    /// </remarks>
+    public bool ShrinkChartByLegendSize { get; set; } = false;
+
+    /// <summary>
     /// The list of colors applied to series values.
     /// </summary>
     /// <remarks>

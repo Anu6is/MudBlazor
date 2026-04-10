@@ -45,6 +45,11 @@ public partial class MudChart<T> where T : struct, INumber<T>, IMinMaxValue<T>, 
             ChartOptions options => GetChartTypeOptions(options),
             _ => ChartOptions
         };
+
+        if (_chartOptions is not null)
+        {
+            _chartOptions.ShrinkChartByLegendSize = ShrinkChartByLegendSize;
+        }
     }
 
     protected override void OnAfterRender(bool firstRender)

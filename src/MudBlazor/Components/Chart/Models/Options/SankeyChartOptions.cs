@@ -137,5 +137,6 @@ public class SankeyChartOptions : DefaultChartOptions
         TooltipTitleFormat = options.TooltipTitleFormat,
         TooltipSubtitleFormat = options.TooltipSubtitleFormat,
         ChartPalette = options.ChartPalette,
+        ShrinkChartByLegendSize = options.ShrinkChartByLegendSize,
     };
 }

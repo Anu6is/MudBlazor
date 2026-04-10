@@ -8,6 +8,7 @@
                      ElementRefChanged="SetElementReference"
                      Width="@Width"
                      Height="@Height"
+                     MatchBoundsToSize="@(MatchBoundsToSize || ChartOptions?.ShrinkChartByLegendSize == true)"
                      Paths="@_paths"
                      Radius="@Radius"
                      ChartClass="mud-chart-pie"

@@ -1,0 +1,19 @@
+@using MudBlazor
+@using MudBlazor.Charts
+
+<MudChart ChartType="ChartType.Bar"
+          Width="400px"
+          Height="400px"
+          ChartSeries="@_series"
+          ChartLabels="@_labels"
+          ShrinkChartByLegendSize="true"
+          MatchBoundsToSize="true" />
+
+@code {
+    private List<ChartSeries<double>> _series = new()
+    {
+        new() { Name = "Series 1", Data = new double[] { 10, 20 } },
+        new() { Name = "Series 2", Data = new double[] { 30, 40 } }
+    };
+    private string[] _labels = { "Label 1", "Label 2" };
+}

@@ -21,15 +21,18 @@
                          ForId="@InputElementId"
                          @onmousedown="@HandleMouseDown">
             <InputContent>
+                @{
+                    var val = Strict && !IsValueInList ? null : ReadText;
+                }
                 <MudInput @ref="_elementReference"
-                          InputType="@(CanRenderValue || (Strict && !IsValueInList) ? InputType.Hidden : InputType.Text)"
+                          InputType="InputType.Hidden"
                           Class="@InputClassname"
                           Margin="@Margin"
                           Placeholder="@Placeholder"
                           Label="@Label"
                           Variant="@Variant"
                           Typo="@Typo"
-                          Value="@(Strict && !IsValueInList ? null : ReadText)"
+                          Value="@val"
                           Underline="@Underline"
                           Disabled="@GetDisabledState()"
                           ReadOnly="true"
@@ -49,12 +52,20 @@
                           OnClearButtonClick="@(async (e) => await SelectClearButtonClickHandlerAsync(e))"
                           @attributes="UserAttributes"
                           OnBlur="@OnBlurAsync"
-                          ShrinkLabel="@(ShrinkLabel || CanRenderValue)"
+                          ShrinkLabel="@(ShrinkLabel || CanRenderValue || !string.IsNullOrWhiteSpace(val) || _isFocused)"
                           InputId="@InputElementId"
                           Required="@Required">
                     @if (CanRenderValue)
                     {
                         @GetSelectedValuePresenter()
+                    }
+                    else if (!string.IsNullOrWhiteSpace(val))
+                    {
+                        @val
+                    }
+                    else
+                    {
+                        <span class="mud-select-placeholder">@Placeholder</span>
                     }
                 </MudInput>
                 @if (FitContent)

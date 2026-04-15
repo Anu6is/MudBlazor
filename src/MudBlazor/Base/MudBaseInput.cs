@@ -19,7 +19,7 @@ namespace MudBlazor
         /// This field is set to <c>true</c> to prevent validation from occurring more than once during a validation cycle.  Each change in the <see cref="Value"/> will reset this field to <c>false</c>.
         /// </remarks>
         private bool _validated;
-        protected bool _isFocused;
+        protected internal bool _isFocused;
         protected bool _forceTextUpdate;
 
         /// <summary>

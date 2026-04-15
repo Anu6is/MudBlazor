@@ -424,7 +424,7 @@ namespace MudBlazor.UnitTests.Components
             await comp.WaitForAssertionAsync(() => select.Instance.ReadValue.Should().Be(2));
             select.Instance.ReadText.Should().Be("2");
             comp.FindComponent<MudInput<string>>().Instance.ReadValue.Should().Be("2");
-            comp.FindComponent<MudInput<string>>().Instance.InputType.Should().Be(InputType.Text); // because list item has no render fragment, so we show it as text
+            comp.FindComponent<MudInput<string>>().Instance.InputType.Should().Be(InputType.Hidden); // MudSelect now always uses Hidden InputType
         }
 
         /// <summary>
@@ -542,14 +542,14 @@ namespace MudBlazor.UnitTests.Components
 
             select.Instance.ReadValue.Should().Be(1);
             select.Instance.ReadText.Should().Be("1");
-            comp.Find("div.mud-input-slot").Attributes["style"].Value.Should().Contain("display:none");
+            comp.Find("div.mud-input-slot").Attributes["style"].Value.Should().Contain("display:inline");
 
             await input.MouseDownAsync();
             await comp.WaitForAssertionAsync(() => comp.FindAll("div.mud-list-item").Count.Should().BeGreaterThan(0));
             var items = comp.FindAll("div.mud-list-item").ToArray();
             await items[1].ClickAsync();
             await comp.WaitForAssertionAsync(() => comp.Find("div.mud-popover").ClassList.Should().NotContain("mud-popover-open"));
-            await comp.WaitForAssertionAsync(() => comp.Find("div.mud-input-slot").Attributes["style"].Value.Should().Contain("display:none"));
+            await comp.WaitForAssertionAsync(() => comp.Find("div.mud-input-slot").Attributes["style"].Value.Should().Contain("display:inline"));
             select.Instance.ReadValue.Should().Be(2);
             select.Instance.ReadText.Should().Be("2");
         }
@@ -2016,7 +2016,9 @@ namespace MudBlazor.UnitTests.Components
 
             displaySlots = comp.FindAll("div.mud-input-slot");
             displaySlot = displaySlots.FirstOrDefault(x => x.GetAttribute("style")?.Contains("display:inline") == true || x.GetAttribute("style")?.Contains("display: inline") == true);
-            displaySlot.Should().BeNull("because ToStringFunc should take precedence over RenderFragment when it returns a non-null value");
+            displaySlot.Should().NotBeNull("because we are now always using a div for display");
+            displaySlot.InnerHtml.Should().NotContain("custom-render", "because ToStringFunc should take precedence over RenderFragment when it returns a non-null value");
+            displaySlot.TextContent.Trim().Should().Be("ITEM2");
 
             var input = comp.Find("input");
             input.GetAttribute("value").Should().Be("ITEM2");

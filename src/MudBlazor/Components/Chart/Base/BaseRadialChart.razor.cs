@@ -38,6 +38,13 @@ public partial class BaseRadialChart<T, TChartOptions> : MudComponentBase
     public string Height { get; set; } = string.Empty;
 
     /// <summary>
+    /// Make the chart fill the parent
+    /// </summary>
+    [Parameter]
+    [Category(CategoryTypes.Chart.Appearance)]
+    public bool MatchBoundsToSize { get; set; }
+
+    /// <summary>
     /// The radius of the chart.
     /// </summary>
     [Parameter]

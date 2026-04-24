@@ -33,4 +33,9 @@ public interface IChartOptions
     /// The format string for tooltip subtitles.
     /// </summary>
     public string? TooltipSubtitleFormat { get; set; }
+
+    /// <summary>
+    /// If true, the chart will shrink to accommodate the legend within the defined width and height.
+    /// </summary>
+    public bool ShrinkChartByLegendSize { get; set; }
 }

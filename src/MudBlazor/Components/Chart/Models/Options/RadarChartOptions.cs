@@ -117,5 +117,6 @@ public class RadarChartOptions : DefaultRadialChartOptions, IRadialChartOptions,
         TooltipTitleFormat = options.TooltipTitleFormat,
         TooltipSubtitleFormat = options.TooltipSubtitleFormat,
         ChartPalette = options.ChartPalette,
+        ShrinkChartByLegendSize = options.ShrinkChartByLegendSize,
     };
 }

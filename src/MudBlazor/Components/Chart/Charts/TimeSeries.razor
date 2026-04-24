@@ -15,7 +15,7 @@
                        Height="@Height"
                        ViewBoxWidth="_boundWidth"
                        ViewBoxHeight="@(_boundHeight)"
-                       MatchBoundsToSize="@MatchBoundsToSize"
+                       MatchBoundsToSize="@(MatchBoundsToSize || ChartOptions?.ShrinkChartByLegendSize == true)"
                        ChartClass="mud-chart-line"
                        ChartSeries="@ChartSeries"
                        ChartLabels="@ChartLabels"

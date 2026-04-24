@@ -126,6 +126,16 @@ public abstract class MudChartBase<T, TOptions> : MudComponentBase, IMudChart<T>
     public bool MatchBoundsToSize { get; set; }
 
     /// <summary>
+    /// If true, the chart will shrink to accommodate the legend within the defined width and height.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to <c>false</c>.
+    /// </remarks>
+    [Parameter]
+    [Category(CategoryTypes.Chart.Appearance)]
+    public bool ShrinkChartByLegendSize { get; set; }
+
+    /// <summary>
     /// The location of series labels.
     /// </summary>
     /// <remarks>
@@ -173,6 +183,7 @@ public abstract class MudChartBase<T, TOptions> : MudComponentBase, IMudChart<T>
     protected string Classname => new CssBuilder("mud-chart")
         .AddClass($"mud-chart-legend-{ConvertLegendPosition(LegendPosition).ToStringFast(true)}")
         .AddClass("mud-chart-fill-bounds", MatchBoundsToSize)
+        .AddClass("mud-chart-shrink", ShrinkChartByLegendSize)
         .AddClass(Class)
         .Build();
 

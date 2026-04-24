@@ -13,7 +13,7 @@
                    Height="@Height"
                    ViewBoxWidth="_boundWidth"
                    ViewBoxHeight="_boundHeight"
-                   MatchBoundsToSize="@MatchBoundsToSize"
+                       MatchBoundsToSize="@(MatchBoundsToSize || ChartOptions?.ShrinkChartByLegendSize == true)"
                    ChartClass="mud-chart-scatter"
                    ChartSeries="@ChartSeries"
                    ChartLabels="@ChartLabels"

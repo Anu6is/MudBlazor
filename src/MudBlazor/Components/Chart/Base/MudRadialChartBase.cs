@@ -348,9 +348,9 @@ public abstract class MudRadialChartBase<T, TOptions> : MudChartBase<T, TOptions
     {
         // Normalize angles to [0, 2π)
         const double twoPi = 2 * Math.PI;
-        angle = (angle % twoPi + twoPi) % twoPi;
-        start = (start % twoPi + twoPi) % twoPi;
-        end = (end % twoPi + twoPi) % twoPi;
+        angle = ((angle % twoPi) + twoPi) % twoPi;
+        start = ((start % twoPi) + twoPi) % twoPi;
+        end = ((end % twoPi) + twoPi) % twoPi;
 
         // If start and end are equal (after normalization), it represents a full circle
         if (Math.Abs(start - end) < 1e-10)

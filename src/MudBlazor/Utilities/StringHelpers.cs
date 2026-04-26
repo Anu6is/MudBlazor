@@ -13,6 +13,7 @@ internal static partial class StringHelpers
     public static string ToS(double value, string? format = null)
     {
         value = Math.Round(value, 4);
+
         if (value == 0)
         {
             value = 0;

@@ -54,7 +54,7 @@ namespace MudBlazor.Charts
 
                 var data = normalizedData[i];
                 var actualValue = T.Max(T.Zero, chartData[i]);
-                var radians = (sweepAngle * Math.PI / 180.0) * data;
+                var radians = sweepAngle * Math.PI / 180.0 * data;
                 var coords = GetSegmentCoordinates(cumulativeRadians, radians);
                 cumulativeRadians += radians;
 
@@ -103,7 +103,7 @@ namespace MudBlazor.Charts
 
             sb.Append($"M {ToS(ToR(g.Coords.StartX, g.OuterRadius))} {ToS(ToR(g.Coords.StartY, g.OuterRadius))} ");
 
-            if (Math.Abs(g.SegmentRadians - 2 * Math.PI) < 1e-6)
+            if (Math.Abs(g.SegmentRadians - (2 * Math.PI)) < 1e-6)
             {
                 sb.Append($"A {ToS(g.OuterRadius)} {ToS(g.OuterRadius)} 0 0 1 {ToS(ToR(g.Coords.MidX, g.OuterRadius))} {ToS(ToR(g.Coords.MidY, g.OuterRadius))} ");
                 sb.Append($"A {ToS(g.OuterRadius)} {ToS(g.OuterRadius)} 0 0 1 {ToS(ToR(g.Coords.EndX, g.OuterRadius))} {ToS(ToR(g.Coords.EndY, g.OuterRadius))} ");
@@ -115,7 +115,7 @@ namespace MudBlazor.Charts
 
             sb.Append($"L {ToS(ToR(g.Coords.EndX, g.InnerRadius))} {ToS(ToR(g.Coords.EndY, g.InnerRadius))} ");
 
-            if (Math.Abs(g.SegmentRadians - 2 * Math.PI) < 1e-6)
+            if (Math.Abs(g.SegmentRadians - (2 * Math.PI)) < 1e-6)
             {
                 sb.Append($"A {ToS(g.InnerRadius)} {ToS(g.InnerRadius)} 0 0 0 {ToS(ToR(g.Coords.MidX, g.InnerRadius))} {ToS(ToR(g.Coords.MidY, g.InnerRadius))} ");
                 sb.Append($"A {ToS(g.InnerRadius)} {ToS(g.InnerRadius)} 0 0 0 {ToS(ToR(g.Coords.StartX, g.InnerRadius))} {ToS(ToR(g.Coords.StartY, g.InnerRadius))} ");
@@ -132,7 +132,7 @@ namespace MudBlazor.Charts
 
         private static (double X, double Y) GetLabelPosition(double angle, double outerRadius, double donutRatio, double radians)
         {
-            if (donutRatio >= 1 && Math.Abs(radians - 2 * Math.PI) < 1e-6)
+            if (donutRatio >= 1 && Math.Abs(radians - (2 * Math.PI)) < 1e-6)
                 return (0, 0);
 
             var radius = outerRadius * (1 - (donutRatio / 2));

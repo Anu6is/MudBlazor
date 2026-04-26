@@ -142,7 +142,7 @@ namespace MudBlazor.UnitTests.Charts
                 .Add(p => p.ChartType, ChartType.Pie)
                 .Add(p => p.ChartSeries, [data]));
 
-            comp.Markup.Should().Contain("d=\"M 0 -100 A 100 100 0 1 1 0 100 A 100 100 0 1 1 0 -100 L 0 0 Z\"");
+            comp.Markup.Should().Contain("d=\"M 0 -100 A 100 100 0 0 1 0 100 A 100 100 0 0 1 0 -100 L 0 0 Z\"");
         }
 
         [Test]

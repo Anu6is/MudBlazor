@@ -50,7 +50,7 @@ public partial class BaseRadialChart<T, TChartOptions> : MudComponentBase
     /// </summary>
     [Parameter]
     [Category(CategoryTypes.Chart.Appearance)]
-    public string ViewBox { get; set; } = "0 0 200 200";
+    public string ViewBox { get; set; } = "-100 -100 200 200";
 
     /// <summary>
     /// The SVG paths for the chart segments.

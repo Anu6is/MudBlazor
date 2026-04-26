@@ -73,7 +73,7 @@ public abstract class MudRadialChartBase<T, TOptions> : MudChartBase<T, TOptions
     /// <summary>
     /// The radius of the radial chart.
     /// </summary>
-    protected double Radius => 100;
+    protected virtual double Radius => 100;
 
     /// <summary>
     /// The bounding box of the chart arc.
@@ -273,46 +273,23 @@ public abstract class MudRadialChartBase<T, TOptions> : MudChartBase<T, TOptions
         ViewBox = GetViewBox();
     }
 
-    private string GetViewBox()
+    /// <summary>
+    /// Gets the SVG viewBox for the chart.
+    /// </summary>
+    /// <returns>A string representing the SVG viewBox.</returns>
+    protected virtual string GetViewBox()
     {
-        var startAngle = ChartOptions?.StartAngle ?? 270.0;
-        var sweepAngle = ChartOptions?.SweepAngle ?? 360.0;
-
-        if (sweepAngle >= 360.0)
-        {
-            return "-100 -100 200 200";
-        }
-
-        var startRad = startAngle * Math.PI / 180.0;
-        var sweepRad = sweepAngle * Math.PI / 180.0;
-        var endRad = startRad + sweepRad;
-
-        var xs = new List<double> { 0, Math.Cos(startRad) * 100, Math.Cos(endRad) * 100 };
-        var ys = new List<double> { 0, Math.Sin(startRad) * 100, Math.Sin(endRad) * 100 };
-
-        // Check for the 4 extreme points of the circle
-        for (var angle = 0.0; angle < 360.0; angle += 90.0)
-        {
-            var rad = angle * Math.PI / 180.0;
-            if (IsAngleBetween(rad, startRad, endRad))
-            {
-                xs.Add(Math.Cos(rad) * 100);
-                ys.Add(Math.Sin(rad) * 100);
-            }
-        }
-
-        var minX = xs.Min();
-        var maxX = xs.Max();
-        var minY = ys.Min();
-        var maxY = ys.Max();
-
-        var width = maxX - minX;
-        var height = maxY - minY;
-
-        return $"{ToS(minX)} {ToS(minY)} {ToS(width)} {ToS(height)}";
+        return $"{ToS(-Radius)} {ToS(-Radius)} {ToS(Radius * 2)} {ToS(Radius * 2)}";
     }
 
-    private static bool IsAngleBetween(double angle, double start, double end)
+    /// <summary>
+    /// Checks if an angle is between two other angles.
+    /// </summary>
+    /// <param name="angle">The angle to check.</param>
+    /// <param name="start">The start angle.</param>
+    /// <param name="end">The end angle.</param>
+    /// <returns>True if the angle is between start and end; otherwise, false.</returns>
+    protected static bool IsAngleBetween(double angle, double start, double end)
     {
         // Normalize angles to [0, 2π)
         const double twoPi = 2 * Math.PI;

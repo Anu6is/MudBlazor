@@ -85,5 +85,48 @@ namespace MudBlazor.UnitTests.Charts
             path.GetAttribute("d").Should().Contain("L 50 0");
             path.GetAttribute("d").Should().Contain("A 50 50 0 0 0 -50 0");
         }
+
+        [Test]
+        public void PieChart_SweepAngleZero_ViewBox()
+        {
+            var options = new PieChartOptions
+            {
+                StartAngle = 0,
+                SweepAngle = 0
+            };
+
+            var comp = Context.Render<Pie<double>>(parameters => parameters
+                .Add(p => p.ChartOptions, options)
+                .Add(p => p.ChartSeries, new List<ChartSeries<double>> { new() { Data = new double[] { 100 } } }));
+
+            // SweepAngle <= 0 should fallback to full-circle centered viewBox
+            var svg = comp.Find("svg");
+            svg.GetAttribute("viewBox").Should().Be("-100 -100 200 200");
+        }
+
+        [Test]
+        public void PieChart_SingleSegmentPartialSweep_NoSplit()
+        {
+            var options = new PieChartOptions
+            {
+                StartAngle = 0,
+                SweepAngle = 270
+            };
+
+            var comp = Context.Render<Pie<double>>(parameters => parameters
+                .Add(p => p.ChartOptions, options)
+                .Add(p => p.ChartSeries, new List<ChartSeries<double>> { new() { Data = new double[] { 100 } } }));
+
+            // Single segment with SweepAngle 270 should NOT split into two arcs.
+            // Normalized data will be 1.0, but segment radians will be 270 deg (1.5 PI).
+            // A 270 deg arc should have arcFlag 1 and NOT use the two-arc split workaround.
+            var path = comp.Find("path");
+            var d = path.GetAttribute("d");
+            // Check for single 'A' command (no split)
+            var arcCommandsCount = d.Split('A').Length - 1;
+            arcCommandsCount.Should().Be(1);
+            // Check for large arc flag 1
+            d.Should().Contain("A 100 100 0 1 1");
+        }
     }
 }

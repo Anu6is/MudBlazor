@@ -284,7 +284,7 @@ public abstract class MudRadialChartBase<T, TOptions> : MudChartBase<T, TOptions
     /// <returns>A string representing the SVG viewBox.</returns>
     protected virtual string GetViewBox()
     {
-        return $"{ToS(-NormalizedRadius)} {ToS(-NormalizedRadius)} {ToS(NormalizedRadius * 2)} {ToS(NormalizedRadius * 2)}";
+        return $"{ToS(-Radius)} {ToS(-Radius)} {ToS(Radius * 2)} {ToS(Radius * 2)}";
     }
 
     /// <summary>
@@ -304,8 +304,8 @@ public abstract class MudRadialChartBase<T, TOptions> : MudChartBase<T, TOptions
         var sweepRad = sweepAngle * Math.PI / 180.0;
         var endRad = startRad + sweepRad;
 
-        var xs = new List<double> { 0, Math.Cos(startRad) * NormalizedRadius, Math.Cos(endRad) * NormalizedRadius };
-        var ys = new List<double> { 0, Math.Sin(startRad) * NormalizedRadius, Math.Sin(endRad) * NormalizedRadius };
+        var xs = new List<double> { 0, Math.Cos(startRad) * Radius, Math.Cos(endRad) * Radius };
+        var ys = new List<double> { 0, Math.Sin(startRad) * Radius, Math.Sin(endRad) * Radius };
 
         // Check for the 4 extreme points of the circle
         for (var angle = 0.0; angle < 360.0; angle += 90.0)
@@ -313,8 +313,8 @@ public abstract class MudRadialChartBase<T, TOptions> : MudChartBase<T, TOptions
             var rad = angle * Math.PI / 180.0;
             if (IsAngleBetween(rad, startRad, endRad))
             {
-                xs.Add(Math.Cos(rad) * NormalizedRadius);
-                ys.Add(Math.Sin(rad) * NormalizedRadius);
+                xs.Add(Math.Cos(rad) * Radius);
+                ys.Add(Math.Sin(rad) * Radius);
             }
         }
 
@@ -323,10 +323,14 @@ public abstract class MudRadialChartBase<T, TOptions> : MudChartBase<T, TOptions
         var minY = ys.Min();
         var maxY = ys.Max();
 
-        var width = Math.Max(maxX - minX, 0.001);
-        var height = Math.Max(maxY - minY, 0.001);
+        var width = maxX - minX;
+        var height = maxY - minY;
 
-        return $"{ToS(minX)} {ToS(minY)} {ToS(width)} {ToS(height)}";
+        var centerX = (minX + maxX) / 2.0;
+        var centerY = (minY + maxY) / 2.0;
+        var viewBoxSize = Radius * 2;
+
+        return $"{ToS(centerX - Radius)} {ToS(centerY - Radius)} {ToS(viewBoxSize)} {ToS(viewBoxSize)}";
     }
 
     /// <summary>
@@ -343,10 +347,10 @@ public abstract class MudRadialChartBase<T, TOptions> : MudChartBase<T, TOptions
     protected static bool IsAngleBetween(double angle, double start, double end)
     {
         // Normalize angles to [0, 2π)
-        const double TwoPi = 2 * Math.PI;
-        angle = ((angle % TwoPi) + TwoPi) % TwoPi;
-        start = ((start % TwoPi) + TwoPi) % TwoPi;
-        end = ((end % TwoPi) + TwoPi) % TwoPi;
+        const double twoPi = 2 * Math.PI;
+        angle = (angle % twoPi + twoPi) % twoPi;
+        start = (start % twoPi + twoPi) % twoPi;
+        end = (end % twoPi + twoPi) % twoPi;
 
         // If start and end are equal (after normalization), it represents a full circle
         if (Math.Abs(start - end) < 1e-10)

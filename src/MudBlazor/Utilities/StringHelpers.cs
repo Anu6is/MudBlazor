@@ -13,8 +13,6 @@ internal static partial class StringHelpers
     public static string ToS(double value, string? format = null)
     {
         value = Math.Round(value, 4);
-
-        // Normalize negative zero (-0) to standard zero (0)
         if (value == 0)
         {
             value = 0;

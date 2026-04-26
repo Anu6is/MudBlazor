@@ -1,11 +1,11 @@
-﻿// Copyright (c) MudBlazor 2021
+// Copyright (c) MudBlazor 2021
 // MudBlazor licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using AwesomeAssertions;
 using Bunit;
 using MudBlazor.Charts;
 using NUnit.Framework;
+using AwesomeAssertions;
 
 namespace MudBlazor.UnitTests.Charts
 {
@@ -28,12 +28,12 @@ namespace MudBlazor.UnitTests.Charts
             // Start (180 deg): (-100, 0)
             // Mid (270 deg): (0, -100)
             // End (360 deg): (100, 0)
-            // Center: (0, 0)
-            // MinX: -100, MaxX: 100, MinY: -100, MaxY: 0
-            // Width: 200, Height: 100
-            // ViewBox should be "-100 -100 200 100"
+            // Bounds: MinX: -100, MaxX: 100, MinY: -100, MaxY: 0
+            // Center of bounds: (0, -50)
+            // ViewBox is Radius 100 centered at (0, -50) => MinX: 0 - 100 = -100, MinY: -50 - 100 = -150
+            // ViewBox should be "-100 -150 200 200"
             var svg = comp.Find("svg");
-            svg.GetAttribute("viewBox").Should().Be("-100 -100 200 100");
+            svg.GetAttribute("viewBox").Should().Be("-100 -150 200 200");
         }
 
         [Test]
@@ -53,12 +53,12 @@ namespace MudBlazor.UnitTests.Charts
             // Start (0 deg): (100, 0)
             // Mid (45 deg): (70.71, 70.71)
             // End (90 deg): (0, 100)
-            // Center: (0, 0)
-            // MinX: 0, MaxX: 100, MinY: 0, MaxY: 100
-            // Width: 100, Height: 100
-            // ViewBox should be "0 0 100 100"
+            // Bounds: MinX: 0, MaxX: 100, MinY: 0, MaxY: 100
+            // Center of bounds: (50, 50)
+            // ViewBox is Radius 100 centered at (50, 50) => MinX: 50 - 100 = -50, MinY: 50 - 100 = -50
+            // ViewBox should be "-50 -50 200 200"
             var svg = comp.Find("svg");
-            svg.GetAttribute("viewBox").Should().Be("0 0 100 100");
+            svg.GetAttribute("viewBox").Should().Be("-50 -50 200 200");
         }
 
         [Test]

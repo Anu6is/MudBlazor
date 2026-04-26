@@ -53,7 +53,7 @@ namespace MudBlazor.Charts
 
                 var data = normalizedData[i];
                 var value = T.Max(T.Zero, chartData[i]);
-                var segmentRadians = sweepAngle * Math.PI / 180.0 * data;
+                var segmentRadians = (sweepAngle * Math.PI / 180.0) * data;
                 var half = segmentRadians / 2;
 
                 var coords = GetSegmentCoordinates(cumulativeRadians, half, segmentRadians);
@@ -103,7 +103,7 @@ namespace MudBlazor.Charts
 
             sb.Append($"M {ToS(c.StartX * radius)} {ToS(c.StartY * radius)} ");
 
-            if (Math.Abs(radians - (2 * Math.PI)) < 1e-6)
+            if (Math.Abs(radians - 2 * Math.PI) < 1e-6)
             {
                 sb.Append($"A {ToS(radius)} {ToS(radius)} 0 0 1 {ToS(c.MidX * radius)} {ToS(c.MidY * radius)} ");
                 sb.Append($"A {ToS(radius)} {ToS(radius)} 0 0 1 {ToS(c.EndX * radius)} {ToS(c.EndY * radius)} ");
@@ -120,7 +120,7 @@ namespace MudBlazor.Charts
 
         private static (double X, double Y) GetLabelPosition(double angle, double radius, double radians)
         {
-            if (Math.Abs(radians - (2 * Math.PI)) < 1e-6)
+            if (Math.Abs(radians - 2 * Math.PI) < 1e-6)
                 return (0, 0);
 
             var r = radius * 0.5;

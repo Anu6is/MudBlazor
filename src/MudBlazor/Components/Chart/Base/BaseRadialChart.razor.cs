@@ -46,8 +46,11 @@ public partial class BaseRadialChart<T, TChartOptions> : MudComponentBase
     public double Radius { get; set; }
 
     /// <summary>
-    /// The SVG viewBox.
+    /// The SVG <c>viewBox</c> attribute for the chart, defining the coordinate system and visible area.
     /// </summary>
+    /// <remarks>
+    /// Defaults to <c>"-100 -100 200 200"</c>, which corresponds to the component's fixed radius of 100 centered at (0,0).
+    /// </remarks>
     [Parameter]
     [Category(CategoryTypes.Chart.Appearance)]
     public string ViewBox { get; set; } = "-100 -100 200 200";

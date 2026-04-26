@@ -289,6 +289,10 @@ public abstract class MudRadialChartBase<T, TOptions> : MudChartBase<T, TOptions
     /// <param name="start">The start angle.</param>
     /// <param name="end">The end angle.</param>
     /// <returns>True if the angle is between start and end; otherwise, false.</returns>
+    /// <remarks>
+    /// If the normalized start and end angles are equal, this method returns <c>true</c> for any angle, representing a full 360° span.
+    /// Callers should avoid passing equal endpoints unless a full-circle span is intended.
+    /// </remarks>
     protected static bool IsAngleBetween(double angle, double start, double end)
     {
         // Normalize angles to [0, 2π)
@@ -297,7 +301,13 @@ public abstract class MudRadialChartBase<T, TOptions> : MudChartBase<T, TOptions
         start = (start % twoPi + twoPi) % twoPi;
         end = (end % twoPi + twoPi) % twoPi;
 
-        if (start <= end)
+        // If start and end are equal (after normalization), it represents a full circle
+        if (Math.Abs(start - end) < 1e-10)
+        {
+            return true;
+        }
+
+        if (start < end)
         {
             return angle >= start && angle <= end;
         }

@@ -73,7 +73,12 @@ public abstract class MudRadialChartBase<T, TOptions> : MudChartBase<T, TOptions
     /// <summary>
     /// The radius of the radial chart.
     /// </summary>
-    protected virtual double Radius => 100;
+    protected virtual double Radius => Math.Round(Math.Min(_boundWidth, _boundHeight) / 2);
+
+    /// <summary>
+    /// The normalized radius used for the internal coordinate system of some radial charts (e.g. Pie, Donut).
+    /// </summary>
+    protected virtual double NormalizedRadius => 100;
 
     /// <summary>
     /// The bounding box of the chart arc.
@@ -279,7 +284,49 @@ public abstract class MudRadialChartBase<T, TOptions> : MudChartBase<T, TOptions
     /// <returns>A string representing the SVG viewBox.</returns>
     protected virtual string GetViewBox()
     {
-        return $"{ToS(-Radius)} {ToS(-Radius)} {ToS(Radius * 2)} {ToS(Radius * 2)}";
+        return $"{ToS(-NormalizedRadius)} {ToS(-NormalizedRadius)} {ToS(NormalizedRadius * 2)} {ToS(NormalizedRadius * 2)}";
+    }
+
+    /// <summary>
+    /// Computes the SVG viewBox for a partial arc.
+    /// </summary>
+    /// <param name="startAngle">The start angle in degrees.</param>
+    /// <param name="sweepAngle">The sweep angle in degrees.</param>
+    /// <returns>A string representing the SVG viewBox.</returns>
+    protected string ComputeArcViewBox(double startAngle, double sweepAngle)
+    {
+        if (sweepAngle >= 360.0 || sweepAngle <= 0)
+        {
+            return $"{ToS(-NormalizedRadius)} {ToS(-NormalizedRadius)} {ToS(NormalizedRadius * 2)} {ToS(NormalizedRadius * 2)}";
+        }
+
+        var startRad = startAngle * Math.PI / 180.0;
+        var sweepRad = sweepAngle * Math.PI / 180.0;
+        var endRad = startRad + sweepRad;
+
+        var xs = new List<double> { 0, Math.Cos(startRad) * NormalizedRadius, Math.Cos(endRad) * NormalizedRadius };
+        var ys = new List<double> { 0, Math.Sin(startRad) * NormalizedRadius, Math.Sin(endRad) * NormalizedRadius };
+
+        // Check for the 4 extreme points of the circle
+        for (var angle = 0.0; angle < 360.0; angle += 90.0)
+        {
+            var rad = angle * Math.PI / 180.0;
+            if (IsAngleBetween(rad, startRad, endRad))
+            {
+                xs.Add(Math.Cos(rad) * NormalizedRadius);
+                ys.Add(Math.Sin(rad) * NormalizedRadius);
+            }
+        }
+
+        var minX = xs.Min();
+        var maxX = xs.Max();
+        var minY = ys.Min();
+        var maxY = ys.Max();
+
+        var width = Math.Max(maxX - minX, 0.001);
+        var height = Math.Max(maxY - minY, 0.001);
+
+        return $"{ToS(minX)} {ToS(minY)} {ToS(width)} {ToS(height)}";
     }
 
     /// <summary>
@@ -296,10 +343,10 @@ public abstract class MudRadialChartBase<T, TOptions> : MudChartBase<T, TOptions
     protected static bool IsAngleBetween(double angle, double start, double end)
     {
         // Normalize angles to [0, 2π)
-        const double TwoPi = 2 * Math.PI;
-        angle = ((angle % TwoPi) + TwoPi) % TwoPi;
-        start = ((start % TwoPi) + TwoPi) % TwoPi;
-        end = ((end % TwoPi) + TwoPi) % TwoPi;
+        const double twoPi = 2 * Math.PI;
+        angle = (angle % twoPi + twoPi) % twoPi;
+        start = (start % twoPi + twoPi) % twoPi;
+        end = (end % twoPi + twoPi) % twoPi;
 
         // If start and end are equal (after normalization), it represents a full circle
         if (Math.Abs(start - end) < 1e-10)

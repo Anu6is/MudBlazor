@@ -295,7 +295,7 @@ public abstract class MudRadialChartBase<T, TOptions> : MudChartBase<T, TOptions
     /// <returns>A string representing the SVG viewBox.</returns>
     protected string ComputeArcViewBox(double startAngle, double sweepAngle)
     {
-        if (sweepAngle >= 360.0 || sweepAngle <= 0)
+        if (sweepAngle is >= 360.0 or <= 0)
         {
             return $"{ToS(-NormalizedRadius)} {ToS(-NormalizedRadius)} {ToS(NormalizedRadius * 2)} {ToS(NormalizedRadius * 2)}";
         }
@@ -311,6 +311,7 @@ public abstract class MudRadialChartBase<T, TOptions> : MudChartBase<T, TOptions
         for (var angle = 0.0; angle < 360.0; angle += 90.0)
         {
             var rad = angle * Math.PI / 180.0;
+
             if (IsAngleBetween(rad, startRad, endRad))
             {
                 xs.Add(Math.Cos(rad) * Radius);
@@ -322,9 +323,6 @@ public abstract class MudRadialChartBase<T, TOptions> : MudChartBase<T, TOptions
         var maxX = xs.Max();
         var minY = ys.Min();
         var maxY = ys.Max();
-
-        var width = maxX - minX;
-        var height = maxY - minY;
 
         var centerX = (minX + maxX) / 2.0;
         var centerY = (minY + maxY) / 2.0;
@@ -347,10 +345,10 @@ public abstract class MudRadialChartBase<T, TOptions> : MudChartBase<T, TOptions
     protected static bool IsAngleBetween(double angle, double start, double end)
     {
         // Normalize angles to [0, 2π)
-        const double twoPi = 2 * Math.PI;
-        angle = ((angle % twoPi) + twoPi) % twoPi;
-        start = ((start % twoPi) + twoPi) % twoPi;
-        end = ((end % twoPi) + twoPi) % twoPi;
+        const double TwoPi = 2 * Math.PI;
+        angle = ((angle % TwoPi) + TwoPi) % TwoPi;
+        start = ((start % TwoPi) + TwoPi) % TwoPi;
+        end = ((end % TwoPi) + TwoPi) % TwoPi;
 
         // If start and end are equal (after normalization), it represents a full circle
         if (Math.Abs(start - end) < 1e-10)

@@ -14,6 +14,8 @@ internal static partial class StringHelpers
     {
         value = Math.Round(value, 4);
 
+        // Normalize negative zero to positive zero so formatted output
+        // never contains "-0".
         if (value == 0)
         {
             value = 0;

@@ -296,10 +296,10 @@ public abstract class MudRadialChartBase<T, TOptions> : MudChartBase<T, TOptions
     protected static bool IsAngleBetween(double angle, double start, double end)
     {
         // Normalize angles to [0, 2π)
-        const double twoPi = 2 * Math.PI;
-        angle = (angle % twoPi + twoPi) % twoPi;
-        start = (start % twoPi + twoPi) % twoPi;
-        end = (end % twoPi + twoPi) % twoPi;
+        const double TwoPi = 2 * Math.PI;
+        angle = ((angle % TwoPi) + TwoPi) % TwoPi;
+        start = ((start % TwoPi) + TwoPi) % TwoPi;
+        end = ((end % TwoPi) + TwoPi) % TwoPi;
 
         // If start and end are equal (after normalization), it represents a full circle
         if (Math.Abs(start - end) < 1e-10)

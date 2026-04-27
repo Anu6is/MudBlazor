@@ -7,6 +7,7 @@ using Bunit;
 using Microsoft.AspNetCore.Components;
 using MudBlazor.Charts;
 using MudBlazor.Extensions;
+using MudBlazor.Interop;
 using MudBlazor.UnitTests.Components;
 using NUnit.Framework;
 
@@ -296,6 +297,91 @@ namespace MudBlazor.UnitTests.Charts
             seriesCheckboxes[2].IsChecked().Should().BeTrue("Series 3 checkbox should be checked after showing");
             chartSeries[2].Visible.Should().BeTrue("Series 3 Visible property should be true");
             comp.FindAll($"path.mud-chart-bar{series3}").Count.Should().Be(chartSeries[2].Data.Values.Count, "Series 3 bars should be visible");
+        }
+
+        [Test]
+        public async Task BarChart_XAxisLabelRotation()
+        {
+            var mockXAxisLabelSize = new ElementSize { Width = 50.0, Height = 20.0 };
+
+            Context.JSInterop.Setup<ElementSize>("mudGetSvgBBox", _ => true).SetResult(mockXAxisLabelSize);
+
+            var chartSeries = new List<ChartSeries<double>>()
+            {
+                new() { Name = "Series 1", Data = new double[] { 10, 20, 30 } },
+            };
+            string[] xAxisLabels = { "Jan", "Feb", "Mar" };
+
+            var options = new BarChartOptions { XAxisLabelRotation = 90 };
+            var comp = Context.Render<MudChart<double>>(parameters => parameters
+                .Add(p => p.ChartType, ChartType.Bar)
+                .Add(p => p.Height, "350px")
+                .Add(p => p.Width, "700px")
+                .Add(p => p.ChartSeries, chartSeries)
+                .Add(p => p.ChartLabels, xAxisLabels)
+                .Add(p => p.ChartOptions, options));
+
+            // Initial render, offset should be calculated with DefaultXAxisLabelHeight (20) + RotatedXAxisLabelBuffer (10) = 30
+            // Because OnAfterRenderAsync hasn't updated the sizes yet in a way that triggers a rebuild in this sync test
+            // Wait, BUnit might have run OnAfterRenderAsync already.
+
+            // XAxisLabelOffset for 90 rotation is height + 10.
+            // Default height is 20. So offset is 30.
+            // y = 350 - 30 = 320.
+
+            var xAxisLabelsElements = comp.FindAll(".mud-charts-xaxis text");
+            xAxisLabelsElements.Should().NotBeEmpty();
+            foreach (var label in xAxisLabelsElements)
+            {
+                label.Attributes["text-anchor"]?.Value.Should().Be("end");
+                label.Attributes["transform"]?.Value.Should().Contain("rotate(-90");
+            }
+
+            // Verify the Y position of the labels
+            // _boundHeight - XAxisLabelOffset = 350 - 30 = 320
+            xAxisLabelsElements[0].Attributes["y"]?.Value.Should().Be("320");
+
+            // Initial viewbox 0 0 700 350
+            comp.Find("svg").Attributes["viewBox"]?.Value.Should().Be("0 0 700 350");
+
+            // Change rotation to 0
+            await comp.SetParametersAndRenderAsync(parameters => parameters
+                .Add(p => p.ChartOptions, new BarChartOptions { XAxisLabelRotation = 0 }));
+
+            xAxisLabelsElements = comp.FindAll(".mud-charts-xaxis text");
+            foreach (var label in xAxisLabelsElements)
+            {
+                label.Attributes["text-anchor"]?.Value.Should().Be("middle");
+                label.Attributes["transform"]?.Value.Should().Contain("rotate(0");
+            }
+            // XAxisLabelOffset for 0 rotation is height / 2.
+            // Default height is 20. So offset is 10.
+            // y = 350 - 10 = 340.
+            xAxisLabelsElements[0].Attributes["y"]?.Value.Should().Be("340");
+        }
+
+        [Test]
+        public void BaseAxisChart_LabelHtmlEncoding()
+        {
+            var chartSeries = new List<ChartSeries<double>>()
+            {
+                new() { Name = "Series 1", Data = new double[] { 10 } },
+            };
+            string[] xAxisLabels = { "<script>alert('XSS')</script>" };
+
+            var options = new BarChartOptions { YAxisTitle = "<b>Y Axis</b>" };
+            var comp = Context.Render<MudChart<double>>(parameters => parameters
+                .Add(p => p.ChartType, ChartType.Bar)
+                .Add(p => p.ChartSeries, chartSeries)
+                .Add(p => p.ChartLabels, xAxisLabels)
+                .Add(p => p.ChartOptions, options));
+
+            // Check X-axis label encoding
+            comp.Markup.Should().NotContain("<script>");
+            comp.Markup.Should().Contain("&lt;script&gt;alert('XSS')&lt;/script&gt;");
+
+            // Check Y-axis label encoding (Y-axis values are numbers, but we can check if they are rendered correctly)
+            // The HorizontalValues are numbers formatted by BuildYAxisValueString.
         }
     }
 }

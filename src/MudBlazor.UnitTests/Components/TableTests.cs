@@ -128,6 +128,34 @@ namespace MudBlazor.UnitTests.Components
             comp.FindAll("td")[2].TextContent.Trim().Should().Be("A");
         }
 
+        [Test]
+        public async Task TableSortLabelInitialSortDirection()
+        {
+            var comp = Context.Render<TableInitialSortDirectionTest>();
+            comp.FindAll("td")[0].TextContent.Trim().Should().Be("B");
+            comp.FindAll("td")[1].TextContent.Trim().Should().Be("A");
+            comp.FindAll("td")[2].TextContent.Trim().Should().Be("C");
+
+            await comp.Find("span.mud-clickable.mud-table-sort-label").ClickAsync();
+            comp.FindAll("td")[0].TextContent.Trim().Should().Be("C");
+            comp.FindAll("td")[1].TextContent.Trim().Should().Be("B");
+            comp.FindAll("td")[2].TextContent.Trim().Should().Be("A");
+
+            comp = Context.Render<TableInitialSortDirectionTest>(parameters => parameters
+                .Add(p => p.InitialSortDirection, SortDirection.Ascending));
+            await comp.Find("span.mud-clickable.mud-table-sort-label").ClickAsync();
+            comp.FindAll("td")[0].TextContent.Trim().Should().Be("A");
+            comp.FindAll("td")[1].TextContent.Trim().Should().Be("B");
+            comp.FindAll("td")[2].TextContent.Trim().Should().Be("C");
+
+            comp = Context.Render<TableInitialSortDirectionTest>(parameters => parameters
+                .Add(p => p.InitialSortDirection, SortDirection.None));
+            await comp.Find("span.mud-clickable.mud-table-sort-label").ClickAsync();
+            comp.FindAll("td")[0].TextContent.Trim().Should().Be("A");
+            comp.FindAll("td")[1].TextContent.Trim().Should().Be("B");
+            comp.FindAll("td")[2].TextContent.Trim().Should().Be("C");
+        }
+
         /// <summary>
         /// Check if the loading parameter is adding a supplementary row.
         /// </summary>
@@ -695,7 +723,7 @@ namespace MudBlazor.UnitTests.Components
         [Test]
         public async Task TableMultiSelection_IgnoreCheckbox_RowClick()
         {
-            var comp = Context.Render<TableMultiSelection_IgnoreCheckbox_RowClickTest>();
+            var comp = Context.Render<TableMultiSelectIgnoreRowTest>();
             var rows = comp.FindComponent<MudTable<int>>().FindAll("tr").ToArray();
             var table = comp.FindComponent<MudTable<int>>().Instance;
 
@@ -709,7 +737,7 @@ namespace MudBlazor.UnitTests.Components
         [Test]
         public void TableMultiSelection_MultiGrouping_DefaultCheckboxStates()
         {
-            var comp = Context.Render<TableMultiSelection_MultiGrouping_DefaultCheckboxStatesTest>();
+            var comp = Context.Render<TableMultiGroupCheckboxTest>();
             var mudTable = comp.Instance.MudTable;
 
             // All row checkbox states must be false.

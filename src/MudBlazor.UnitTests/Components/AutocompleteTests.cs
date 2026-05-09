@@ -53,6 +53,28 @@ namespace MudBlazor.UnitTests.Components
             filteredItems.Count.Should().Be(4, "The popover should contain 4 items.");
         }
 
+        [Test]
+        public async Task AutocompleteCoerceValue_WithCustomConverter_UsesConvertBack()
+        {
+            var comp = Context.Render<AutocompleteConverterStrictTest>();
+            var autocompleteComponent = comp.FindComponent<MudAutocomplete<AutocompleteConverterStrictTest.ConverterElement>>();
+
+            await autocompleteComponent.SetParametersAndRenderAsync(parameters => parameters
+                .Add(x => x.CoerceText, false)
+                .Add(x => x.Immediate, true)
+                .Add(x => x.DebounceInterval, 0));
+
+            await autocompleteComponent.Find("input").InputAsync("Oxygen");
+
+            await autocompleteComponent.WaitForAssertionAsync(() =>
+            {
+                autocompleteComponent.Instance.ReadText.Should().Be("Oxygen");
+                autocompleteComponent.Instance.ReadValue.Should().NotBeNull();
+                autocompleteComponent.Instance.ReadValue!.Name.Should().Be("Oxygen");
+                autocompleteComponent.Instance.ConversionError.Should().BeFalse();
+            });
+        }
+
         /// <summary>
         /// Initial value should be shown and popup should not open.
         /// </summary>
@@ -143,7 +165,7 @@ namespace MudBlazor.UnitTests.Components
         public async Task AutocompleteCancelDispose()
         {
             var comp = Context.Render<AutocompleteTest8>();
-            var autocompleteContainerComp = comp.FindComponent<AutoCompleteContainer>();
+            var autocompleteContainerComp = comp.FindComponent<AutocompleteContainer>();
             var autocompleteComp = autocompleteContainerComp.FindComponent<MudAutocomplete<string>>();
             await autocompleteComp.SetParametersAndRenderAsync(parameters => parameters.Add(a => a.Text, "Alabama"));
             await Task.Delay(500);
@@ -246,6 +268,35 @@ namespace MudBlazor.UnitTests.Components
 
             await comp.WaitForAssertionAsync(() => autocomplete.ReadValue.Should().Be("Austria"));
             autocomplete.ReadText.Should().Be("Austria");
+        }
+
+        [Test]
+        public async Task AutocompleteImmediateCoerceValue_WithToStringFuncAndObjectValue_DoesNotThrowOnClear()
+        {
+            var comp = Context.Render<MudAutocomplete<CoerceValueElement>>(parameters =>
+            {
+                parameters.Add(a => a.Value, new CoerceValueElement { Name = "Helium" });
+                parameters.Add(a => a.CoerceValue, true);
+                parameters.Add(a => a.CoerceText, false);
+                parameters.Add(a => a.Immediate, true);
+                parameters.Add(a => a.DebounceInterval, 0);
+                parameters.Add(a => a.ToStringFunc, static x => x?.Name);
+            });
+
+            await comp.WaitForAssertionAsync(() =>
+            {
+                comp.Instance.ReadText.Should().Be("Helium");
+                comp.Instance.ReadValue.Should().NotBeNull();
+            });
+
+            await comp.Find("input").InputAsync(string.Empty);
+
+            await comp.WaitForAssertionAsync(() =>
+            {
+                comp.Instance.ReadText.Should().BeEmpty();
+                comp.Instance.ReadValue.Should().BeNull();
+                comp.Instance.ConversionError.Should().BeFalse();
+            });
         }
 
         [Test]
@@ -415,6 +466,51 @@ namespace MudBlazor.UnitTests.Components
 
             comp.Instance.ReadText.Should().Be("ABC");
             comp.Instance.ReadValue.Should().Be("ABC");
+        }
+
+        [Test]
+        public async Task CoerceValueWithToStringFuncAndObjectValue_DoesNotThrowOnBlur()
+        {
+            var comp = Context.Render<MudAutocomplete<CoerceValueElement>>(parameters =>
+            {
+                parameters.Add(a => a.CoerceValue, true);
+                parameters.Add(a => a.CoerceText, false);
+                parameters.Add(a => a.Immediate, false);
+                parameters.Add(a => a.DebounceInterval, 0);
+                parameters.Add(a => a.ToStringFunc, static x => x?.Name);
+            });
+
+            await comp.Find("input").InputAsync("Hydrogen");
+            await comp.Find("input").BlurAsync();
+
+            await comp.WaitForAssertionAsync(() =>
+            {
+                comp.Instance.ReadText.Should().Be("Hydrogen");
+                comp.Instance.ReadValue.Should().BeNull();
+                comp.Instance.ConversionError.Should().BeFalse();
+            });
+        }
+
+        [Test]
+        public async Task CoerceValueWithObjectToStringAndNoToStringFunc_DoesNotThrowOnBlur()
+        {
+            var comp = Context.Render<MudAutocomplete<CoerceValueElement>>(parameters =>
+            {
+                parameters.Add(a => a.CoerceValue, true);
+                parameters.Add(a => a.CoerceText, false);
+                parameters.Add(a => a.Immediate, false);
+                parameters.Add(a => a.DebounceInterval, 0);
+            });
+
+            await comp.Find("input").InputAsync("Lithium");
+            await comp.Find("input").BlurAsync();
+
+            await comp.WaitForAssertionAsync(() =>
+            {
+                comp.Instance.ReadText.Should().Be("Lithium");
+                comp.Instance.ReadValue.Should().BeNull();
+                comp.Instance.ConversionError.Should().BeFalse();
+            });
         }
 
         [Test]
@@ -1770,7 +1866,7 @@ namespace MudBlazor.UnitTests.Components
         [Test]
         public async Task Autocomplete_Should_LoadListStartWhenSetAndThereAreItems()
         {
-            var comp = Context.Render<AutocompleteListBeforeAndAfterRendersWithItemsTest>();
+            var comp = Context.Render<AutocompleteListPartsTest>();
 
             await comp.Find("div.mud-input-control").FocusAsync();
             await comp.WaitForAssertionAsync(() => comp.Find("div.mud-popover").ClassList.Should().Contain("mud-popover-open"));
@@ -1787,7 +1883,7 @@ namespace MudBlazor.UnitTests.Components
         [Test]
         public async Task Autocomplete_Should_LoadListEndWhenSetAndThereAreItems()
         {
-            var comp = Context.Render<AutocompleteListBeforeAndAfterRendersWithItemsTest>();
+            var comp = Context.Render<AutocompleteListPartsTest>();
 
             await comp.Find("div.mud-input-control").FocusAsync();
             await comp.WaitForAssertionAsync(() => comp.Find("div.mud-popover").ClassList.Should().Contain("mud-popover-open"));
@@ -2102,6 +2198,8 @@ namespace MudBlazor.UnitTests.Components
 
             comp.Instance.ConversionErrorMessage.Should().NotBeNullOrEmpty();
             comp.Find("#error-id").InnerHtml.Should().Be(comp.Instance.ConversionErrorMessage);
+            comp.Find("input").GetAttribute("aria-describedby").Should().Be("error-id");
+            comp.Find("input").GetAttribute("aria-invalid").Should().Be("true");
         }
 
         [TestCase(Adornment.Start)]
@@ -2431,6 +2529,13 @@ namespace MudBlazor.UnitTests.Components
             // Verify that the component is using the global defaults
             // Modal should be null (using PopoverOptions defaults)
             auto.Instance.Modal.Should().BeNull();
+        }
+
+        private sealed class CoerceValueElement
+        {
+            public string Name { get; set; } = string.Empty;
+
+            public override string ToString() => Name;
         }
     }
 }

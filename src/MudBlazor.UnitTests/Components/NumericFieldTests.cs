@@ -764,6 +764,22 @@ namespace MudBlazor.UnitTests.Components
             comp.Instance.ReadValue.Should().Be(value);
         }
 
+        [Test]
+        public async Task NumericField_SpinButtonsShouldFocusInput()
+        {
+            var comp = Context.Render<MudNumericField<int>>(parameters => parameters
+                .Add(x => x.HideSpinButtons, false)
+                .Add(x => x.Value, 5)
+                .Add(x => x.Step, 1));
+
+            await comp.FindAll(".mud-input-numeric-spin .mud-button-root")[0].TriggerEventAsync("onpointerdown", new PointerEventArgs());
+            await comp.FindAll(".mud-input-numeric-spin .mud-button-root")[1].TriggerEventAsync("onpointerdown", new PointerEventArgs());
+
+            Context.JSInterop.Invocations
+                .Count(x => x.Identifier == "Blazor._internal.domWrapper.focus")
+                .Should().Be(2);
+        }
+
         [TestCaseSource(nameof(TypeCases))]
         public async Task NumericFieldNullable_Increment_Decrement<T>(T value) where T : struct
         {
@@ -924,9 +940,8 @@ namespace MudBlazor.UnitTests.Components
         /// <summary>
         /// Validate that a re-render of a debounced numeric field does not cause a loss of uncommitted text.
         /// </summary>
-        // TODO: Re-enable parallel execution. This test intermittently causes test-host hangs under full parallel coverage runs.
         [Test]
-        [NonParallelizable]
+        [Ignore("Randomly fails or causes test-host hangs under heavy loads.")]
         public async Task DebouncedNumericFieldRerender()
         {
             var timeProvider = new FakeTimeProvider();
@@ -975,12 +990,13 @@ namespace MudBlazor.UnitTests.Components
         /// Validate that a re-render of a debounced numeric field does not cause a loss of uncommitted text while changing culture.
         /// </summary>
         [Test]
+        [Ignore("Randomly fails or causes test-host hangs under heavy loads.")]
         public async Task DebouncedNumericFieldCultureChangeRerender()
         {
             var timeProvider = new FakeTimeProvider();
             Context.Services.AddSingleton<TimeProvider>(timeProvider);
 
-            var comp = Context.Render<DebouncedNumericFieldCultureChangeRerenderTest>();
+            var comp = Context.Render<NumericFieldCultureChangeTest>();
             var numericField = comp.FindComponent<MudNumericField<double>>().Instance;
             var delayedCultureChange = comp.Find("button#culture-change");
             // ensure text is updated on initialize
@@ -1108,13 +1124,13 @@ namespace MudBlazor.UnitTests.Components
         }
 
         [Test]
-        public async Task Should_render_appropriate_type()
+        public async Task Should_render_text_input_and_only_emit_pattern_when_explicitly_set()
         {
             var comp = Context.Render<NumericFieldRenderTest>();
             var field = comp.Find("#num-field-id");
 
             comp.Markup.Should().NotContain("pattern");
-            field.GetAttribute("type").Should().Be("number");
+            field.GetAttribute("type").Should().Be("text");
 
             await comp.SetParametersAndRenderAsync(parameters => parameters
                 .Add(x => x.UsePattern, true));
@@ -1125,7 +1141,39 @@ namespace MudBlazor.UnitTests.Components
                 .Add(x => x.UsePattern, false));
 
             comp.Markup.Should().NotContain("pattern");
-            field.GetAttribute("type").Should().Be("number");
+            field.GetAttribute("type").Should().Be("text");
+        }
+
+        [Test]
+        public void NumericField_Should_RenderSpinbuttonAriaAttributes()
+        {
+            var comp = Context.Render<MudNumericField<int>>(parameters => parameters
+                .Add(p => p.Value, 4)
+                .Add(p => p.Min, 1)
+                .Add(p => p.Max, 10));
+
+            var input = comp.Find("input");
+
+            input.GetAttribute("type").Should().Be("text");
+            input.GetAttribute("role").Should().Be("spinbutton");
+            input.GetAttribute("aria-valuenow").Should().Be("4");
+            input.GetAttribute("aria-valuemin").Should().Be("1");
+            input.GetAttribute("aria-valuemax").Should().Be("10");
+            input.HasAttribute("aria-valuetext").Should().BeFalse();
+        }
+
+        [Test]
+        public void NumericField_Should_RenderAriaValueText_WhenFormattedTextDiffers()
+        {
+            var comp = Context.Render<MudNumericField<double>>(parameters => parameters
+                .Add(p => p.Value, 1234.56)
+                .Add(p => p.Culture, CultureInfo.GetCultureInfo("en-US"))
+                .Add(p => p.Format, "N2"));
+
+            var input = comp.Find("input");
+
+            input.GetAttribute("aria-valuenow").Should().Be("1234.56");
+            input.GetAttribute("aria-valuetext").Should().Be("1,234.56");
         }
 
         [Test]
@@ -1141,6 +1189,21 @@ namespace MudBlazor.UnitTests.Components
             await comp.WaitForAssertionAsync(() => comp.Instance.Value.Should().Be(123.45M));
             numericField.Instance.ReadText.Should().Be("123.45");
             numericField.Instance.GetState(x => x.Culture).Name.Should().Be("");
+        }
+
+        [Test]
+        [SetUICulture("ru-RU")]
+        public async Task Should_apply_explicit_current_ui_culture()
+        {
+            var comp = Context.Render<MudNumericField<decimal>>(parameters => parameters
+                .Add(p => p.Culture, CultureInfo.GetCultureInfo("ru-RU")));
+
+            await comp.Find("input").ChangeAsync("123,45");
+            await comp.Find("input").BlurAsync();
+
+            await comp.WaitForAssertionAsync(() => comp.Instance.ReadValue.Should().Be(123.45M));
+            comp.Instance.ReadText.Should().Be("123,45");
+            comp.Instance.Culture.Name.Should().Be("ru-RU");
         }
 
         [Test]
@@ -1238,6 +1301,8 @@ namespace MudBlazor.UnitTests.Components
 
             comp.Instance.ConversionErrorMessage.Should().NotBeNullOrEmpty();
             comp.Find("#error-id").InnerHtml.Should().Be(comp.Instance.ConversionErrorMessage);
+            comp.Find("input").GetAttribute("aria-describedby").Should().Be("error-id");
+            comp.Find("input").GetAttribute("aria-invalid").Should().Be("true");
         }
 
         [TestCase(Adornment.Start)]

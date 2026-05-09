@@ -383,7 +383,7 @@ namespace MudBlazor.UnitTests.Components
         [Test]
         public async Task FormAsyncValidationWithFieldChangedSubscriber()
         {
-            var comp = Context.Render<FormAsyncValidationWithFieldChangedSubscriberTest>();
+            var comp = Context.Render<FormFieldChangedSubTest>();
             var textField = comp.FindComponent<MudTextField<string>>().Instance;
             var input = () => comp.Find("input");
             await input().InputAsync("test");
@@ -1086,7 +1086,7 @@ namespace MudBlazor.UnitTests.Components
         {
             var fileName = "cat.jpg";
             var fileToUpload = InputFileContent.CreateFromText("I am a cat image, trust me.", "cat.jpg");
-            var comp = Context.Render<FormWithFileUploadAndDragAndDropActivatorTest>();
+            var comp = Context.Render<FormFileUploadDndTest>();
             var form = comp.FindComponent<MudForm>().Instance;
             var fileUploadComp = comp.FindComponent<MudFileUpload<IBrowserFile>>();
             var fileUploadInstance = comp.FindComponent<MudFileUpload<IBrowserFile>>().Instance;
@@ -1608,7 +1608,7 @@ namespace MudBlazor.UnitTests.Components
         [Test]
         public void MudForm_Should_RegisterOnlyTopSubscribeToParentFormFormControls()
         {
-            var comp = Context.Render<FormShouldRegisterOnlyTopSubscribeToParentFormFormControlsTest>();
+            var comp = Context.Render<FormTopLevelControlsTest>();
             var form = comp.FindComponent<MudFormTestable>().Instance;
 
             form.FormControls.Count.Should().Be(13);
@@ -1982,7 +1982,7 @@ namespace MudBlazor.UnitTests.Components
         [Test]
         public async Task FormComponent_Should_UpdateValidationMessagesOnEditContextChanged()
         {
-            var comp = Context.Render<FormComponentUpdateValidationMessagesOnEditContextChangedTest>();
+            var comp = Context.Render<FormEditContextMessagesTest>();
             var validator = comp.FindComponent<FormComponentUpdateValidationMessagesValidator>();
             var errorMessage = "some error";
 
@@ -2125,6 +2125,58 @@ namespace MudBlazor.UnitTests.Components
             await comp.InvokeAsync(async () => await parentForm.ResetAsync());
             comp.Instance.IsParentTouchChanged.Should().BeFalse();
             comp.Instance.IsChildTouchChanged.Should().BeFalse();
+        }
+
+        /// <summary>
+        /// Regression test for: https://github.com/MudBlazor/MudBlazor/issues/12012.
+        /// When a form has a validation error and the bound property is updated through code,
+        /// the validation error should be cleared if the new value is valid, or updated if still invalid.
+        /// </summary>
+        [Test]
+        public async Task FormValidationErrorClearedOnProgrammaticValueChange()
+        {
+            var comp = Context.Render<FormWithSingleTextField>();
+            var form = comp.FindComponent<MudForm>().Instance;
+            var textFieldComp = comp.FindComponent<MudTextField<string>>();
+            var textField = textFieldComp.Instance;
+
+            // Set validation that requires non-empty string
+            await textFieldComp.SetParametersAndRenderAsync(parameters => parameters
+                .Add(x => x.Required, true)
+                .Add(x => x.RequiredError, "This field is required"));
+
+            // Simulate user interaction: Tab out of field to trigger validation error
+            await textFieldComp.Find("input").BlurAsync();
+            await comp.WaitForAssertionAsync(() =>
+            {
+                form.IsValid.Should().BeFalse();
+                textField.GetState(x => x.Error).Should().BeTrue();
+                textField.GetState(x => x.ErrorText).Should().Be("This field is required");
+            });
+
+            // Now set a valid value programmatically through parameter binding
+            await textFieldComp.SetParametersAndRenderAsync(parameters =>
+                parameters.Add(x => x.Value, "Valid Value"));
+
+            // The validation error should be cleared because the value is now valid
+            await comp.WaitForAssertionAsync(() =>
+            {
+                form.IsValid.Should().BeTrue();
+                textField.GetState(x => x.Error).Should().BeFalse();
+                textField.GetState(x => x.ErrorText).Should().BeNullOrEmpty();
+            });
+
+            // Clear the value programmatically through parameter binding
+            await textFieldComp.SetParametersAndRenderAsync(parameters =>
+                parameters.Add(x => x.Value, string.Empty));
+
+            // The validation error should reappear because the value is now invalid
+            await comp.WaitForAssertionAsync(() =>
+            {
+                form.IsValid.Should().BeFalse();
+                textField.GetState(x => x.Error).Should().BeTrue();
+                textField.GetState(x => x.ErrorText).Should().Be("This field is required");
+            });
         }
     }
 }

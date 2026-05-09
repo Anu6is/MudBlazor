@@ -58,6 +58,16 @@ namespace MudBlazor.UnitTests.Components
         }
 
         [Test]
+        public void DateRangePickerInputDefaultAriaLabels()
+        {
+            var comp = Context.Render<MudDateRangePicker>();
+            var inputs = comp.FindAll("input");
+
+            inputs[0].Attributes.GetNamedItem("aria-label")?.Value.Should().Be("Start date");
+            inputs[1].Attributes.GetNamedItem("aria-label")?.Value.Should().Be("End date");
+        }
+
+        [Test]
         public async Task DateRangePickerSeparatorIcon()
         {
             var newIcon = Icons.Material.Filled.Star;
@@ -1457,7 +1467,7 @@ namespace MudBlazor.UnitTests.Components
     {
         public static Task SelectDateAsync(this IRenderedComponent<IComponent> comp, string day, bool firstOccurrence = true)
         {
-            return comp.ValidateSelection(day, firstOccurrence).ClickAsync();
+            return comp.InvokeAsync(async () => await comp.ValidateSelection(day, firstOccurrence).ClickAsync());
         }
 
         private static IElement ValidateSelection(this IRenderedComponent<IComponent> comp, string day, bool firstOccurrence)

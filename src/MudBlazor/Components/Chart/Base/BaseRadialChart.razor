@@ -69,7 +69,14 @@
         else
         {
             var tooltipFormat = BuildTooltipFormat();
-            <ChartTooltip Title="@tooltipFormat.title" Subtitle="@tooltipFormat.subtitle" Color="@color" X="@tooltipX" Y="@tooltipY" />
+            <ChartTooltip Title="@tooltipFormat.title"
+                          Subtitle="@tooltipFormat.subtitle"
+                          Color="@color"
+                          X="@tooltipX"
+                          Y="@tooltipY"
+                          FontSize="@(ChartOptions.TooltipFontSize * TooltipScalingFactor)"
+                          PaddingSize="@(5.0 * TooltipScalingFactor)"
+                          StrokeWidth="@(1.0 * TooltipScalingFactor)" />
         }
     }
 </svg>

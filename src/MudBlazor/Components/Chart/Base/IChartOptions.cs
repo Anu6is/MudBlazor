@@ -33,4 +33,9 @@ public interface IChartOptions
     /// The format string for tooltip subtitles.
     /// </summary>
     public string? TooltipSubtitleFormat { get; set; }
+
+    /// <summary>
+    /// The font size for the tooltip.
+    /// </summary>
+    public double TooltipFontSize { get; set; }
 }

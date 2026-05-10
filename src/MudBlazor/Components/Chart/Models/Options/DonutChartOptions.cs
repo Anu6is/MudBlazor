@@ -20,6 +20,7 @@ public class DonutChartOptions : PieChartOptions
         ShowToolTips = options.ShowToolTips,
         TooltipTitleFormat = options.TooltipTitleFormat,
         TooltipSubtitleFormat = options.TooltipSubtitleFormat,
+        TooltipFontSize = options.TooltipFontSize,
         ChartPalette = options.ChartPalette,
     };
 }

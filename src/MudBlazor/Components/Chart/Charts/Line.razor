@@ -164,6 +164,9 @@
                 builder.AddAttribute(seq++, "Color", color);
                 builder.AddAttribute(seq++, "X", tooltipX);
                 builder.AddAttribute(seq++, "Y", tooltipY);
+                builder.AddAttribute(seq++, "FontSize", ChartOptions.TooltipFontSize * TooltipScalingFactor);
+                builder.AddAttribute(seq++, "PaddingSize", 5.0 * TooltipScalingFactor);
+                builder.AddAttribute(seq++, "StrokeWidth", 1.0 * TooltipScalingFactor);
                 builder.CloseComponent();
             }
         }

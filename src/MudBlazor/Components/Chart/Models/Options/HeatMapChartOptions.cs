@@ -72,6 +72,7 @@ public class HeatMapChartOptions : DefaultChartOptions
         ShowToolTips = options.ShowToolTips,
         TooltipTitleFormat = options.TooltipTitleFormat,
         TooltipSubtitleFormat = options.TooltipSubtitleFormat,
+        TooltipFontSize = options.TooltipFontSize,
         ChartPalette = options.ChartPalette,
     };
 }

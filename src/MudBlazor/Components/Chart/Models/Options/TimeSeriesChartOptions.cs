@@ -61,6 +61,7 @@ public class TimeSeriesChartOptions : DefaultAxisLineChartOptions
         ShowToolTips = options.ShowToolTips,
         TooltipTitleFormat = options.TooltipTitleFormat,
         TooltipSubtitleFormat = options.TooltipSubtitleFormat,
+        TooltipFontSize = options.TooltipFontSize,
         ChartPalette = options.ChartPalette,
     };
 }

@@ -63,19 +63,38 @@ public partial class ChartTooltip : ComponentBase
     /// The font size of the <see cref="Title"/> and <see cref="Subtitle"/>.
     /// </summary>
     /// <remarks>
+    /// Defaults to <c>12.0</c>.
+    /// </remarks>
+    [Parameter]
+    public double FontSize { get; set; } = 12.0;
+
+    /// <summary>
+    /// The font size of the <see cref="Title"/> and <see cref="Subtitle"/>.
+    /// </summary>
+    /// <remarks>
     /// Defaults to <c>"12px"</c>.
     /// </remarks>
     [Parameter]
-    public string FontSize { get; set; } = "12px";
+    public string? FontSizeStr
+    {
+        get => FontSize.ToStr() + "px";
+        set
+        {
+            if (value != null && value.EndsWith("px") && double.TryParse(value.AsSpan(0, value.Length - 2), out var val))
+            {
+                FontSize = val;
+            }
+        }
+    }
 
     /// <summary>
     /// The padding size of the tooltip background in px.
     /// </summary>
     /// <remarks>
-    /// Defaults to <c>5</c>.
+    /// Defaults to <c>5.0</c>.
     /// </remarks>
     [Parameter]
-    public int PaddingSize { get; set; } = 5;
+    public double PaddingSize { get; set; } = 5.0;
 
     /// <summary>
     /// The color of the <see cref="Title"/> and <see cref="Subtitle"/>.
@@ -90,10 +109,10 @@ public partial class ChartTooltip : ComponentBase
     /// The width of the border.
     /// </summary>
     /// <remarks>
-    /// Defaults to <c>1</c>.
+    /// Defaults to <c>1.0</c>.
     /// </remarks>
     [Parameter]
-    public int StrokeWidth { get; set; } = 1;
+    public double StrokeWidth { get; set; } = 1.0;
 
     /// <summary>
     /// Whether to show the triangle pointing down.
@@ -118,7 +137,7 @@ public partial class ChartTooltip : ComponentBase
 
     private double _previousX;
     private double _previousY;
-    private string? _previousFontSize;
+    private double _previousFontSize;
     private string? _previousTitle;
     private string? _previousSubtitle;
 
@@ -126,7 +145,7 @@ public partial class ChartTooltip : ComponentBase
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (firstRender || FontSize != _previousFontSize || Title != _previousTitle || Subtitle != _previousSubtitle || _previousX != X || _previousY != Y)
+        if (firstRender || Math.Abs(FontSize - _previousFontSize) > 1e-6 || Title != _previousTitle || Subtitle != _previousSubtitle || _previousX != X || _previousY != Y)
         {
             await RecalculateBoxWidthAsync();
         }

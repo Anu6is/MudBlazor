@@ -38,7 +38,7 @@
     <text @ref="_text"
           x="@ToS(_textBbox.X)"
           y="@ToS(_textBbox.Y - (HasSubtitle ? _textBbox.Height : 0))"
-          font-size="@FontSize"
+          font-size="@(FontSize.ToStr() + "px")"
           fill="@FontColor"
           text-anchor="middle"
           stroke="black"

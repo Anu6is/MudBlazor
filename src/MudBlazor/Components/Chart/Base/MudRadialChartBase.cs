@@ -81,6 +81,28 @@ public abstract class MudRadialChartBase<T, TOptions> : MudChartBase<T, TOptions
     protected virtual double NormalizedRadius => 100;
 
     /// <summary>
+    /// The scaling factor for tooltips based on the chart's coordinate system.
+    /// </summary>
+    protected override double TooltipScalingFactor
+    {
+        get
+        {
+            if (Radius == NormalizedRadius)
+            {
+                var minDimension = Math.Min(_boundWidth, _boundHeight);
+                if (minDimension <= 0)
+                {
+                    return 1.0;
+                }
+
+                return (NormalizedRadius * 2) / minDimension;
+            }
+
+            return 1.0;
+        }
+    }
+
+    /// <summary>
     /// The bounding box of the chart arc.
     /// </summary>
     protected string ViewBox { get; set; } = "-100 -100 200 200";

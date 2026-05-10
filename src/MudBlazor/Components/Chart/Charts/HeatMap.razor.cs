@@ -133,6 +133,7 @@ namespace MudBlazor.Charts
         /// </summary>
         public (int Row, int Column) SelectedCell { get; set; }
 
+
         /// <summary>
         /// The chart, if any, containing this component.
         /// </summary>

@@ -19,6 +19,22 @@ public class PieChartOptions : DefaultRadialChartOptions, IHasValueLabelOptions
     /// </remarks>
     public bool ShowValues { get; set; } = false;
 
+    /// <summary>
+    /// The starting angle of the chart in degrees.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to <c>270.0</c> (top).
+    /// </remarks>
+    public virtual double StartAngle { get; set; } = 270.0;
+
+    /// <summary>
+    /// The total angle of the chart arc in degrees.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to <c>360.0</c> (full circle).
+    /// </remarks>
+    public virtual double SweepAngle { get; set; } = 360.0;
+
     public static implicit operator PieChartOptions(ChartOptions options) => new()
     {
         ShowLegend = options.ShowLegend,

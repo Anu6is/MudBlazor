@@ -39,6 +39,7 @@ public class RoseChartOptions : DefaultRadialChartOptions, IHasValueLabelOptions
         ShowToolTips = options.ShowToolTips,
         TooltipTitleFormat = options.TooltipTitleFormat,
         TooltipSubtitleFormat = options.TooltipSubtitleFormat,
+        TooltipFontSize = options.TooltipFontSize,
         ChartPalette = options.ChartPalette,
     };
 }

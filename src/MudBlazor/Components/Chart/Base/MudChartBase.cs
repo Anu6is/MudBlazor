@@ -168,6 +168,11 @@ public abstract class MudChartBase<T, TOptions> : MudComponentBase, IMudChart<T>
     public virtual string[] LegendPalette => ChartOptions?.ChartPalette ?? [];
 
     /// <summary>
+    /// The scaling factor for tooltips based on the chart's coordinate system.
+    /// </summary>
+    protected virtual double TooltipScalingFactor => 1.0;
+
+    /// <summary>
     /// The CSS classes for the chart component.
     /// </summary>
     protected string Classname => new CssBuilder("mud-chart")

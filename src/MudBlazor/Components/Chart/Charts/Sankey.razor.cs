@@ -59,6 +59,7 @@ namespace MudBlazor.Charts
         private List<ChartSeries<T>> _seriesData = [];
         private Dictionary<string, SankeyNode> _nodeLookup = [];
 
+
         /// <summary>
         /// The chart, if any, containing this component.
         /// </summary>

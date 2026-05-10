@@ -165,6 +165,13 @@ public partial class BaseRadialChart<T, TChartOptions> : MudComponentBase
     public RenderFragment<(SvgPath Segment, string Color)>? TooltipTemplate { get; set; }
 
     /// <summary>
+    /// The scaling factor for tooltips based on the chart's coordinate system.
+    /// </summary>
+    [Parameter]
+    [Category(CategoryTypes.Chart.Appearance)]
+    public double TooltipScalingFactor { get; set; } = 1.0;
+
+    /// <summary>
     /// The function to determine the position of the tooltip.
     /// </summary>
     [Parameter]

@@ -39,6 +39,14 @@ public abstract class DefaultChartOptions : IChartOptions
     public virtual string? TooltipSubtitleFormat { get; set; }
 
     /// <summary>
+    /// The font size for the tooltip.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to <c>12.0</c>.
+    /// </remarks>
+    public virtual double TooltipFontSize { get; set; } = 12.0;
+
+    /// <summary>
     /// The list of colors applied to series values.
     /// </summary>
     /// <remarks>

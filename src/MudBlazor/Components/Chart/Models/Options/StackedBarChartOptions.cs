@@ -30,6 +30,7 @@ public class StackedBarChartOptions : DefaultBarChartOptions
         ShowToolTips = options.ShowToolTips,
         TooltipTitleFormat = options.TooltipTitleFormat,
         TooltipSubtitleFormat = options.TooltipSubtitleFormat,
+        TooltipFontSize = options.TooltipFontSize,
         ChartPalette = options.ChartPalette,
     };
 }

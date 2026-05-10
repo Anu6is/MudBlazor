@@ -58,8 +58,8 @@
                               ShowTriangle="false"
                               StrokeWidth="0"
                               AnchorPositionX="@(kv.Value.X <= 10 ? ChartTooltipAnchorPositionX.Start : ChartTooltipAnchorPositionX.End)"
-                              FontSize="@ChartOptions.LabelFontSize"
-                              PaddingSize="@ChartOptions.LabelPadding"/>
+                              FontSizeStr="@(ChartOptions.LabelFontSize)"
+                              PaddingSize="@(ChartOptions.LabelPadding)"/>
             }
         }
         @* Draw edge labels last to have them at the top*@
@@ -83,8 +83,8 @@
                               Y="@edge.LabelY"
                               ShowTriangle="false"
                               StrokeWidth="0"
-                              FontSize="@ChartOptions!.LabelFontSize"
-                              PaddingSize="@ChartOptions.LabelPadding"/>
+                              FontSizeStr="@(ChartOptions!.LabelFontSize)"
+                              PaddingSize="@(ChartOptions.LabelPadding)"/>
             }
         }
         @MudChartParent?.CustomGraphics

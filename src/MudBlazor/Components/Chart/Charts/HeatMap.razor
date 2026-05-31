@@ -11,7 +11,7 @@
 }
 
 <svg @ref="_elementReference" @attributes="UserAttributes" class="mud-chart-heat mud-ltr" 
-     width="@(MatchBoundsToSize ? "100%" : Width)" height="@Height" 
+     width="@GetChartWidth()" height="@GetChartHeight()"
      viewBox="0 0 @_boundWidth.ToStr() @_boundHeight.ToStr()"
      style="@HoveredStylename">
     @if (_options is { EnableSmoothGradient: true })
@@ -389,5 +389,5 @@
 
 @if (CanHideSeries)
 {
-    <Legend T="T" Data="@_toggleLegend"></Legend>
+    <Legend T="T" Data="@_toggleLegend" LegendPosition="@LegendPosition" LegendHeight="@LegendHeight" LegendWidth="@LegendWidth" />
 }

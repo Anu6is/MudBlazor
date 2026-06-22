@@ -101,6 +101,7 @@ namespace MudBlazor
         public SnackbarOptions(Severity severity, CommonSnackbarOptions options) : base(options)
         {
             Severity = severity;
+            PositionClass = null;
 
             if (string.IsNullOrEmpty(Icon))
             {

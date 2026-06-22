@@ -7,11 +7,21 @@
 @inherits MudComponentBase
 
 @{
-}
-
-<div @attributes="UserAttributes" id="mud-snackbar-container" class="@Classname" style="@Style">
-    @foreach (var snackbar in Snackbar)
+    var groups = GroupedSnackbars.ToList();
+    if (!groups.Any())
     {
-        <MudSnackbarElement @key="snackbar" Snackbar="@snackbar"></MudSnackbarElement>
+        <div @attributes="UserAttributes" class="@GetContainerClass(Snackbars.Configuration.PositionClass)" style="@Style"></div>
     }
-</div>
+    else
+    {
+        @foreach (var group in groups)
+        {
+            <div @attributes="UserAttributes" class="@GetContainerClass(group.Key)" style="@Style">
+                @foreach (var snackbar in group)
+                {
+                    <MudSnackbarElement @key="snackbar" Snackbar="@snackbar"></MudSnackbarElement>
+                }
+            </div>
+        }
+    }
+}

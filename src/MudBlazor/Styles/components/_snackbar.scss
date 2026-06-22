@@ -90,7 +90,7 @@
   }
 }
 
-#mud-snackbar-container {
+.mud-snackbar-container {
   position: fixed;
   z-index: var(--mud-zindex-snackbar);
   pointer-events: none

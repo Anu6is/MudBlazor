@@ -19,18 +19,26 @@ namespace MudBlazor
         [CascadingParameter(Name = "RightToLeft")]
         public bool RightToLeft { get; set; }
 
-        protected IEnumerable<Snackbar> Snackbar => Snackbars.Configuration.NewestOnTop
-                ? Snackbars.ShownSnackbars.Reverse()
-                : Snackbars.ShownSnackbars;
+        protected IEnumerable<IGrouping<string, Snackbar>> GroupedSnackbars
+        {
+            get
+            {
+                var snackbars = Snackbars.Configuration.NewestOnTop
+                    ? Snackbars.ShownSnackbars.Reverse()
+                    : Snackbars.ShownSnackbars;
 
-        protected string Classname =>
-            new CssBuilder(Class)
-                .AddClass(GetPositionClass())
+                return snackbars.GroupBy(s => s.State.Options.PositionClass ?? Snackbars.Configuration.PositionClass);
+            }
+        }
+
+        protected string GetContainerClass(string positionClass) =>
+            new CssBuilder("mud-snackbar-container")
+                .AddClass(GetPositionClass(positionClass))
+                .AddClass(Class)
                 .Build();
 
-        private string GetPositionClass()
+        private string GetPositionClass(string positionClass)
         {
-            var positionClass = Snackbars.Configuration.PositionClass;
             return positionClass switch
             {
                 Defaults.Classes.Position.BottomStart => RightToLeft ? Defaults.Classes.Position.BottomRight : Defaults.Classes.Position.BottomLeft,

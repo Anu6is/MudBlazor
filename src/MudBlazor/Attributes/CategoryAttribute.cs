@@ -225,6 +225,12 @@ namespace MudBlazor
             public const string Appearance = "Appearance";
         }
 
+        public static class Collapse
+        {
+            public const string Behavior = "Behavior";
+            public const string Appearance = "Appearance";
+        }
+
         public static class Chip
         {
             public const string Behavior = "Behavior";
